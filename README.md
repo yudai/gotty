@@ -10,6 +10,14 @@ GoTTY is a simple command line tool that turns your CLI tools into web applicati
 
 Download the latest binary file from the [Releases](https://github.com/yudai/gotty/releases) page.
 
+## `go get` Instalation
+
+If you have a Go language environment, you can install gotty with the `go get` command.
+
+```sh
+go get github.com/yudai/gotty
+```
+
 # Usage
 
 
