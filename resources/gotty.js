@@ -6,7 +6,6 @@
 
     var term;
 
-
     ws.onopen = function(event) {
         hterm.defaultStorage = new lib.Storage.Local()
 

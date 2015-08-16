@@ -6,6 +6,7 @@ resource.go: bindata/hterm.js bindata/index.html bindata/gotty.js
 
 bindata:
 	mkdir bindata
+
 bindata/hterm.js: bindata libapps/hterm/js/*.js
 	cd libapps && \
 	LIBDOT_SEARCH_PATH=`pwd` ./libdot/bin/concat.sh -i ./hterm/concat/hterm_all.concat -o ../bindata/hterm.js
