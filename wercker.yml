@@ -1,0 +1,23 @@
+box: tcnksm/gox
+
+build:
+  steps:
+    - setup-go-workspace
+    - script:
+        name: go get
+        code: |
+          go get github.com/tools/godep
+          godep restore
+    - tcnksm/gox:
+        os: "darwin linux"
+        arch: "amd64"
+    - yudai/targz:
+        input: $WERCKER_OUTPUT_DIR/pkg
+        output: $WERCKER_OUTPUT_DIR/dist
+
+deploy:
+  steps:
+    - tcnksm/ghr:
+        token: $GITHUB_TOKEN
+        input: dist
+        replace: true

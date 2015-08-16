@@ -1,5 +1,7 @@
 # GoTTY - Share your terminal as a web application
 
+[![wercker status](https://app.wercker.com/status/03b91f441bebeda34f80e09a9f14126f/s/master "wercker status")](https://app.wercker.com/project/bykey/03b91f441bebeda34f80e09a9f14126f)
+
 GoTTY is a simple command line tool that turns your CLI tools into web applications.
 
 ![Screenshot](https://raw.githubusercontent.com/yudai/gotty/master/screenshot.gif)
