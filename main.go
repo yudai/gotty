@@ -18,24 +18,24 @@ func main() {
 		cli.StringFlag{
 			Name:   "addr, a",
 			Value:  "",
-			Usage:  "IP address to listen at",
+			Usage:  "IP address to listen",
 			EnvVar: "GOTTY_ADDR",
 		},
 		cli.StringFlag{
 			Name:   "port, p",
 			Value:  "8080",
-			Usage:  "Port number to listen at",
+			Usage:  "Port number to listen",
 			EnvVar: "GOTTY_PORT",
 		},
 		cli.BoolFlag{
 			Name:   "permit-write, w",
-			Usage:  "Permit write from client (BE CAREFUL)",
+			Usage:  "Permit clients to write to the TTY (BE CAREFUL)",
 			EnvVar: "GOTTY_PERMIT_WRITE",
 		},
 	}
 	cmd.Action = func(c *cli.Context) {
 		if len(c.Args()) == 0 {
-			fmt.Println("No command  given.\n")
+			fmt.Println("Error: No command given.\n")
 			cli.ShowAppHelp(c)
 			os.Exit(1)
 		}
@@ -46,5 +46,25 @@ func main() {
 			os.Exit(2)
 		}
 	}
+
+	cmd.HideHelp = true
+	cli.AppHelpTemplate = `NAME:
+   {{.Name}} - {{.Usage}}
+
+USAGE:
+   {{.Name}} [options] <command> [<arguments...>]
+
+VERSION:
+   {{.Version}}{{if or .Author .Email}}
+
+AUTHOR:{{if .Author}}
+  {{.Author}}{{if .Email}} - <{{.Email}}>{{end}}{{else}}
+  {{.Email}}{{end}}{{end}}
+
+OPTIONS:
+   {{range .Flags}}{{.}}
+   {{end}}
+`
+
 	cmd.Run(os.Args)
 }
