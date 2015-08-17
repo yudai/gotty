@@ -56,6 +56,15 @@ $ tmux new -A -s gotty
 
 By using terminal multiplexers, you can have the control of your terminal and allow clients to just see your screen.
 
+### Quick Sharing on tmux
+
+To share your current session with others by a shortcut key, you can add a line like below to your `.tmux.conf`.
+
+```
+# Start gotty in a new window with C-t
+bind-key C-t new-window "gotty tmux attach -t `tmux display -p '#S'`"
+```
+
 ## Playing with Docker
 
 When you want to create a jailed environment for each client, you can use Docker containers like following:
