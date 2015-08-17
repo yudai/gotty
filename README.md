@@ -15,7 +15,7 @@ Download the latest binary file from the [Releases](https://github.com/yudai/got
 If you have a Go language environment, you can install gotty with the `go get` command.
 
 ```sh
-go get github.com/yudai/gotty
+$ go get github.com/yudai/gotty
 ```
 
 # Usage
@@ -45,16 +45,24 @@ Gotty starts a new process when a new client connects to the server. This means 
 For example, you can start a new tmux session named `gotty` with `top` command by the command below.
 
 ```sh
-gotty tmux new -A -s gotty top
+$ gotty tmux new -A -s gotty top
 ```
 
 This command doesn't allow clients to send keystrokes, however, you can attach the session from your local terminal and run operatitons like switching the mode of the `top` command. To connect to the tmux session from your terminal, you can use following command.
 
-```
-tmux new -A -s gotty
+```sh
+$ tmux new -A -s gotty
 ```
 
 By using terminal multiplexers, you can have the control of your terminal and allow clients to just see your screen.
+
+## Playing with Docker
+
+When you want to create a jailed environment for each client, you can use Docker containers like following:
+
+```sh
+$ gotty -w docker run -it --rm busybox
+```
 
 # License
 
