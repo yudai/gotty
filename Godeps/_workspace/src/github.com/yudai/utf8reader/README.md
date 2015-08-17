@@ -63,3 +63,7 @@ Of course, bytes left behind will be used to fill up the buffer on next `Read()`
 ## Note
 
 UTF8Reader just checks incomplete bytes at the tail of the buffer. Even if the original byte sequence given to UTF8Reader is broken, UTF8Reader reports no errors and just fills up the buffer.
+
+## License
+
+The MIT License

@@ -77,3 +77,21 @@ func TestReadWithSmallBuffer(t *testing.T) {
 		t.Errorf("Expected error were not returned")
 	}
 }
+
+func TestReadWithSmallRead(t *testing.T) {
+	input := []byte("いろは")
+	or := bytes.NewBuffer(input[0:2]) // small read
+	r := New(or)
+	buf := make([]byte, 512)
+
+	_, err := r.Read(buf)
+	if err != nil {
+		t.Errorf("Unexpected error")
+	}
+
+	or.Write(input[2:6])
+	_, err = r.Read(buf)
+	if err != nil {
+		t.Errorf("Unexpected error")
+	}
+}

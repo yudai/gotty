@@ -43,7 +43,7 @@ func (r *UTF8Reader) Read(p []byte) (n int, err error) {
 	}
 
 	leftOver := 0
-	for ; leftOver < utf8.UTFMax; leftOver++ {
+	for ; leftOver < utf8.UTFMax && size-leftOver > 0; leftOver++ {
 		rune, _ := utf8.DecodeLastRune(p[:size-leftOver])
 		if rune != utf8.RuneError {
 			break
