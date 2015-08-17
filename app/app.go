@@ -7,12 +7,12 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
-	"unicode/utf8"
 	"unsafe"
 
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
+	"github.com/yudai/utf8reader"
 )
 
 type App struct {
@@ -83,11 +83,10 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 			defer func() { exit <- true }()
 
 			buf := make([]byte, 1024)
-			leftOver := 0
-			for {
-				size, err := fio.Read(buf[leftOver:])
-				size += leftOver
+			utf8f := utf8reader.New(fio)
 
+			for {
+				size, err := utf8f.Read(buf)
 				if err != nil {
 					log.Printf("command exited for: %s", r.RemoteAddr)
 					return
@@ -98,31 +97,8 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				// UTF-8 Boundary check
-				for leftOver = 0; leftOver < utf8.UTFMax; leftOver++ {
-					re, _ := utf8.DecodeLastRune(
-						buf[:size-leftOver],
-					)
-
-					if re != utf8.RuneError {
-						break
-					}
-					// Invalid UTF rune
-				}
-
-				if leftOver == utf8.UTFMax-1 {
-					re, _ := utf8.DecodeLastRune(buf[:size-leftOver])
-					if re == utf8.RuneError {
-						log.Fatal("UTF8 Boundary error.")
-					}
-				}
-
-				writer.Write(buf[:size-leftOver])
+				writer.Write(buf[:size])
 				writer.Close()
-
-				for i := 0; i < leftOver; i++ {
-					buf[i] = buf[size-leftOver+i]
-				}
 			}
 		}()
 

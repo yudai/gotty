@@ -19,6 +19,10 @@
 			"ImportPath": "github.com/kr/pty",
 			"Comment": "release.r56-28-g5cf931e",
 			"Rev": "5cf931ef8f76dccd0910001d74a58a7fca84a83d"
+		},
+		{
+			"ImportPath": "github.com/yudai/utf8reader",
+			"Rev": "543610cf49fc1279921d6ef1b7f7773ebece14f8"
 		}
 	]
 }
