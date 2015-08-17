@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"unicode/utf8"
 	"unsafe"
 
 	"github.com/elazarl/go-bindata-assetfs"
@@ -53,8 +54,8 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("New client connected: %s", r.RemoteAddr)
 
 		upgrader := websocket.Upgrader{
-			ReadBufferSize:  0,
-			WriteBufferSize: 0,
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
 			Subprotocols:    []string{"gotty"},
 		}
 
@@ -81,19 +82,47 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 		go func() {
 			defer func() { exit <- true }()
 
-			buf := make([]byte, 512)
+			buf := make([]byte, 1024)
+			leftOver := 0
 			for {
-				len, err := fio.Read(buf)
+				size, err := fio.Read(buf[leftOver:])
+				size += leftOver
+
 				if err != nil {
 					log.Printf("command exited for: %s", r.RemoteAddr)
 					return
 				}
-				writer, err := conn.NextWriter(1)
+
+				writer, err := conn.NextWriter(websocket.TextMessage)
 				if err != nil {
 					return
 				}
-				writer.Write(buf[0:len])
+
+				// UTF-8 Boundary check
+				for leftOver = 0; leftOver < utf8.UTFMax; leftOver++ {
+					re, _ := utf8.DecodeLastRune(
+						buf[:size-leftOver],
+					)
+
+					if re != utf8.RuneError {
+						break
+					}
+					// Invalid UTF rune
+				}
+
+				if leftOver == utf8.UTFMax-1 {
+					re, _ := utf8.DecodeLastRune(buf[:size-leftOver])
+					if re == utf8.RuneError {
+						log.Fatal("UTF8 Boundary error.")
+					}
+				}
+
+				writer.Write(buf[:size-leftOver])
 				writer.Close()
+
+				for i := 0; i < leftOver; i++ {
+					buf[i] = buf[size-leftOver+i]
+				}
 			}
 		}()
 
