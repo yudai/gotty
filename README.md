@@ -10,6 +10,15 @@ GoTTY is a simple command line tool that turns your CLI tools into web applicati
 
 Download the latest binary file from the [Releases](https://github.com/yudai/gotty/releases) page.
 
+## Homebrew Installation
+
+You can install gotty with [Homebrew](http://brew.sh/) as well.
+
+```sh
+$ brew tap yudai/gotty
+$ brew install gotty
+```
+
 ## `go get` Installation
 
 If you have a Go language environment, you can install gotty with the `go get` command.
