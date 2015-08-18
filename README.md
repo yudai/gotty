@@ -24,7 +24,7 @@ $ go get github.com/yudai/gotty
 Usage: gotty [options] <command> [<arguments...>]
 ```
 
-Run `gotty` with your prefered command as its arguments (e.g. `gotty top`).
+Run `gotty` with your preferred command as its arguments (e.g. `gotty top`).
 
 By default, gotty starts a web server at port 8080. Open the URL on your web browser and you can see the running command as if it's running on your terminal.
 
@@ -36,7 +36,7 @@ By default, gotty starts a web server at port 8080. Open the URL on your web bro
 --permit-write, -w   Permit clients to write to the TTY (BE CAREFUL) [$GOTTY_PERMIT_WRITE]
 ```
 
-By default, gotty doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permmit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. Make sure that only trusted clients can connect to your gotty server when activate this option. If you need interaction with the PTY, consider starting gotty with tmux or GNU Screen and run your main command on it.
+By default, gotty doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. Make sure that only trusted clients can connect to your gotty server when you activate this option. If you need interaction with the PTY, consider starting gotty with tmux or GNU Screen and run your main command on it.
 
 ## Sharing with Multiple Clients
 
@@ -48,7 +48,7 @@ For example, you can start a new tmux session named `gotty` with `top` command b
 $ gotty tmux new -A -s gotty top
 ```
 
-This command doesn't allow clients to send keystrokes, however, you can attach the session from your local terminal and run operatitons like switching the mode of the `top` command. To connect to the tmux session from your terminal, you can use following command.
+This command doesn't allow clients to send keystrokes, however, you can attach the session from your local terminal and run operations like switching the mode of the `top` command. To connect to the tmux session from your terminal, you can use following command.
 
 ```sh
 $ tmux new -A -s gotty
