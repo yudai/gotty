@@ -45,7 +45,7 @@
     }
 
     ws.onclose = function(event) {
-        term.io.print("Connection closed.");
+        term.io.showOverlay("Connection Closed", null);
         term.uninstallKeyboard();
     }
 })()
