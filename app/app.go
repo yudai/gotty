@@ -40,7 +40,7 @@ func (app *App) Run() error {
 	http.HandleFunc("/ws", app.generateHandler())
 
 	url := app.Address + ":" + app.Port
-	log.Printf("Sever is running at %s, command: %s", url, strings.Join(app.Command, " "))
+	log.Printf("Server is running at %s, command: %s", url, strings.Join(app.Command, " "))
 	err := http.ListenAndServe(url, nil)
 	if err != nil {
 		return err
