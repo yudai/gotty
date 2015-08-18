@@ -177,7 +177,9 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			<-exit
-			fio.Write([]byte{4})
+			if app.PermitWrite {
+				fio.Write([]byte{4})
+			}
 			fio.Close()
 			conn.Close()
 			log.Printf("Connection closed: %s", r.RemoteAddr)
