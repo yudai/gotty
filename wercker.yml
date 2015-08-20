@@ -8,6 +8,10 @@ build:
         code: |
           go get github.com/tools/godep
           godep restore
+    - script:
+        name: check format
+        code: |
+          if [ `go fmt ./... | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
     - tcnksm/gox:
         os: "darwin linux"
         arch: "amd64"
