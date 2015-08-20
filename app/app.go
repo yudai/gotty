@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -19,16 +20,48 @@ type App struct {
 	Address     string
 	Port        string
 	PermitWrite bool
+	Credential  string
 	Command     []string
 }
 
-func New(address string, port string, permitWrite bool, command []string) *App {
+func New(address string, port string, permitWrite bool, cred string, command []string) *App {
 	return &App{
 		Address:     address,
 		Port:        port,
 		PermitWrite: permitWrite,
+		Credential:  cred,
 		Command:     command,
 	}
+}
+
+func loggerHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s", r.Method, r.URL.Path)
+		h.ServeHTTP(w, r)
+	})
+}
+
+func basicAuthHandler(h http.Handler, cred string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+		if len(token) != 2 || strings.ToLower(token[0]) != "basic" {
+			w.Header().Set("WWW-Authenticate", `Basic realm="GoTTY"`)
+			http.Error(w, "Bad Request", http.StatusUnauthorized)
+			return
+		}
+
+		payload, err := base64.StdEncoding.DecodeString(token[1])
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if cred != string(payload) {
+			w.Header().Set("WWW-Authenticate", `Basic realm="GoTTY"`)
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
 }
 
 func (app *App) Run() error {
@@ -41,7 +74,12 @@ func (app *App) Run() error {
 
 	url := app.Address + ":" + app.Port
 	log.Printf("Server is running at %s, command: %s", url, strings.Join(app.Command, " "))
-	err := http.ListenAndServe(url, nil)
+	handler := http.Handler(http.DefaultServeMux)
+	handler = loggerHandler(handler)
+	if app.Credential != "" {
+		handler = basicAuthHandler(handler, app.Credential)
+	}
+	err := http.ListenAndServe(url, handler)
 	if err != nil {
 		return err
 	}
