@@ -3,6 +3,7 @@ gotty: resource.go main.go app/*.go
 
 resource.go: bindata/hterm.js bindata/index.html bindata/gotty.js
 	go-bindata -pkg app -ignore=\\.gitkeep -o app/resource.go bindata/
+	gofmt -w app/resource.go
 
 bindata:
 	mkdir bindata
