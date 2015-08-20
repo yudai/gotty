@@ -82,6 +82,25 @@ When you want to create a jailed environment for each client, you can use Docker
 $ gotty -w docker run -it --rm busybox
 ```
 
+## Development
+
+You can build a binary yourself using following commands. Windows is not supported now.
+
+```sh
+# Install tools
+go get github.com/jteeuwen/go-bindata/...
+go get github.com/tools/godep
+
+# Checkout hterm
+git submodule sync && git submodule update --init --recursive
+
+# Restore libraries in Godeps
+godep restore
+
+# Build
+make
+```
+
 # License
 
 The MIT License
