@@ -20,22 +20,21 @@ import (
 )
 
 type App struct {
+	options Options
+}
+
+type Options struct {
 	Address     string
 	Port        string
 	PermitWrite bool
-	RandomUrl   bool
 	Credential  string
+	RandomUrl   bool
 	Command     []string
 }
 
-func New(address string, port string, permitWrite bool, cred string, randomUrl bool, command []string) *App {
+func New(options Options) *App {
 	return &App{
-		Address:     address,
-		Port:        port,
-		PermitWrite: permitWrite,
-		Credential:  cred,
-		RandomUrl:   randomUrl,
-		Command:     command,
+		options: options,
 	}
 }
 
@@ -71,7 +70,7 @@ func basicAuthHandler(h http.Handler, cred string) http.Handler {
 
 func (app *App) Run() error {
 	path := "/"
-	if app.RandomUrl {
+	if app.options.RandomUrl {
 		randomPath := generateRandomString(8)
 		path = "/" + randomPath + "/"
 	}
@@ -80,12 +79,12 @@ func (app *App) Run() error {
 	http.Handle(path, fs)
 	http.HandleFunc(path+"ws", app.generateHandler())
 
-	endpoint := app.Address + ":" + app.Port
-	log.Printf("Server is running at %s, command: %s", endpoint+path, strings.Join(app.Command, " "))
+	endpoint := app.options.Address + ":" + app.options.Port
+	log.Printf("Server is running at %s, command: %s", endpoint+path, strings.Join(app.options.Command, " "))
 	handler := http.Handler(http.DefaultServeMux)
 	handler = loggerHandler(handler)
-	if app.Credential != "" {
-		handler = basicAuthHandler(handler, app.Credential)
+	if app.options.Credential != "" {
+		handler = basicAuthHandler(handler, app.options.Credential)
 	}
 	err := http.ListenAndServe(endpoint, handler)
 	if err != nil {
@@ -116,7 +115,7 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		cmd := exec.Command(app.Command[0], app.Command[1:]...)
+		cmd := exec.Command(app.options.Command[0], app.options.Command[1:]...)
 		fio, err := pty.Start(cmd)
 		log.Printf("Command is running for client %s with PID %d", r.RemoteAddr, cmd.Process.Pid)
 		if err != nil {
@@ -160,7 +159,7 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 
 				switch data[0] {
 				case '0':
-					if !app.PermitWrite {
+					if !app.options.PermitWrite {
 						break
 					}
 
