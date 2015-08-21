@@ -110,6 +110,7 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 
 		cmd := exec.Command(app.Command[0], app.Command[1:]...)
 		fio, err := pty.Start(cmd)
+		log.Printf("Command is running for client %s with PID %d", r.RemoteAddr, cmd.Process.Pid)
 		if err != nil {
 			log.Print("Failed to execute command")
 			return
@@ -126,7 +127,7 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 			for {
 				size, err := utf8f.Read(buf)
 				if err != nil {
-					log.Printf("command exited for: %s", r.RemoteAddr)
+					log.Printf("Command exited for: %s", r.RemoteAddr)
 					return
 				}
 
