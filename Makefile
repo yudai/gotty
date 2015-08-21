@@ -1,7 +1,9 @@
-gotty: resource.go main.go app/*.go
+gotty: app/resource.go main.go app/*.go
 	go build
 
-resource.go: bindata/hterm.js bindata/index.html bindata/gotty.js
+resource: app/resource.go
+
+app/resource.go: bindata/hterm.js bindata/index.html bindata/gotty.js
 	go-bindata -pkg app -ignore=\\.gitkeep -o app/resource.go bindata/
 	gofmt -w app/resource.go
 
