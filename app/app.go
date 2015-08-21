@@ -216,6 +216,7 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			<-exit
+			cmd.Wait()
 			conn.Close()
 			log.Printf("Connection closed: %s", r.RemoteAddr)
 		}()
