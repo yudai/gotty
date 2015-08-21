@@ -24,11 +24,8 @@
                 ws.send(
                     "1" + JSON.stringify(
                         {
-                            name: "resize_terminal",
-                            arguments: {
-                                columns: columns,
-                                rows: rows,
-                            },
+                            columns: columns,
+                            rows: rows,
                         }
                     )
                 )

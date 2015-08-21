@@ -158,7 +158,7 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 				}
 
 				switch data[0] {
-				case '0':
+				case Input:
 					if !app.options.PermitWrite {
 						break
 					}
@@ -168,51 +168,31 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 
-				case '1':
-					var remoteCmd command
-					err = json.Unmarshal(data[1:], &remoteCmd)
+				case ResizeTerminal:
+					var args argResizeTerminal
+					err = json.Unmarshal(data[1:], &args)
 					if err != nil {
 						log.Print("Malformed remote command")
 						return
 					}
 
-					switch remoteCmd.Name {
-					case "resize_terminal":
-
-						rows := remoteCmd.Arguments["rows"]
-						switch rows.(type) {
-						case float64:
-						default:
-							log.Print("Malformed remote command")
-							return
-						}
-
-						cols := remoteCmd.Arguments["columns"]
-						switch cols.(type) {
-						case float64:
-						default:
-							log.Print("Malformed remote command")
-							return
-						}
-
-						window := struct {
-							row uint16
-							col uint16
-							x   uint16
-							y   uint16
-						}{
-							uint16(rows.(float64)),
-							uint16(cols.(float64)),
-							0,
-							0,
-						}
-						syscall.Syscall(
-							syscall.SYS_IOCTL,
-							fio.Fd(),
-							syscall.TIOCSWINSZ,
-							uintptr(unsafe.Pointer(&window)),
-						)
+					window := struct {
+						row uint16
+						col uint16
+						x   uint16
+						y   uint16
+					}{
+						uint16(args.Rows),
+						uint16(args.Columns),
+						0,
+						0,
 					}
+					syscall.Syscall(
+						syscall.SYS_IOCTL,
+						fio.Fd(),
+						syscall.TIOCSWINSZ,
+						uintptr(unsafe.Pointer(&window)),
+					)
 
 				default:
 					log.Print("Unknown message type")
@@ -230,9 +210,14 @@ func (app *App) generateHandler() func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type command struct {
-	Name      string                 `json:"name"`
-	Arguments map[string]interface{} `json:"arguments"`
+const (
+	Input          = '0'
+	ResizeTerminal = '1'
+)
+
+type argResizeTerminal struct {
+	Columns float64
+	Rows    float64
 }
 
 func generateRandomString(length int) string {
