@@ -48,6 +48,7 @@ func (context *clientContext) goHandleClient() {
 
 	go func() {
 		<-exit
+		context.pty.Close()
 		context.command.Wait()
 		context.connection.Close()
 		log.Printf("Connection closed: %s", context.request.RemoteAddr)
