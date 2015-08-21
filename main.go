@@ -14,6 +14,7 @@ func main() {
 	cmd.Version = "0.0.2"
 	cmd.Name = "gotty"
 	cmd.Usage = "Share your terminal as a web application"
+	cmd.HideHelp = true
 	cmd.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "addr, a",
@@ -66,24 +67,7 @@ func main() {
 		}
 	}
 
-	cmd.HideHelp = true
-	cli.AppHelpTemplate = `NAME:
-   {{.Name}} - {{.Usage}}
-
-USAGE:
-   {{.Name}} [options] <command> [<arguments...>]
-
-VERSION:
-   {{.Version}}{{if or .Author .Email}}
-
-AUTHOR:{{if .Author}}
-  {{.Author}}{{if .Email}} - <{{.Email}}>{{end}}{{else}}
-  {{.Email}}{{end}}{{end}}
-
-OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}
-`
+	cli.AppHelpTemplate = helpTemplate
 
 	cmd.Run(os.Args)
 }
