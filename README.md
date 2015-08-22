@@ -103,6 +103,10 @@ godep restore
 make
 ```
 
+## Architecture
+
+Gotty uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-hterm) to run a JavaScript based terminal on web browsers. Gotty itself provides a websocket server that simply relays output from the PTY to clients and receives input from clients and forwards to the PTY. This hterm + websocket idea is highly inspired by [Wetty](https://github.com/krishnasrinivas/wetty).
+
 # License
 
 The MIT License
