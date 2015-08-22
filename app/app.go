@@ -42,63 +42,41 @@ func New(options Options) *App {
 	}
 }
 
-func loggerHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s", r.Method, r.URL.Path)
-		h.ServeHTTP(w, r)
-	})
-}
-
-func basicAuthHandler(h http.Handler, cred string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-		if len(token) != 2 || strings.ToLower(token[0]) != "basic" {
-			w.Header().Set("WWW-Authenticate", `Basic realm="GoTTY"`)
-			http.Error(w, "Bad Request", http.StatusUnauthorized)
-			return
-		}
-
-		payload, err := base64.StdEncoding.DecodeString(token[1])
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		if cred != string(payload) {
-			w.Header().Set("WWW-Authenticate", `Basic realm="GoTTY"`)
-			http.Error(w, "authorization failed", http.StatusUnauthorized)
-			return
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
 func (app *App) Run() error {
 	path := "/"
 	if app.options.RandomUrl {
-		randomPath := generateRandomString(8)
-		path = "/" + randomPath + "/"
+		path += generateRandomString(8)
 	}
-
-	fs := http.StripPrefix(path, http.FileServer(&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "bindata"}))
-	http.Handle(path, fs)
-	http.HandleFunc(path+"ws", app.handler)
 
 	endpoint := app.options.Address + ":" + app.options.Port
-	log.Printf("Server is running at %s, command: %s", endpoint+path, strings.Join(app.options.Command, " "))
-	handler := http.Handler(http.DefaultServeMux)
-	handler = loggerHandler(handler)
+
+	staticHandler := http.FileServer(
+		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "bindata"},
+	)
+	wsHandler := http.HandlerFunc(app.handleWS)
+
+	var siteMux = http.NewServeMux()
+	siteMux.Handle(path, staticHandler)
+	siteMux.Handle(path+"ws", wsHandler)
+
+	siteHandler := http.Handler(siteMux)
+
 	if app.options.Credential != "" {
-		handler = basicAuthHandler(handler, app.options.Credential)
+		log.Printf("Using Basic Authentication")
+		siteHandler = wrapBasicAuth(siteHandler, app.options.Credential)
 	}
-	err := http.ListenAndServe(endpoint, handler)
-	if err != nil {
+
+	siteHandler = wrapLogger(siteHandler)
+
+	log.Printf("Server is running at %s, command: %s", endpoint+path, strings.Join(app.options.Command, " "))
+	if err := http.ListenAndServe(endpoint, siteHandler); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (app *App) handler(w http.ResponseWriter, r *http.Request) {
+func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	log.Printf("New client connected: %s", r.RemoteAddr)
 
 	if r.Method != "GET" {
@@ -129,6 +107,40 @@ func (app *App) handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	context.goHandleClient()
+}
+
+func wrapLogger(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s", r.Method, r.URL.Path)
+		handler.ServeHTTP(w, r)
+	})
+}
+
+func wrapBasicAuth(handler http.Handler, credential string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+
+		if len(token) != 2 || strings.ToLower(token[0]) != "basic" {
+			w.Header().Set("WWW-Authenticate", `Basic realm="GoTTY"`)
+			http.Error(w, "Bad Request", http.StatusUnauthorized)
+			return
+		}
+
+		payload, err := base64.StdEncoding.DecodeString(token[1])
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		if credential != string(payload) {
+			w.Header().Set("WWW-Authenticate", `Basic realm="GoTTY"`)
+			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
+		}
+
+		log.Printf("Basic Authentication Succeeded: %s", r.RemoteAddr)
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func generateRandomString(length int) string {
