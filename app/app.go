@@ -13,6 +13,7 @@ import (
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
+	"net"
 )
 
 type App struct {
@@ -68,7 +69,17 @@ func (app *App) Run() error {
 
 	siteHandler = wrapLogger(siteHandler)
 
-	log.Printf("Server is running at %s, command: %s", endpoint+path, strings.Join(app.options.Command, " "))
+	log.Printf(
+		"Server is starting with command: %s",
+		strings.Join(app.options.Command, " "),
+	)
+	if app.options.Address != "" {
+		log.Printf("URL: %s", "http://"+endpoint+path)
+	} else {
+		for _, address := range listAddresses() {
+			log.Printf("URL: %s", "http://"+address+":"+app.options.Port+path)
+		}
+	}
 	if err := http.ListenAndServe(endpoint, siteHandler); err != nil {
 		return err
 	}
@@ -152,4 +163,25 @@ func generateRandomString(length int) string {
 		n[i] = strconv.FormatInt(c.Int64(), base)[0]
 	}
 	return string(n)
+}
+
+func listAddresses() (addresses []string) {
+	ifaces, _ := net.Interfaces()
+
+	addresses = make([]string, 0, len(ifaces))
+
+	for _, iface := range ifaces {
+		ifAddrs, _ := iface.Addrs()
+		for _, ifAddr := range ifAddrs {
+			switch v := ifAddr.(type) {
+			case *net.IPNet:
+				addresses = append(addresses, v.IP.String())
+			case *net.IPAddr:
+				addresses = append(addresses, v.IP.To16().String())
+				addresses = append(addresses, v.IP.To4().String())
+			}
+		}
+	}
+
+	return
 }
