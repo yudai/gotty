@@ -11,7 +11,7 @@ import (
 
 func main() {
 	cmd := cli.NewApp()
-	cmd.Version = "0.0.2"
+	cmd.Version = "0.0.3"
 	cmd.Name = "gotty"
 	cmd.Usage = "Share your terminal as a web application"
 	cmd.HideHelp = true
