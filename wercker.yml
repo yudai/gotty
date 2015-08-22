@@ -13,7 +13,7 @@ build:
         code: |
           if [ `go fmt ./... | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
     - tcnksm/gox:
-        os: "darwin linux"
+        os: "darwin linux freebsd netbsd openbsd"
         arch: "386 amd64"
     - yudai/targz:
         input: $WERCKER_OUTPUT_DIR/pkg
