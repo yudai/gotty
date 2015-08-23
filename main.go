@@ -43,6 +43,12 @@ func main() {
 			Usage:  "Add a random string to the URL",
 			EnvVar: "GOTTY_RANDOM_URL",
 		},
+		cli.StringFlag{
+			Name:   "title-format",
+			Value:  "GoTTY - {{ .Command }} ({{ .Hostname }})",
+			Usage:  "Title format of browser window",
+			EnvVar: "GOTTY_title-format",
+		},
 	}
 	cmd.Action = func(c *cli.Context) {
 		if len(c.Args()) == 0 {
@@ -57,6 +63,7 @@ func main() {
 				c.Bool("permit-write"),
 				c.String("credential"),
 				c.Bool("random-url"),
+				c.String("title-format"),
 				c.Args(),
 			},
 		)

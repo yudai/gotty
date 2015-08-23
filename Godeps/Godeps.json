@@ -12,6 +12,14 @@
 			"Rev": "d5cac425555ca5cf00694df246e04f05e6a55150"
 		},
 		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "ee1815431e497d3850809578c93ab6705f1a19f7"
+		},
+		{
 			"ImportPath": "github.com/gorilla/websocket",
 			"Rev": "b6ab76f1fe9803ee1d59e7e5b2a797c1fe897ce5"
 		},

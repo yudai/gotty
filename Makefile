@@ -1,21 +1,27 @@
 gotty: app/resource.go main.go app/*.go
 	go build
 
-resource: app/resource.go
+resource:  app/resource.go
 
-app/resource.go: bindata/hterm.js bindata/index.html bindata/gotty.js
-	go-bindata -pkg app -ignore=\\.gitkeep -o app/resource.go bindata/
+app/resource.go: bindata/static/hterm.js bindata/static/gotty.js  bindata/templates/index.html
+	go-bindata -prefix bindata -pkg app -ignore=\\.gitkeep -o app/resource.go bindata/...
 	gofmt -w app/resource.go
 
 bindata:
 	mkdir bindata
 
-bindata/hterm.js: bindata libapps/hterm/js/*.js
+bindata/static: bindata
+	mkdir bindata/static
+
+bindata/templates: bindata
+	mkdir bindata/templates
+
+bindata/static/hterm.js: bindata/static libapps/hterm/js/*.js
 	cd libapps && \
-	LIBDOT_SEARCH_PATH=`pwd` ./libdot/bin/concat.sh -i ./hterm/concat/hterm_all.concat -o ../bindata/hterm.js
+	LIBDOT_SEARCH_PATH=`pwd` ./libdot/bin/concat.sh -i ./hterm/concat/hterm_all.concat -o ../bindata/static/hterm.js
 
-bindata/index.html: bindata resources/index.html
-	cp resources/index.html bindata/index.html
+bindata/static/gotty.js: bindata/static resources/gotty.js
+	cp resources/gotty.js bindata/static/gotty.js
 
-bindata/gotty.js: bindata resources/gotty.js
-	cp resources/gotty.js bindata/gotty.js
+bindata/templates/index.html: bindata/templates resources/index.html
+	cp resources/index.html bindata/templates/index.html
