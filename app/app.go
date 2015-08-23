@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
@@ -120,10 +121,19 @@ func (app *App) Run() error {
 		strings.Join(app.options.Command, " "),
 	)
 	if app.options.Address != "" {
-		log.Printf("URL: %s", "http://"+endpoint+path+"/")
+		log.Printf(
+			"URL: %s", (&url.URL{Scheme: "http", Host: endpoint, Path: path + "/"}).String(),
+		)
 	} else {
 		for _, address := range listAddresses() {
-			log.Printf("URL: %s", "http://"+net.JoinHostPort(address, app.options.Port)+path+"/")
+			log.Printf(
+				"URL: %s",
+				(&url.URL{
+					Scheme: "http",
+					Host:   net.JoinHostPort(address, app.options.Port),
+					Path:   path + "/",
+				}).String(),
+			)
 		}
 	}
 	if err := http.ListenAndServe(endpoint, siteHandler); err != nil {
