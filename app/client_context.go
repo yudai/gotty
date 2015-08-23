@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 	"unsafe"
 
@@ -26,9 +27,21 @@ const (
 	ResizeTerminal = '1'
 )
 
+const (
+	Output         = '0'
+	SetWindowTitle = '1'
+)
+
 type argResizeTerminal struct {
 	Columns float64
 	Rows    float64
+}
+
+type ContextVars struct {
+	Command    string
+	Pid        int
+	Hostname   string
+	RemoteAddr string
 }
 
 func (context *clientContext) goHandleClient() {
@@ -56,6 +69,11 @@ func (context *clientContext) goHandleClient() {
 }
 
 func (context *clientContext) processSend() {
+	if err := context.sendInitialize(); err != nil {
+		log.Printf(err.Error())
+		return
+	}
+
 	buf := make([]byte, 1024)
 	utf8f := utf8reader.New(context.pty)
 
@@ -71,9 +89,32 @@ func (context *clientContext) processSend() {
 			return
 		}
 
+		writer.Write([]byte{Output})
 		writer.Write(buf[:size])
 		writer.Close()
 	}
+}
+
+func (context *clientContext) sendInitialize() error {
+	hostname, _ := os.Hostname()
+	titleVars := ContextVars{
+		Command:    strings.Join(context.app.options.Command, " "),
+		Pid:        context.command.Process.Pid,
+		Hostname:   hostname,
+		RemoteAddr: context.request.RemoteAddr,
+	}
+
+	writer, err := context.connection.NextWriter(websocket.TextMessage)
+	if err != nil {
+		return err
+	}
+	writer.Write([]byte{SetWindowTitle})
+	if err = context.app.titleTemplate.Execute(writer, titleVars); err != nil {
+		return err
+	}
+	writer.Close()
+
+	return nil
 }
 
 func (context *clientContext) processReceive() {

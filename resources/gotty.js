@@ -38,7 +38,15 @@
     };
 
     ws.onmessage = function(event) {
-        term.io.writeUTF16(event.data);
+        data = event.data.slice(1);
+        switch(event.data[0]) {
+        case '0':
+            term.io.writeUTF16(data);
+            break;
+        case '1':
+            term.setWindowTitle(data);
+            break;
+        }
     }
 
     ws.onclose = function(event) {

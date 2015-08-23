@@ -3,7 +3,7 @@ gotty: app/resource.go main.go app/*.go
 
 resource:  app/resource.go
 
-app/resource.go: bindata/static/hterm.js bindata/static/gotty.js  bindata/templates/index.html
+app/resource.go: bindata/static/hterm.js bindata/static/gotty.js  bindata/static/index.html
 	go-bindata -prefix bindata -pkg app -ignore=\\.gitkeep -o app/resource.go bindata/...
 	gofmt -w app/resource.go
 
@@ -23,5 +23,5 @@ bindata/static/hterm.js: bindata/static libapps/hterm/js/*.js
 bindata/static/gotty.js: bindata/static resources/gotty.js
 	cp resources/gotty.js bindata/static/gotty.js
 
-bindata/templates/index.html: bindata/templates resources/index.html
-	cp resources/index.html bindata/templates/index.html
+bindata/static/index.html: bindata/static resources/index.html
+	cp resources/index.html bindata/static/index.html

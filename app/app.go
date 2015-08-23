@@ -1,19 +1,17 @@
 package app
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/base64"
-	htemplate "html/template"
+	"errors"
 	"log"
 	"math/big"
 	"net"
 	"net/http"
-	"os"
 	"os/exec"
 	"strconv"
 	"strings"
-	ttemplate "text/template"
+	"text/template"
 
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
@@ -23,7 +21,8 @@ import (
 type App struct {
 	options Options
 
-	upgrader *websocket.Upgrader
+	upgrader      *websocket.Upgrader
+	titleTemplate *template.Template
 }
 
 type Options struct {
@@ -36,7 +35,12 @@ type Options struct {
 	Command     []string
 }
 
-func New(options Options) *App {
+func New(options Options) (*App, error) {
+	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
+	if err != nil {
+		return nil, errors.New("Title format string syntax error")
+	}
+
 	return &App{
 		options: options,
 
@@ -45,7 +49,8 @@ func New(options Options) *App {
 			WriteBufferSize: 1024,
 			Subprotocols:    []string{"gotty"},
 		},
-	}
+		titleTemplate: titleTemplate,
+	}, nil
 }
 
 func (app *App) Run() error {
@@ -56,15 +61,13 @@ func (app *App) Run() error {
 
 	endpoint := app.options.Address + ":" + app.options.Port
 
-	indexHandler := http.HandlerFunc(app.handleIndex)
 	wsHandler := http.HandlerFunc(app.handleWS)
 	staticHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
 
 	var siteMux = http.NewServeMux()
-	siteMux.Handle(path+"/", indexHandler)
-	siteMux.Handle(path+"/static/", http.StripPrefix(path+"/static/", staticHandler))
+	siteMux.Handle(path+"/", http.StripPrefix(path+"/", staticHandler))
 	siteMux.Handle(path+"/ws", wsHandler)
 
 	siteHandler := http.Handler(siteMux)
@@ -92,36 +95,6 @@ func (app *App) Run() error {
 	}
 
 	return nil
-}
-
-type TitleVars struct {
-	Command  string
-	Hostname string
-}
-
-type IndexVars struct {
-	Title string
-}
-
-func (app *App) handleIndex(w http.ResponseWriter, r *http.Request) {
-	title := make([]byte, 0)
-	titleBuf := bytes.NewBuffer(title)
-	hostname, _ := os.Hostname()
-	titleVars := TitleVars{
-		Command:  strings.Join(app.options.Command, " "),
-		Hostname: hostname,
-	}
-	titleTmpl, _ := ttemplate.New("title").Parse(app.options.TitleFormat)
-	titleTmpl.Execute(titleBuf, titleVars)
-
-	data, _ := Asset("templates/index.html")
-	tmpl, _ := htemplate.New("index").Parse(string(data))
-
-	vars := IndexVars{
-		Title: titleBuf.String(),
-	}
-
-	tmpl.Execute(w, vars)
 }
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {

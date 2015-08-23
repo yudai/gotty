@@ -56,7 +56,8 @@ func main() {
 			cli.ShowAppHelp(c)
 			os.Exit(1)
 		}
-		app := app.New(
+
+		app, err := app.New(
 			app.Options{
 				c.String("addr"),
 				c.String("port"),
@@ -67,10 +68,15 @@ func main() {
 				c.Args(),
 			},
 		)
-		err := app.Run()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(2)
+		}
+
+		err = app.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(3)
 		}
 	}
 
