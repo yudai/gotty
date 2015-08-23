@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"os/user"
 	"strconv"
 	"strings"
 	"text/template"
@@ -53,11 +52,7 @@ func New(options Options) (*App, error) {
 	prefString := []byte{}
 	prefPath := options.ProfileFile
 	if options.ProfileFile == DefaultProfileFilePath {
-		usr, err := user.Current()
-		if err != nil {
-			return nil, err
-		}
-		prefPath = usr.HomeDir + "/.gotty"
+		prefPath = os.Getenv("HOME") + "/.gotty"
 	}
 	if _, err = os.Stat(prefPath); os.IsNotExist(err) {
 		if options.ProfileFile != DefaultProfileFilePath {
