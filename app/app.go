@@ -53,7 +53,10 @@ func New(options Options) (*App, error) {
 	prefString := []byte{}
 	prefPath := options.ProfileFile
 	if options.ProfileFile == DefaultProfileFilePath {
-		usr, _ := user.Current()
+		usr, err := user.Current()
+		if err != nil {
+			return nil, err
+		}
 		prefPath = usr.HomeDir + "/.gotty"
 	}
 	if _, err = os.Stat(prefPath); os.IsNotExist(err) {
