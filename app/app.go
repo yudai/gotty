@@ -221,10 +221,13 @@ func listAddresses() (addresses []string) {
 		for _, ifAddr := range ifAddrs {
 			switch v := ifAddr.(type) {
 			case *net.IPNet:
-				addresses = append(addresses, v.IP.String())
+				if v.IP.To4() == nil {
+					addresses = append(addresses, "["+v.IP.String()+"]")
+				} else {
+					addresses = append(addresses, v.IP.String())
+				}
 			case *net.IPAddr:
-				addresses = append(addresses, v.IP.To16().String())
-				addresses = append(addresses, v.IP.To4().String())
+				addresses = append(addresses, v.IP.String())
 			}
 		}
 	}
