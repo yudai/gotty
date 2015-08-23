@@ -3,12 +3,16 @@ package app
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"math/big"
 	"net"
 	"net/http"
+	"os"
 	"os/exec"
+	"os/user"
 	"strconv"
 	"strings"
 	"text/template"
@@ -21,7 +25,9 @@ import (
 type App struct {
 	options Options
 
-	upgrader      *websocket.Upgrader
+	upgrader *websocket.Upgrader
+
+	preferences   map[string]interface{}
 	titleTemplate *template.Template
 }
 
@@ -31,14 +37,40 @@ type Options struct {
 	PermitWrite bool
 	Credential  string
 	RandomUrl   bool
+	ProfileFile string
 	TitleFormat string
 	Command     []string
 }
+
+const DefaultProfileFilePath = "~/.gotty"
 
 func New(options Options) (*App, error) {
 	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
 	if err != nil {
 		return nil, errors.New("Title format string syntax error")
+	}
+
+	prefString := []byte{}
+	prefPath := options.ProfileFile
+	if options.ProfileFile == DefaultProfileFilePath {
+		usr, _ := user.Current()
+		prefPath = usr.HomeDir + "/.gotty"
+	}
+	if _, err = os.Stat(prefPath); os.IsNotExist(err) {
+		if options.ProfileFile != DefaultProfileFilePath {
+			return nil, err
+		}
+	} else {
+		log.Printf("Loading profile path: %s", prefPath)
+		prefString, _ = ioutil.ReadFile(prefPath)
+	}
+	if len(prefString) == 0 {
+		prefString = []byte(("{}"))
+	}
+	var prefMap map[string]interface{}
+	err = json.Unmarshal(prefString, &prefMap)
+	if err != nil {
+		return nil, err
 	}
 
 	return &App{
@@ -49,6 +81,8 @@ func New(options Options) (*App, error) {
 			WriteBufferSize: 1024,
 			Subprotocols:    []string{"gotty"},
 		},
+
+		preferences:   prefMap,
 		titleTemplate: titleTemplate,
 	}, nil
 }

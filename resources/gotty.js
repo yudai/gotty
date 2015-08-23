@@ -7,7 +7,8 @@
     var term;
 
     ws.onopen = function(event) {
-        hterm.defaultStorage = new lib.Storage.Local()
+        hterm.defaultStorage = new lib.Storage.Local();
+        hterm.defaultStorage.clear();
 
         term = new hterm.Terminal();
 
@@ -45,6 +46,12 @@
             break;
         case '1':
             term.setWindowTitle(data);
+            break;
+        case '2':
+            preferences = JSON.parse(data);
+            Object.keys(preferences).forEach(function(key) {
+                term.getPrefs().set(key, preferences[key]);
+            });
             break;
         }
     }

@@ -30,6 +30,7 @@ const (
 const (
 	Output         = '0'
 	SetWindowTitle = '1'
+	SetPreferences = '2'
 )
 
 type argResizeTerminal struct {
@@ -112,6 +113,15 @@ func (context *clientContext) sendInitialize() error {
 	if err = context.app.titleTemplate.Execute(writer, titleVars); err != nil {
 		return err
 	}
+	writer.Close()
+
+	prefs, _ := json.Marshal(context.app.preferences)
+	writer, err = context.connection.NextWriter(websocket.TextMessage)
+	if err != nil {
+		return err
+	}
+	writer.Write([]byte{SetPreferences})
+	writer.Write(prefs)
 	writer.Close()
 
 	return nil

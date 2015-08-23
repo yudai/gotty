@@ -13,9 +13,6 @@ bindata:
 bindata/static: bindata
 	mkdir bindata/static
 
-bindata/templates: bindata
-	mkdir bindata/templates
-
 bindata/static/hterm.js: bindata/static libapps/hterm/js/*.js
 	cd libapps && \
 	LIBDOT_SEARCH_PATH=`pwd` ./libdot/bin/concat.sh -i ./hterm/concat/hterm_all.concat -o ../bindata/static/hterm.js

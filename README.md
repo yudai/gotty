@@ -45,11 +45,27 @@ By default, gotty starts a web server at port 8080. Open the URL on your web bro
 --permit-write, -w                                           Permit clients to write to the TTY (BE CAREFUL) [$GOTTY_PERMIT_WRITE]
 --credential, -c                                             Credential for Basic Authentication (ex: user:pass) [$GOTTY_CREDENTIAL]
 --random-url, -r                                             Add a random string to the URL [$GOTTY_RANDOM_URL]
+--profile-file, -f "~/.gotty"                                Path to profile file [$GOTTY_PROFILE_FILE]
 --title-format "GoTTY - {{ .Command }} ({{ .Hostname }})"    Title format of browser window [$GOTTY_TITLE_FORMAT]
 --version, -v                                                print the version
 ```
 
 By default, gotty doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. Make sure that only trusted clients can connect to your gotty server when you activate this option. If you need interaction with the PTY, consider starting gotty with tmux or GNU Screen and run your main command on it.
+
+### Profile File
+
+You can customize your terminal (hterm) by providing a profile file to the `gotty` command, which is a JSON file that has a map of preference keys and values. Gotty loads a profile file at `~/.gotty` by default when it exists.
+
+The following example makes the font size smaller and the background color a little bit blue.
+
+```json
+{
+    "font-size": 5,
+    "background-color": "rgb(16, 16, 32)"
+}
+```
+
+Available preferences are listed in [the hterm source code](https://chromium.googlesource.com/apps/libapps/+/master/hterm/js/hterm_preference_manager.js)
 
 ## Sharing with Multiple Clients
 

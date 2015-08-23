@@ -44,6 +44,12 @@ func main() {
 			EnvVar: "GOTTY_RANDOM_URL",
 		},
 		cli.StringFlag{
+			Name:   "profile-file, f",
+			Value:  app.DefaultProfileFilePath,
+			Usage:  "Path to profile file",
+			EnvVar: "GOTTY_PROFILE_FILE",
+		},
+		cli.StringFlag{
 			Name:   "title-format",
 			Value:  "GoTTY - {{ .Command }} ({{ .Hostname }})",
 			Usage:  "Title format of browser window",
@@ -64,6 +70,7 @@ func main() {
 				c.Bool("permit-write"),
 				c.String("credential"),
 				c.Bool("random-url"),
+				c.String("profile-file"),
 				c.String("title-format"),
 				c.Args(),
 			},
