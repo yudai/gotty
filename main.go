@@ -55,6 +55,12 @@ func main() {
 			Usage:  "Title format of browser window",
 			EnvVar: "GOTTY_TITLE_FORMAT",
 		},
+		cli.IntFlag{
+			Name:   "auto-reconnect",
+			Value:  -1,
+			Usage:  "Seconds to automatically reconnect to the server when the connection is closed (default: disabled)",
+			EnvVar: "GOTTY_AUTO_RECONNECT",
+		},
 	}
 	cmd.Action = func(c *cli.Context) {
 		if len(c.Args()) == 0 {
@@ -72,6 +78,7 @@ func main() {
 				c.Bool("random-url"),
 				c.String("profile-file"),
 				c.String("title-format"),
+				c.Int("auto-reconnect"),
 				c.Args(),
 			},
 		)

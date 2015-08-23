@@ -56,7 +56,7 @@ By default, gotty starts a web server at port 8080. Open the URL on your web bro
 --random-url, -r                                             Add a random string to the URL [$GOTTY_RANDOM_URL]
 --profile-file, -f "~/.gotty"                                Path to profile file [$GOTTY_PROFILE_FILE]
 --title-format "GoTTY - {{ .Command }} ({{ .Hostname }})"    Title format of browser window [$GOTTY_TITLE_FORMAT]
---version, -v                                                print the version
+--auto-reconnect "-1"                                        Seconds to automatically reconnect to the server when the connection is closed (default: disabled) [$GOTTY_AUTO_RECONNECT]
 ```
 
 By default, gotty doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. Make sure that only trusted clients can connect to your gotty server when you activate this option. If you need interaction with the PTY, consider starting gotty with tmux or GNU Screen and run your main command on it.

@@ -32,14 +32,15 @@ type App struct {
 }
 
 type Options struct {
-	Address     string
-	Port        string
-	PermitWrite bool
-	Credential  string
-	RandomUrl   bool
-	ProfileFile string
-	TitleFormat string
-	Command     []string
+	Address       string
+	Port          string
+	PermitWrite   bool
+	Credential    string
+	RandomUrl     bool
+	ProfileFile   string
+	TitleFormat   string
+	AutoReconnect int
+	Command       []string
 }
 
 const DefaultProfileFilePath = "~/.gotty"
