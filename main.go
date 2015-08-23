@@ -47,7 +47,7 @@ func main() {
 			Name:   "title-format",
 			Value:  "GoTTY - {{ .Command }} ({{ .Hostname }})",
 			Usage:  "Title format of browser window",
-			EnvVar: "GOTTY_title-format",
+			EnvVar: "GOTTY_TITLE_FORMAT",
 		},
 	}
 	cmd.Action = func(c *cli.Context) {
