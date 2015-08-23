@@ -54,6 +54,10 @@ func New(options Options) (*App, error) {
 }
 
 func (app *App) Run() error {
+	if app.options.PermitWrite {
+		log.Printf("Permitting clients to write input to the PTY.")
+	}
+
 	path := ""
 	if app.options.RandomUrl {
 		path += "/" + generateRandomString(8)
