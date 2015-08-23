@@ -95,7 +95,7 @@ func (app *App) Run() error {
 		path += "/" + generateRandomString(8)
 	}
 
-	endpoint := app.options.Address + ":" + app.options.Port
+	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
 
 	wsHandler := http.HandlerFunc(app.handleWS)
 	staticHandler := http.FileServer(
@@ -123,7 +123,7 @@ func (app *App) Run() error {
 		log.Printf("URL: %s", "http://"+endpoint+path+"/")
 	} else {
 		for _, address := range listAddresses() {
-			log.Printf("URL: %s", "http://"+address+":"+app.options.Port+path+"/")
+			log.Printf("URL: %s", "http://"+net.JoinHostPort(address, app.options.Port)+path+"/")
 		}
 	}
 	if err := http.ListenAndServe(endpoint, siteHandler); err != nil {
@@ -221,11 +221,7 @@ func listAddresses() (addresses []string) {
 		for _, ifAddr := range ifAddrs {
 			switch v := ifAddr.(type) {
 			case *net.IPNet:
-				if v.IP.To4() == nil {
-					addresses = append(addresses, "["+v.IP.String()+"]")
-				} else {
-					addresses = append(addresses, v.IP.String())
-				}
+				addresses = append(addresses, v.IP.String())
 			case *net.IPAddr:
 				addresses = append(addresses, v.IP.String())
 			}
