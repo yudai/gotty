@@ -122,7 +122,6 @@ func (app *App) Run() error {
 
 	if app.options.Once {
 		log.Printf("Once option is provided, accepting only one client")
-		wsHandler = wrapOnce(wsHandler, app)
 	}
 
 	var siteMux = http.NewServeMux()
@@ -268,14 +267,6 @@ func wrapBasicAuth(handler http.Handler, credential string) http.Handler {
 		}
 
 		log.Printf("Basic Authentication Succeeded: %s", r.RemoteAddr)
-		handler.ServeHTTP(w, r)
-	})
-}
-
-func wrapOnce(handler http.HandlerFunc, app *App) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Last client accepted, closing the listener.")
-		app.server.Close()
 		handler.ServeHTTP(w, r)
 	})
 }
