@@ -60,6 +60,7 @@ By default, gotty starts a web server at port 8080. Open the URL on your web bro
 --tls-key "~/.gotty.key"                                     TLS/SSL key [$GOTTY_TLS_KEY]
 --title-format "GoTTY - {{ .Command }} ({{ .Hostname }})"    Title format of browser window [$GOTTY_TITLE_FORMAT]
 --auto-reconnect "-1"                                        Seconds to automatically reconnect to the server when the connection is closed (default: disabled) [$GOTTY_AUTO_RECONNECT]
+--once                                                       Accept only one client and exit on disconnection [$GOTTY_ONCE]
 ```
 
 ### Profile File

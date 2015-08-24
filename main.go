@@ -82,7 +82,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:   "once",
-			Usage:  "Accept only one client and exits on disconnection",
+			Usage:  "Accept only one client and exit on disconnection",
 			EnvVar: "GOTTY_ONCE",
 		},
 	}
