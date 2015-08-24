@@ -49,6 +49,23 @@ func main() {
 			Usage:  "Path to profile file",
 			EnvVar: "GOTTY_PROFILE_FILE",
 		},
+		cli.BoolFlag{
+			Name:   "enable-tls, t",
+			Usage:  "Enable TLS/SSL",
+			EnvVar: "GOTTY_ENABLE_TLS",
+		},
+		cli.StringFlag{
+			Name:   "tls-cert",
+			Value:  app.DefaultTLSCertPath,
+			Usage:  "TLS/SSL cert",
+			EnvVar: "GOTTY_TLS_CERT",
+		},
+		cli.StringFlag{
+			Name:   "tls-key",
+			Value:  app.DefaultTLSKeyPath,
+			Usage:  "TLS/SSL key",
+			EnvVar: "GOTTY_TLS_KEY",
+		},
 		cli.StringFlag{
 			Name:   "title-format",
 			Value:  "GoTTY - {{ .Command }} ({{ .Hostname }})",
@@ -77,6 +94,9 @@ func main() {
 				c.String("credential"),
 				c.Bool("random-url"),
 				c.String("profile-file"),
+				c.Bool("enable-tls"),
+				c.String("tls-cert"),
+				c.String("tls-key"),
 				c.String("title-format"),
 				c.Int("auto-reconnect"),
 				c.Args(),

@@ -38,12 +38,17 @@ type Options struct {
 	Credential    string
 	RandomUrl     bool
 	ProfileFile   string
+	EnableTLS     bool
+	TLSCert       string
+	TLSKey        string
 	TitleFormat   string
 	AutoReconnect int
 	Command       []string
 }
 
 const DefaultProfileFilePath = "~/.gotty"
+const DefaultTLSKeyPath = "~/.gotty.key"
+const DefaultTLSCertPath = "~/.gotty.crt"
 
 func New(options Options) (*App, error) {
 	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
@@ -125,31 +130,58 @@ func (app *App) Run() error {
 
 	siteHandler = wrapLogger(siteHandler)
 
+	scheme := "http"
+	if app.options.EnableTLS {
+		scheme = "https"
+	}
 	log.Printf(
 		"Server is starting with command: %s",
 		strings.Join(app.options.Command, " "),
 	)
 	if app.options.Address != "" {
 		log.Printf(
-			"URL: %s", (&url.URL{Scheme: "http", Host: endpoint, Path: path + "/"}).String(),
+			"URL: %s",
+			(&url.URL{Scheme: scheme, Host: endpoint, Path: path + "/"}).String(),
 		)
 	} else {
 		for _, address := range listAddresses() {
 			log.Printf(
 				"URL: %s",
 				(&url.URL{
-					Scheme: "http",
+					Scheme: scheme,
 					Host:   net.JoinHostPort(address, app.options.Port),
 					Path:   path + "/",
 				}).String(),
 			)
 		}
 	}
-	if err := http.ListenAndServe(endpoint, siteHandler); err != nil {
+
+	var err error
+	if app.options.EnableTLS {
+		cert, key := app.loadTLSFiles()
+		err = http.ListenAndServeTLS(endpoint, cert, key, siteHandler)
+	} else {
+		err = http.ListenAndServe(endpoint, siteHandler)
+	}
+	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (app *App) loadTLSFiles() (cert string, key string) {
+	cert = app.options.TLSCert
+	if app.options.TLSCert == DefaultTLSCertPath {
+		cert = os.Getenv("HOME") + "/.gotty.crt"
+	}
+
+	key = app.options.TLSKey
+	if app.options.TLSKey == DefaultTLSKeyPath {
+		key = os.Getenv("HOME") + "/.gotty.key"
+	}
+
+	return
 }
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
