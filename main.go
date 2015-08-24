@@ -80,6 +80,11 @@ func main() {
 			Usage:  "Seconds to automatically reconnect to the server when the connection is closed (default: disabled)",
 			EnvVar: "GOTTY_AUTO_RECONNECT",
 		},
+		cli.BoolFlag{
+			Name:   "once",
+			Usage:  "Accept only one client and exits on disconnection",
+			EnvVar: "GOTTY_ONCE",
+		},
 	}
 	cmd.Action = func(c *cli.Context) {
 		if len(c.Args()) == 0 {
@@ -101,6 +106,7 @@ func main() {
 				c.String("tls-key"),
 				c.String("title-format"),
 				c.Int("auto-reconnect"),
+				c.Bool("once"),
 				c.Args(),
 			},
 		)

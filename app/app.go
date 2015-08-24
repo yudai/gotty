@@ -45,6 +45,7 @@ type Options struct {
 	TLSKey        string
 	TitleFormat   string
 	AutoReconnect int
+	Once          bool
 	Command       []string
 }
 
@@ -118,6 +119,11 @@ func (app *App) Run() error {
 	staticHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
+
+	if app.options.Once {
+		log.Printf("Once option is provided, accepting only one client")
+		wsHandler = wrapOnce(wsHandler, app)
+	}
 
 	var siteMux = http.NewServeMux()
 	siteMux.Handle(path+"/", http.StripPrefix(path+"/", staticHandler))
@@ -262,6 +268,14 @@ func wrapBasicAuth(handler http.Handler, credential string) http.Handler {
 		}
 
 		log.Printf("Basic Authentication Succeeded: %s", r.RemoteAddr)
+		handler.ServeHTTP(w, r)
+	})
+}
+
+func wrapOnce(handler http.HandlerFunc, app *App) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Last client accepted, closing the listener.")
+		app.server.Close()
 		handler.ServeHTTP(w, r)
 	})
 }
