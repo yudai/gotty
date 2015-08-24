@@ -17,6 +17,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
@@ -26,6 +27,7 @@ type App struct {
 	options Options
 
 	upgrader *websocket.Upgrader
+	server   *manners.GracefulServer
 
 	preferences   map[string]interface{}
 	titleTemplate *template.Template
@@ -157,15 +159,20 @@ func (app *App) Run() error {
 	}
 
 	var err error
+	app.server = manners.NewWithServer(
+		&http.Server{Addr: endpoint, Handler: siteHandler},
+	)
 	if app.options.EnableTLS {
 		cert, key := app.loadTLSFiles()
-		err = http.ListenAndServeTLS(endpoint, cert, key, siteHandler)
+		err = app.server.ListenAndServeTLS(cert, key)
 	} else {
-		err = http.ListenAndServe(endpoint, siteHandler)
+		err = app.server.ListenAndServe()
 	}
 	if err != nil {
 		return err
 	}
+
+	log.Printf("Exiting...")
 
 	return nil
 }
@@ -215,6 +222,14 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	context.goHandleClient()
+}
+
+func (app *App) Exit() (firstCall bool) {
+	if app.server != nil {
+		log.Printf("Received Exit command, waiting for all clients to close sessions...")
+		return app.server.Close()
+	}
+	return true
 }
 
 func wrapLogger(handler http.Handler) http.Handler {

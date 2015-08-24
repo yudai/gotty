@@ -61,7 +61,10 @@ func (context *clientContext) goHandleClient() {
 		context.processReceive()
 	}()
 
+	context.app.server.StartRoutine()
 	go func() {
+		defer context.app.server.FinishRoutine()
+
 		<-exit
 		context.pty.Close()
 		context.command.Wait()

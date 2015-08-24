@@ -7,6 +7,8 @@ import (
 	"github.com/codegangsta/cli"
 
 	"github.com/yudai/gotty/app"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -107,6 +109,8 @@ func main() {
 			os.Exit(2)
 		}
 
+		registerSignals(app)
+
 		err = app.Run()
 		if err != nil {
 			fmt.Println(err)
@@ -117,4 +121,25 @@ func main() {
 	cli.AppHelpTemplate = helpTemplate
 
 	cmd.Run(os.Args)
+}
+
+func registerSignals(app *app.App) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(
+		sigChan,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+
+	go func() {
+		for {
+			s := <-sigChan
+			switch s {
+			case syscall.SIGINT, syscall.SIGTERM:
+				if !app.Exit() {
+					os.Exit(4)
+				}
+			}
+		}
+	}()
 }
