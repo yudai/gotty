@@ -51,24 +51,7 @@ func New(options Options) (*App, error) {
 		return nil, errors.New("Title format string syntax error")
 	}
 
-	prefString := []byte{}
-	prefPath := options.ProfileFile
-	if options.ProfileFile == DefaultProfileFilePath {
-		prefPath = os.Getenv("HOME") + "/.gotty"
-	}
-	if _, err = os.Stat(prefPath); os.IsNotExist(err) {
-		if options.ProfileFile != DefaultProfileFilePath {
-			return nil, err
-		}
-	} else {
-		log.Printf("Loading profile path: %s", prefPath)
-		prefString, _ = ioutil.ReadFile(prefPath)
-	}
-	if len(prefString) == 0 {
-		prefString = []byte(("{}"))
-	}
-	var prefMap map[string]interface{}
-	err = json.Unmarshal(prefString, &prefMap)
+	prefMap, err := loadProfileFile(options)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +68,31 @@ func New(options Options) (*App, error) {
 		preferences:   prefMap,
 		titleTemplate: titleTemplate,
 	}, nil
+}
+
+func loadProfileFile(options Options) (map[string]interface{}, error) {
+	prefString := []byte{}
+	prefPath := options.ProfileFile
+	if options.ProfileFile == DefaultProfileFilePath {
+		prefPath = os.Getenv("HOME") + "/.gotty"
+	}
+	if _, err := os.Stat(prefPath); os.IsNotExist(err) {
+		if options.ProfileFile != DefaultProfileFilePath {
+			return nil, err
+		}
+	} else {
+		log.Printf("Loading profile path: %s", prefPath)
+		prefString, _ = ioutil.ReadFile(prefPath)
+	}
+	if len(prefString) == 0 {
+		prefString = []byte(("{}"))
+	}
+	var prefMap map[string]interface{}
+	err := json.Unmarshal(prefString, &prefMap)
+	if err != nil {
+		return nil, err
+	}
+	return prefMap, nil
 }
 
 func (app *App) Run() error {
