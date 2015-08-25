@@ -34,6 +34,12 @@ func main() {
 			EnvVar: "GOTTY_PERMIT_WRITE",
 		},
 		cli.StringFlag{
+			Name:   "prefix, x",
+			Value:  "/",
+			Usage:  "URL prefix gotty is accessible at",
+			EnvVar: "GOTTY_PREFIX",
+		},
+		cli.StringFlag{
 			Name:   "credential, c",
 			Usage:  "Credential for Basic Authentication (ex: user:pass)",
 			EnvVar: "GOTTY_CREDENTIAL",
@@ -68,6 +74,7 @@ func main() {
 				c.String("addr"),
 				c.String("port"),
 				c.Bool("permit-write"),
+				c.String("prefix"),
 				c.String("credential"),
 				c.Bool("random-url"),
 				c.String("profile-file"),
