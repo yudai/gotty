@@ -37,6 +37,7 @@ type Options struct {
 	Address       string
 	Port          string
 	PermitWrite   bool
+	Prefix        string
 	Credential    string
 	RandomUrl     bool
 	ProfileFile   string
@@ -108,7 +109,7 @@ func (app *App) Run() error {
 		log.Printf("Permitting clients to write input to the PTY.")
 	}
 
-	path := ""
+	path := strings.TrimSuffix(app.options.Prefix, "/")
 	if app.options.RandomUrl {
 		path += "/" + generateRandomString(8)
 	}
