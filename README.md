@@ -1,7 +1,7 @@
 # GoTTY - Share your terminal as a web application
 
 [![GitHub release](http://img.shields.io/github/release/yudai/gotty.svg?style=flat-square)][release]
-[![Wercker](http://img.shields.io/wercker/ci/03b91f441bebeda34f80e09a9f14126f.svg?style=flat-square)][wercker]
+[![Wercker](http://img.shields.io/wercker/ci/55d0eeff7331453f0801982c.svg?style=flat-square)][wercker]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 
 [release]: https://github.com/yudai/gotty/releases
@@ -16,6 +16,8 @@ GoTTY is a simple command line tool that turns your CLI tools into web applicati
 # Installation
 
 Download the latest binary file from the [Releases](https://github.com/yudai/gotty/releases) page.
+
+(`darwin_amd64.tar.gz` is for Mac OS X users)
 
 ## Homebrew Installation
 
@@ -53,11 +55,13 @@ By default, gotty starts a web server at port 8080. Open the URL on your web bro
 --credential, -c                                             Credential for Basic Authentication (ex: user:pass) [$GOTTY_CREDENTIAL]
 --random-url, -r                                             Add a random string to the URL [$GOTTY_RANDOM_URL]
 --profile-file, -f "~/.gotty"                                Path to profile file [$GOTTY_PROFILE_FILE]
+--enable-tls, -t                                             Enable TLS/SSL [$GOTTY_ENABLE_TLS]
+--tls-cert "~/.gotty.crt"                                    TLS/SSL cert [$GOTTY_TLS_CERT]
+--tls-key "~/.gotty.key"                                     TLS/SSL key [$GOTTY_TLS_KEY]
 --title-format "GoTTY - {{ .Command }} ({{ .Hostname }})"    Title format of browser window [$GOTTY_TITLE_FORMAT]
---version, -v                                                print the version
+--auto-reconnect "-1"                                        Seconds to automatically reconnect to the server when the connection is closed (default: disabled) [$GOTTY_AUTO_RECONNECT]
+--once                                                       Accept only one client and exit on disconnection [$GOTTY_ONCE]
 ```
-
-By default, gotty doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. Make sure that only trusted clients can connect to your gotty server when you activate this option. If you need interaction with the PTY, consider starting gotty with tmux or GNU Screen and run your main command on it.
 
 ### Profile File
 
@@ -73,6 +77,18 @@ The following example makes the font size smaller and the background color a lit
 ```
 
 Available preferences are listed in [the hterm source code](https://chromium.googlesource.com/apps/libapps/+/master/hterm/js/hterm_preference_manager.js)
+
+### Security Options
+
+By default, gotty doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. When you need interaction with the PTY for some reasons, consider starting gotty with tmux or GNU Screen and run your main command on it (see "Sharing with Multiple Clients" section for detail).
+
+To restrict client access, you can use the `-c` option to enable the basic authentication. With option, clients need to input the specified username and passwords to connect to the gotty server. The `-r` option is a little bit casualer way to restrict access. With this option, gotty generates a random URL so that only people who know the URL can get access to the server.
+
+All traffic between servers and clients are NOT encrypted by default. When you send secret information through gotty, we strongly recommend you use the `-t` option which enables TLS/SSL on the session. By default, gotty loads the cert and key files placed at `~/.gotty.cert` and `~/.gotty.key`. You can overwrite these file paths with the `--tls-cert` and `--tls-key` options. When you need to generate a self-signed certification file, you can use the `openssl` command.
+
+```sh
+openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
+```
 
 ## Sharing with Multiple Clients
 

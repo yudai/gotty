@@ -28,9 +28,10 @@ const (
 )
 
 const (
-	Output         = '0'
-	SetWindowTitle = '1'
-	SetPreferences = '2'
+	Output           = '0'
+	SetWindowTitle   = '1'
+	SetPreferences   = '2'
+	SetAutoReconnect = '3'
 )
 
 type argResizeTerminal struct {
@@ -60,7 +61,16 @@ func (context *clientContext) goHandleClient() {
 		context.processReceive()
 	}()
 
+	context.app.server.StartRoutine()
+
+	if context.app.options.Once {
+		log.Printf("Last client accepted, closing the listener.")
+		context.app.server.Close()
+	}
+
 	go func() {
+		defer context.app.server.FinishRoutine()
+
 		<-exit
 		context.pty.Close()
 		context.command.Wait()
@@ -123,6 +133,17 @@ func (context *clientContext) sendInitialize() error {
 	writer.Write([]byte{SetPreferences})
 	writer.Write(prefs)
 	writer.Close()
+
+	if context.app.options.AutoReconnect >= 0 {
+		autoReconnect, _ := json.Marshal(context.app.options.AutoReconnect)
+		writer, err = context.connection.NextWriter(websocket.TextMessage)
+		if err != nil {
+			return err
+		}
+		writer.Write([]byte{SetAutoReconnect})
+		writer.Write(autoReconnect)
+		writer.Close()
+	}
 
 	return nil
 }

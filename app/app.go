@@ -10,13 +10,14 @@ import (
 	"math/big"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
-	"os/user"
 	"strconv"
 	"strings"
 	"text/template"
 
+	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
@@ -26,24 +27,32 @@ type App struct {
 	options Options
 
 	upgrader *websocket.Upgrader
+	server   *manners.GracefulServer
 
 	preferences   map[string]interface{}
 	titleTemplate *template.Template
 }
 
 type Options struct {
-	Address     string
-	Port        string
-	PermitWrite bool
-	Prefix      string
-	Credential  string
-	RandomUrl   bool
-	ProfileFile string
-	TitleFormat string
-	Command     []string
+	Address       string
+	Port          string
+	PermitWrite   bool
+	Prefix        string
+	Credential    string
+	RandomUrl     bool
+	ProfileFile   string
+	EnableTLS     bool
+	TLSCert       string
+	TLSKey        string
+	TitleFormat   string
+	AutoReconnect int
+	Once          bool
+	Command       []string
 }
 
 const DefaultProfileFilePath = "~/.gotty"
+const DefaultTLSKeyPath = "~/.gotty.key"
+const DefaultTLSCertPath = "~/.gotty.crt"
 
 func New(options Options) (*App, error) {
 	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
@@ -51,28 +60,7 @@ func New(options Options) (*App, error) {
 		return nil, errors.New("Title format string syntax error")
 	}
 
-	prefString := []byte{}
-	prefPath := options.ProfileFile
-	if options.ProfileFile == DefaultProfileFilePath {
-		usr, err := user.Current()
-		if err != nil {
-			return nil, err
-		}
-		prefPath = usr.HomeDir + "/.gotty"
-	}
-	if _, err = os.Stat(prefPath); os.IsNotExist(err) {
-		if options.ProfileFile != DefaultProfileFilePath {
-			return nil, err
-		}
-	} else {
-		log.Printf("Loading profile path: %s", prefPath)
-		prefString, _ = ioutil.ReadFile(prefPath)
-	}
-	if len(prefString) == 0 {
-		prefString = []byte(("{}"))
-	}
-	var prefMap map[string]interface{}
-	err = json.Unmarshal(prefString, &prefMap)
+	prefMap, err := loadProfileFile(options)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +79,31 @@ func New(options Options) (*App, error) {
 	}, nil
 }
 
+func loadProfileFile(options Options) (map[string]interface{}, error) {
+	prefString := []byte{}
+	prefPath := options.ProfileFile
+	if options.ProfileFile == DefaultProfileFilePath {
+		prefPath = os.Getenv("HOME") + "/.gotty"
+	}
+	if _, err := os.Stat(prefPath); os.IsNotExist(err) {
+		if options.ProfileFile != DefaultProfileFilePath {
+			return nil, err
+		}
+	} else {
+		log.Printf("Loading profile path: %s", prefPath)
+		prefString, _ = ioutil.ReadFile(prefPath)
+	}
+	if len(prefString) == 0 {
+		prefString = []byte(("{}"))
+	}
+	var prefMap map[string]interface{}
+	err := json.Unmarshal(prefString, &prefMap)
+	if err != nil {
+		return nil, err
+	}
+	return prefMap, nil
+}
+
 func (app *App) Run() error {
 	if app.options.PermitWrite {
 		log.Printf("Permitting clients to write input to the PTY.")
@@ -101,12 +114,16 @@ func (app *App) Run() error {
 		path += "/" + generateRandomString(8)
 	}
 
-	endpoint := app.options.Address + ":" + app.options.Port
+	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
 
 	wsHandler := http.HandlerFunc(app.handleWS)
 	staticHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
+
+	if app.options.Once {
+		log.Printf("Once option is provided, accepting only one client")
+	}
 
 	var siteMux = http.NewServeMux()
 	siteMux.Handle(path+"/", http.StripPrefix(path+"/", staticHandler))
@@ -121,22 +138,63 @@ func (app *App) Run() error {
 
 	siteHandler = wrapLogger(siteHandler)
 
+	scheme := "http"
+	if app.options.EnableTLS {
+		scheme = "https"
+	}
 	log.Printf(
 		"Server is starting with command: %s",
 		strings.Join(app.options.Command, " "),
 	)
 	if app.options.Address != "" {
-		log.Printf("URL: %s", "http://"+endpoint+path+"/")
+		log.Printf(
+			"URL: %s",
+			(&url.URL{Scheme: scheme, Host: endpoint, Path: path + "/"}).String(),
+		)
 	} else {
 		for _, address := range listAddresses() {
-			log.Printf("URL: %s", "http://"+address+":"+app.options.Port+path+"/")
+			log.Printf(
+				"URL: %s",
+				(&url.URL{
+					Scheme: scheme,
+					Host:   net.JoinHostPort(address, app.options.Port),
+					Path:   path + "/",
+				}).String(),
+			)
 		}
 	}
-	if err := http.ListenAndServe(endpoint, siteHandler); err != nil {
+
+	var err error
+	app.server = manners.NewWithServer(
+		&http.Server{Addr: endpoint, Handler: siteHandler},
+	)
+	if app.options.EnableTLS {
+		cert, key := app.loadTLSFiles()
+		err = app.server.ListenAndServeTLS(cert, key)
+	} else {
+		err = app.server.ListenAndServe()
+	}
+	if err != nil {
 		return err
 	}
 
+	log.Printf("Exiting...")
+
 	return nil
+}
+
+func (app *App) loadTLSFiles() (cert string, key string) {
+	cert = app.options.TLSCert
+	if app.options.TLSCert == DefaultTLSCertPath {
+		cert = os.Getenv("HOME") + "/.gotty.crt"
+	}
+
+	key = app.options.TLSKey
+	if app.options.TLSKey == DefaultTLSKeyPath {
+		key = os.Getenv("HOME") + "/.gotty.key"
+	}
+
+	return
 }
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
@@ -170,6 +228,14 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	context.goHandleClient()
+}
+
+func (app *App) Exit() (firstCall bool) {
+	if app.server != nil {
+		log.Printf("Received Exit command, waiting for all clients to close sessions...")
+		return app.server.Close()
+	}
+	return true
 }
 
 func wrapLogger(handler http.Handler) http.Handler {
@@ -229,8 +295,7 @@ func listAddresses() (addresses []string) {
 			case *net.IPNet:
 				addresses = append(addresses, v.IP.String())
 			case *net.IPAddr:
-				addresses = append(addresses, v.IP.To16().String())
-				addresses = append(addresses, v.IP.To4().String())
+				addresses = append(addresses, v.IP.String())
 			}
 		}
 	}

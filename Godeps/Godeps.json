@@ -3,6 +3,11 @@
 	"GoVersion": "go1.5",
 	"Deps": [
 		{
+			"ImportPath": "github.com/braintree/manners",
+			"Comment": "0.4.0-6-g9e2a271",
+			"Rev": "9e2a2714de21eb092ead2ef56d8c7a60d7928819"
+		},
+		{
 			"ImportPath": "github.com/codegangsta/cli",
 			"Comment": "1.2.0-139-g142e6cd",
 			"Rev": "142e6cd241a4dfbf7f07a018f1f8225180018da4"
@@ -10,14 +15,6 @@
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
 			"Rev": "d5cac425555ca5cf00694df246e04f05e6a55150"
-		},
-		{
-			"ImportPath": "github.com/gorilla/context",
-			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
-		},
-		{
-			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "ee1815431e497d3850809578c93ab6705f1a19f7"
 		},
 		{
 			"ImportPath": "github.com/gorilla/websocket",

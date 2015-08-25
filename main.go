@@ -7,6 +7,8 @@ import (
 	"github.com/codegangsta/cli"
 
 	"github.com/yudai/gotty/app"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -55,11 +57,39 @@ func main() {
 			Usage:  "Path to profile file",
 			EnvVar: "GOTTY_PROFILE_FILE",
 		},
+		cli.BoolFlag{
+			Name:   "enable-tls, t",
+			Usage:  "Enable TLS/SSL",
+			EnvVar: "GOTTY_ENABLE_TLS",
+		},
+		cli.StringFlag{
+			Name:   "tls-cert",
+			Value:  app.DefaultTLSCertPath,
+			Usage:  "TLS/SSL cert",
+			EnvVar: "GOTTY_TLS_CERT",
+		},
+		cli.StringFlag{
+			Name:   "tls-key",
+			Value:  app.DefaultTLSKeyPath,
+			Usage:  "TLS/SSL key",
+			EnvVar: "GOTTY_TLS_KEY",
+		},
 		cli.StringFlag{
 			Name:   "title-format",
 			Value:  "GoTTY - {{ .Command }} ({{ .Hostname }})",
 			Usage:  "Title format of browser window",
 			EnvVar: "GOTTY_TITLE_FORMAT",
+		},
+		cli.IntFlag{
+			Name:   "auto-reconnect",
+			Value:  -1,
+			Usage:  "Seconds to automatically reconnect to the server when the connection is closed (default: disabled)",
+			EnvVar: "GOTTY_AUTO_RECONNECT",
+		},
+		cli.BoolFlag{
+			Name:   "once",
+			Usage:  "Accept only one client and exit on disconnection",
+			EnvVar: "GOTTY_ONCE",
 		},
 	}
 	cmd.Action = func(c *cli.Context) {
@@ -78,7 +108,12 @@ func main() {
 				c.String("credential"),
 				c.Bool("random-url"),
 				c.String("profile-file"),
+				c.Bool("enable-tls"),
+				c.String("tls-cert"),
+				c.String("tls-key"),
 				c.String("title-format"),
+				c.Int("auto-reconnect"),
+				c.Bool("once"),
 				c.Args(),
 			},
 		)
@@ -86,6 +121,8 @@ func main() {
 			fmt.Println(err)
 			os.Exit(2)
 		}
+
+		registerSignals(app)
 
 		err = app.Run()
 		if err != nil {
@@ -97,4 +134,25 @@ func main() {
 	cli.AppHelpTemplate = helpTemplate
 
 	cmd.Run(os.Args)
+}
+
+func registerSignals(app *app.App) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(
+		sigChan,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+
+	go func() {
+		for {
+			s := <-sigChan
+			switch s {
+			case syscall.SIGINT, syscall.SIGTERM:
+				if !app.Exit() {
+					os.Exit(4)
+				}
+			}
+		}
+	}()
 }
