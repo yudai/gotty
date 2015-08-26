@@ -41,7 +41,7 @@ type Options struct {
 	RandomUrl     bool
 	ProfileFile   string
 	EnableTLS     bool
-	TLSCert       string
+	TLSCrt        string
 	TLSKey        string
 	TitleFormat   string
 	AutoReconnect int
@@ -51,7 +51,7 @@ type Options struct {
 
 const DefaultProfileFilePath = "~/.gotty"
 const DefaultTLSKeyPath = "~/.gotty.key"
-const DefaultTLSCertPath = "~/.gotty.crt"
+const DefaultTLSCrtPath = "~/.gotty.crt"
 
 func New(options Options) (*App, error) {
 	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
@@ -168,8 +168,8 @@ func (app *App) Run() error {
 		&http.Server{Addr: endpoint, Handler: siteHandler},
 	)
 	if app.options.EnableTLS {
-		cert, key := app.loadTLSFiles()
-		err = app.server.ListenAndServeTLS(cert, key)
+		crt, key := app.loadTLSFiles()
+		err = app.server.ListenAndServeTLS(crt, key)
 	} else {
 		err = app.server.ListenAndServe()
 	}
@@ -182,10 +182,10 @@ func (app *App) Run() error {
 	return nil
 }
 
-func (app *App) loadTLSFiles() (cert string, key string) {
-	cert = app.options.TLSCert
-	if app.options.TLSCert == DefaultTLSCertPath {
-		cert = os.Getenv("HOME") + "/.gotty.crt"
+func (app *App) loadTLSFiles() (crt string, key string) {
+	crt = app.options.TLSCrt
+	if app.options.TLSCrt == DefaultTLSCrtPath {
+		crt = os.Getenv("HOME") + "/.gotty.crt"
 	}
 
 	key = app.options.TLSKey

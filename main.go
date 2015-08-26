@@ -57,10 +57,10 @@ func main() {
 			EnvVar: "GOTTY_ENABLE_TLS",
 		},
 		cli.StringFlag{
-			Name:   "tls-cert",
-			Value:  app.DefaultTLSCertPath,
-			Usage:  "TLS/SSL cert",
-			EnvVar: "GOTTY_TLS_CERT",
+			Name:   "tls-crt",
+			Value:  app.DefaultTLSCrtPath,
+			Usage:  "TLS/SSL crt",
+			EnvVar: "GOTTY_TLS_CRT",
 		},
 		cli.StringFlag{
 			Name:   "tls-key",
