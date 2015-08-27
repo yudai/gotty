@@ -28,10 +28,10 @@ const (
 )
 
 const (
-	Output           = '0'
-	SetWindowTitle   = '1'
-	SetPreferences   = '2'
-	SetAutoReconnect = '3'
+	Output         = '0'
+	SetWindowTitle = '1'
+	SetPreferences = '2'
+	SetReconnect   = '3'
 )
 
 type argResizeTerminal struct {
@@ -109,7 +109,7 @@ func (context *clientContext) processSend() {
 func (context *clientContext) sendInitialize() error {
 	hostname, _ := os.Hostname()
 	titleVars := ContextVars{
-		Command:    strings.Join(context.app.options.Command, " "),
+		Command:    strings.Join(context.app.command, " "),
 		Pid:        context.command.Process.Pid,
 		Hostname:   hostname,
 		RemoteAddr: context.request.RemoteAddr,
@@ -134,14 +134,14 @@ func (context *clientContext) sendInitialize() error {
 	writer.Write(prefs)
 	writer.Close()
 
-	if context.app.options.AutoReconnect >= 0 {
-		autoReconnect, _ := json.Marshal(context.app.options.AutoReconnect)
+	if context.app.options.EnableReconnect {
+		reconnect, _ := json.Marshal(context.app.options.ReconnectTime)
 		writer, err = context.connection.NextWriter(websocket.TextMessage)
 		if err != nil {
 			return err
 		}
-		writer.Write([]byte{SetAutoReconnect})
-		writer.Write(autoReconnect)
+		writer.Write([]byte{SetReconnect})
+		writer.Write(reconnect)
 		writer.Close()
 	}
 

@@ -3,7 +3,6 @@ package app
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -19,12 +18,16 @@ import (
 
 	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
+	"github.com/fatih/camelcase"
+	"github.com/fatih/structs"
 	"github.com/gorilla/websocket"
+	"github.com/hashicorp/hcl"
 	"github.com/kr/pty"
 )
 
 type App struct {
-	options Options
+	command []string
+	options *Options
 
 	upgrader *websocket.Upgrader
 	server   *manners.GracefulServer
@@ -34,26 +37,42 @@ type App struct {
 }
 
 type Options struct {
-	Address       string
-	Port          string
-	PermitWrite   bool
-	Credential    string
-	RandomUrl     bool
-	ProfileFile   string
-	EnableTLS     bool
-	TLSCrt        string
-	TLSKey        string
-	TitleFormat   string
-	AutoReconnect int
-	Once          bool
-	Command       []string
+	Address         string
+	Port            string
+	PermitWrite     bool
+	EnableBasicAuth bool
+	Credential      string
+	EnableRandomUrl bool
+	RandomUrlLength int
+	ProfileFile     string
+	EnableTLS       bool
+	TLSCrtFile      string
+	TLSKeyFile      string
+	TitleFormat     string
+	EnableReconnect bool
+	ReconnectTime   int
+	Once            bool
 }
 
-const DefaultProfileFilePath = "~/.gotty"
-const DefaultTLSKeyPath = "~/.gotty.key"
-const DefaultTLSCrtPath = "~/.gotty.crt"
+var DefaultOptions = Options{
+	Address:         "",
+	Port:            "8080",
+	PermitWrite:     false,
+	EnableBasicAuth: false,
+	Credential:      "",
+	EnableRandomUrl: false,
+	RandomUrlLength: 8,
+	ProfileFile:     "~/.gotty.prf",
+	EnableTLS:       false,
+	TLSCrtFile:      "~/.gotty.key",
+	TLSKeyFile:      "~/.gotty.crt",
+	TitleFormat:     "GoTTY - {{ .Command }} ({{ .Hostname }})",
+	EnableReconnect: false,
+	ReconnectTime:   10,
+	Once:            false,
+}
 
-func New(options Options) (*App, error) {
+func New(command []string, options *Options) (*App, error) {
 	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
 	if err != nil {
 		return nil, errors.New("Title format string syntax error")
@@ -65,6 +84,7 @@ func New(options Options) (*App, error) {
 	}
 
 	return &App{
+		command: command,
 		options: options,
 
 		upgrader: &websocket.Upgrader{
@@ -78,25 +98,70 @@ func New(options Options) (*App, error) {
 	}, nil
 }
 
-func loadProfileFile(options Options) (map[string]interface{}, error) {
+func ApplyConfigFile(options *Options, configFilePath string) error {
+	if err := applyConfigFile(options, configFilePath); err != nil {
+		return err
+	}
+	return nil
+}
+
+func applyConfigFile(options *Options, filePath string) error {
+	filePath = expandHomeDir(filePath)
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return err
+	}
+
+	fileString := []byte{}
+	log.Printf("Loading config file at: %s", filePath)
+	fileString, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	config := make(map[string]interface{})
+	hcl.Decode(&config, string(fileString))
+	o := structs.New(options)
+	for _, name := range o.Names() {
+		configName := strings.ToLower(strings.Join(camelcase.Split(name), "_"))
+		if val, ok := config[configName]; ok {
+			field, ok := o.FieldOk(name)
+			if !ok {
+				return errors.New("No such field: " + name)
+			}
+			err := field.Set(val)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func expandHomeDir(path string) string {
+	if path[0:2] == "~/" {
+		return os.Getenv("HOME") + path[1:]
+	} else {
+		return path
+	}
+}
+
+func loadProfileFile(options *Options) (map[string]interface{}, error) {
 	prefString := []byte{}
 	prefPath := options.ProfileFile
-	if options.ProfileFile == DefaultProfileFilePath {
-		prefPath = os.Getenv("HOME") + "/.gotty"
+	if options.ProfileFile == DefaultOptions.ProfileFile {
+		prefPath = os.Getenv("HOME") + "/.gotty.prf"
 	}
 	if _, err := os.Stat(prefPath); os.IsNotExist(err) {
-		if options.ProfileFile != DefaultProfileFilePath {
+		if options.ProfileFile != DefaultOptions.ProfileFile {
 			return nil, err
 		}
 	} else {
 		log.Printf("Loading profile path: %s", prefPath)
 		prefString, _ = ioutil.ReadFile(prefPath)
 	}
-	if len(prefString) == 0 {
-		prefString = []byte(("{}"))
-	}
 	var prefMap map[string]interface{}
-	err := json.Unmarshal(prefString, &prefMap)
+	err := hcl.Decode(&prefMap, string(prefString))
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +174,8 @@ func (app *App) Run() error {
 	}
 
 	path := ""
-	if app.options.RandomUrl {
-		path += "/" + generateRandomString(8)
+	if app.options.EnableRandomUrl {
+		path += "/" + generateRandomString(app.options.RandomUrlLength)
 	}
 
 	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
@@ -130,7 +195,7 @@ func (app *App) Run() error {
 
 	siteHandler := http.Handler(siteMux)
 
-	if app.options.Credential != "" {
+	if app.options.EnableBasicAuth {
 		log.Printf("Using Basic Authentication")
 		siteHandler = wrapBasicAuth(siteHandler, app.options.Credential)
 	}
@@ -143,7 +208,7 @@ func (app *App) Run() error {
 	}
 	log.Printf(
 		"Server is starting with command: %s",
-		strings.Join(app.options.Command, " "),
+		strings.Join(app.command, " "),
 	)
 	if app.options.Address != "" {
 		log.Printf(
@@ -168,8 +233,10 @@ func (app *App) Run() error {
 		&http.Server{Addr: endpoint, Handler: siteHandler},
 	)
 	if app.options.EnableTLS {
-		crt, key := app.loadTLSFiles()
-		err = app.server.ListenAndServeTLS(crt, key)
+		err = app.server.ListenAndServeTLS(
+			expandHomeDir(app.options.TLSCrtFile),
+			expandHomeDir(app.options.TLSKeyFile),
+		)
 	} else {
 		err = app.server.ListenAndServe()
 	}
@@ -180,20 +247,6 @@ func (app *App) Run() error {
 	log.Printf("Exiting...")
 
 	return nil
-}
-
-func (app *App) loadTLSFiles() (crt string, key string) {
-	crt = app.options.TLSCrt
-	if app.options.TLSCrt == DefaultTLSCrtPath {
-		crt = os.Getenv("HOME") + "/.gotty.crt"
-	}
-
-	key = app.options.TLSKey
-	if app.options.TLSKey == DefaultTLSKeyPath {
-		key = os.Getenv("HOME") + "/.gotty.key"
-	}
-
-	return
 }
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
@@ -210,7 +263,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := exec.Command(app.options.Command[0], app.options.Command[1:]...)
+	cmd := exec.Command(app.command[0], app.command[1:]...)
 	ptyIo, err := pty.Start(cmd)
 	if err != nil {
 		log.Print("Failed to execute command")

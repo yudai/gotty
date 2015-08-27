@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/codegangsta/cli"
 
 	"github.com/yudai/gotty/app"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
@@ -17,116 +17,92 @@ func main() {
 	cmd.Name = "gotty"
 	cmd.Usage = "Share your terminal as a web application"
 	cmd.HideHelp = true
-	cmd.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:   "addr, a",
-			Value:  "",
-			Usage:  "IP address to listen",
-			EnvVar: "GOTTY_ADDR",
-		},
-		cli.StringFlag{
-			Name:   "port, p",
-			Value:  "8080",
-			Usage:  "Port number to listen",
-			EnvVar: "GOTTY_PORT",
-		},
-		cli.BoolFlag{
-			Name:   "permit-write, w",
-			Usage:  "Permit clients to write to the TTY (BE CAREFUL)",
-			EnvVar: "GOTTY_PERMIT_WRITE",
-		},
-		cli.StringFlag{
-			Name:   "credential, c",
-			Usage:  "Credential for Basic Authentication (ex: user:pass)",
-			EnvVar: "GOTTY_CREDENTIAL",
-		},
-		cli.BoolFlag{
-			Name:   "random-url, r",
-			Usage:  "Add a random string to the URL",
-			EnvVar: "GOTTY_RANDOM_URL",
-		},
-		cli.StringFlag{
-			Name:   "profile-file, f",
-			Value:  app.DefaultProfileFilePath,
-			Usage:  "Path to profile file",
-			EnvVar: "GOTTY_PROFILE_FILE",
-		},
-		cli.BoolFlag{
-			Name:   "enable-tls, t",
-			Usage:  "Enable TLS/SSL",
-			EnvVar: "GOTTY_ENABLE_TLS",
-		},
-		cli.StringFlag{
-			Name:   "tls-crt",
-			Value:  app.DefaultTLSCrtPath,
-			Usage:  "TLS/SSL crt",
-			EnvVar: "GOTTY_TLS_CRT",
-		},
-		cli.StringFlag{
-			Name:   "tls-key",
-			Value:  app.DefaultTLSKeyPath,
-			Usage:  "TLS/SSL key",
-			EnvVar: "GOTTY_TLS_KEY",
-		},
-		cli.StringFlag{
-			Name:   "title-format",
-			Value:  "GoTTY - {{ .Command }} ({{ .Hostname }})",
-			Usage:  "Title format of browser window",
-			EnvVar: "GOTTY_TITLE_FORMAT",
-		},
-		cli.IntFlag{
-			Name:   "auto-reconnect",
-			Value:  -1,
-			Usage:  "Seconds to automatically reconnect to the server when the connection is closed (default: disabled)",
-			EnvVar: "GOTTY_AUTO_RECONNECT",
-		},
-		cli.BoolFlag{
-			Name:   "once",
-			Usage:  "Accept only one client and exit on disconnection",
-			EnvVar: "GOTTY_ONCE",
-		},
+
+	flags := []flag{
+		flag{"address", "a", "IP address to listen"},
+		flag{"port", "p", "Port number to listen"},
+		flag{"permit-write", "w", "Permit clients to write to the TTY (BE CAREFUL)"},
+		flag{"credential", "c", "Credential for Basic Authentication (ex: user:pass, default disabled)"},
+		flag{"random-url", "r", "Add a random string to the URL"},
+		flag{"random-url-length", "", "Random URL length"},
+		flag{"tls", "t", "Enable TLS/SSL"},
+		flag{"tls-crt", "", "TLS/SSL crt file path"},
+		flag{"tls-key", "", "TLS/SSL key file path"},
+		flag{"profile", "", "Profile file path"},
+		flag{"title-format", "", "Title format of browser window"},
+		flag{"reconnect", "", "Enable reconnection"},
+		flag{"reconnect-time", "", "Time to reconnect"},
+		flag{"once", "", "Accept only one client and exit on disconnection"},
 	}
+
+	mappingHint := map[string]string{
+		"profile":    "ProfileFile",
+		"tls":        "EnableTLS",
+		"tls-crt":    "TLSCrtFile",
+		"tls-key":    "TLSKeyFile",
+		"random-url": "EnableRandomUrl",
+		"reconnect":  "EnableReconnect",
+	}
+
+	cliFlags, err := generateFlags(flags, mappingHint)
+	if err != nil {
+		exit(err, 3)
+	}
+
+	cmd.Flags = append(
+		cliFlags,
+		cli.StringFlag{
+			Name:   "config",
+			Value:  "~/.gotty",
+			Usage:  "Config file path",
+			EnvVar: "GOTTY_CONFIG",
+		},
+	)
+
 	cmd.Action = func(c *cli.Context) {
 		if len(c.Args()) == 0 {
 			fmt.Println("Error: No command given.\n")
 			cli.ShowAppHelp(c)
-			os.Exit(1)
+			exit(err, 1)
 		}
 
-		app, err := app.New(
-			app.Options{
-				c.String("addr"),
-				c.String("port"),
-				c.Bool("permit-write"),
-				c.String("credential"),
-				c.Bool("random-url"),
-				c.String("profile-file"),
-				c.Bool("enable-tls"),
-				c.String("tls-cert"),
-				c.String("tls-key"),
-				c.String("title-format"),
-				c.Int("auto-reconnect"),
-				c.Bool("once"),
-				c.Args(),
-			},
-		)
+		options := app.DefaultOptions
+
+		configFile := c.String("config")
+		_, err := os.Stat(configFile)
+		if configFile != "~/.gotty" || !os.IsNotExist(err) {
+			if err := app.ApplyConfigFile(&options, configFile); err != nil {
+				exit(err, 2)
+			}
+		}
+
+		applyFlags(&options, flags, mappingHint, c)
+
+		if c.IsSet("credential") {
+			options.EnableBasicAuth = true
+		}
+
+		app, err := app.New(c.Args(), &options)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(2)
+			exit(err, 3)
 		}
 
 		registerSignals(app)
 
 		err = app.Run()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(3)
+			exit(err, 4)
 		}
 	}
 
 	cli.AppHelpTemplate = helpTemplate
 
 	cmd.Run(os.Args)
+}
+
+func exit(err error, code int) {
+	fmt.Println(err)
+	os.Exit(code)
 }
 
 func registerSignals(app *app.App) {
@@ -143,7 +119,7 @@ func registerSignals(app *app.App) {
 			switch s {
 			case syscall.SIGINT, syscall.SIGTERM:
 				if !app.Exit() {
-					os.Exit(4)
+					os.Exit(5)
 				}
 			}
 		}

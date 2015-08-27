@@ -17,8 +17,24 @@
 			"Rev": "d5cac425555ca5cf00694df246e04f05e6a55150"
 		},
 		{
+			"ImportPath": "github.com/fatih/camelcase",
+			"Rev": "332844f2fb0193cce955f4687646abbdcc43ceeb"
+		},
+		{
+			"ImportPath": "github.com/fatih/structs",
+			"Rev": "a9f7daa9c2729e97450c2da2feda19130a367d8f"
+		},
+		{
 			"ImportPath": "github.com/gorilla/websocket",
 			"Rev": "b6ab76f1fe9803ee1d59e7e5b2a797c1fe897ce5"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-multierror",
+			"Rev": "56912fb08d85084aa318edcf2bba735b97cf35c5"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl",
+			"Rev": "54864211433d45cb780682431585b3e573b49e4a"
 		},
 		{
 			"ImportPath": "github.com/kr/pty",
