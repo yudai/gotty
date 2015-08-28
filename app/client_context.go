@@ -73,6 +73,11 @@ func (context *clientContext) goHandleClient() {
 
 		<-exit
 		context.pty.Close()
+
+		// Even if the PTY has been closed,
+		// Read(0 in processSend() keeps blocking and the process doen't exit
+		context.command.Process.Signal(syscall.SIGHUP)
+
 		context.command.Wait()
 		context.connection.Close()
 		log.Printf("Connection closed: %s", context.request.RemoteAddr)
@@ -95,14 +100,10 @@ func (context *clientContext) processSend() {
 			return
 		}
 
-		writer, err := context.connection.NextWriter(websocket.TextMessage)
+		err = context.connection.WriteMessage(websocket.TextMessage, append([]byte{Output}, buf[:size]...))
 		if err != nil {
 			return
 		}
-
-		writer.Write([]byte{Output})
-		writer.Write(buf[:size])
-		writer.Close()
 	}
 }
 
