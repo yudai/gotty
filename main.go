@@ -13,7 +13,7 @@ import (
 
 func main() {
 	cmd := cli.NewApp()
-	cmd.Version = "0.0.4"
+	cmd.Version = "0.0.5"
 	cmd.Name = "gotty"
 	cmd.Usage = "Share your terminal as a web application"
 	cmd.HideHelp = true
