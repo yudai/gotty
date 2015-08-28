@@ -127,23 +127,17 @@ func (context *clientContext) sendInitialize() error {
 	writer.Close()
 
 	prefs, _ := json.Marshal(context.app.preferences)
-	writer, err = context.connection.NextWriter(websocket.TextMessage)
-	if err != nil {
-		return err
-	}
-	writer.Write([]byte{SetPreferences})
-	writer.Write(prefs)
-	writer.Close()
+	context.connection.WriteMessage(
+		websocket.TextMessage,
+		append([]byte{SetPreferences}, prefs...),
+	)
 
 	if context.app.options.EnableReconnect {
 		reconnect, _ := json.Marshal(context.app.options.ReconnectTime)
-		writer, err = context.connection.NextWriter(websocket.TextMessage)
-		if err != nil {
-			return err
-		}
-		writer.Write([]byte{SetReconnect})
-		writer.Write(reconnect)
-		writer.Close()
+		context.connection.WriteMessage(
+			websocket.TextMessage,
+			append([]byte{SetReconnect}, reconnect...),
+		)
 	}
 
 	return nil
