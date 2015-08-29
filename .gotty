@@ -46,7 +46,7 @@
 // reconnec_ttime = false
 
 // [bool] Accept only one client and exit gotty once the client exits
-// Once = false
+// once = false
 
 // [object] Client terminal (hterm) preferences
 //          Examples below are some of commonly used options.

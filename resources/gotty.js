@@ -55,6 +55,7 @@
             case '2':
                 preferences = JSON.parse(data);
                 Object.keys(preferences).forEach(function(key) {
+                    console.log("Setting " + key + ": " +  preferences[key]);
                     term.getPrefs().set(key, preferences[key]);
                 });
                 break;
