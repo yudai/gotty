@@ -32,7 +32,6 @@ type App struct {
 	upgrader *websocket.Upgrader
 	server   *manners.GracefulServer
 
-	preferences   map[string]interface{}
 	titleTemplate *template.Template
 }
 
@@ -44,7 +43,7 @@ type Options struct {
 	Credential      string
 	EnableRandomUrl bool
 	RandomUrlLength int
-	ProfileFile     string
+	IndexFile       string
 	EnableTLS       bool
 	TLSCrtFile      string
 	TLSKeyFile      string
@@ -52,6 +51,7 @@ type Options struct {
 	EnableReconnect bool
 	ReconnectTime   int
 	Once            bool
+	Preferences     map[string]interface{}
 }
 
 var DefaultOptions = Options{
@@ -62,7 +62,7 @@ var DefaultOptions = Options{
 	Credential:      "",
 	EnableRandomUrl: false,
 	RandomUrlLength: 8,
-	ProfileFile:     "~/.gotty.prf",
+	IndexFile:       "",
 	EnableTLS:       false,
 	TLSCrtFile:      "~/.gotty.key",
 	TLSKeyFile:      "~/.gotty.crt",
@@ -70,17 +70,13 @@ var DefaultOptions = Options{
 	EnableReconnect: false,
 	ReconnectTime:   10,
 	Once:            false,
+	Preferences:     make(map[string]interface{}),
 }
 
 func New(command []string, options *Options) (*App, error) {
 	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
 	if err != nil {
 		return nil, errors.New("Title format string syntax error")
-	}
-
-	prefMap, err := loadProfileFile(options)
-	if err != nil {
-		return nil, err
 	}
 
 	return &App{
@@ -93,7 +89,6 @@ func New(command []string, options *Options) (*App, error) {
 			Subprotocols:    []string{"gotty"},
 		},
 
-		preferences:   prefMap,
 		titleTemplate: titleTemplate,
 	}, nil
 }
@@ -126,12 +121,25 @@ func applyConfigFile(options *Options, filePath string) error {
 		if val, ok := config[configName]; ok {
 			field, ok := o.FieldOk(name)
 			if !ok {
-				return errors.New("No such field: " + name)
+				return errors.New("No such option: " + name)
 			}
-			err := field.Set(val)
+
+			var err error
+			if name == "Preferences" {
+				prefs := val.([]map[string]interface{})[0]
+				htermPrefs := make(map[string]interface{})
+				for key, value := range prefs {
+					htermPrefs[strings.Replace(key, "_", "-", -1)] = value
+				}
+				err = field.Set(htermPrefs)
+			} else {
+				err = field.Set(val)
+			}
+
 			if err != nil {
 				return err
 			}
+
 		}
 	}
 
@@ -144,28 +152,6 @@ func ExpandHomeDir(path string) string {
 	} else {
 		return path
 	}
-}
-
-func loadProfileFile(options *Options) (map[string]interface{}, error) {
-	prefString := []byte{}
-	prefPath := options.ProfileFile
-	if options.ProfileFile == DefaultOptions.ProfileFile {
-		prefPath = os.Getenv("HOME") + "/.gotty.prf"
-	}
-	if _, err := os.Stat(prefPath); os.IsNotExist(err) {
-		if options.ProfileFile != DefaultOptions.ProfileFile {
-			return nil, err
-		}
-	} else {
-		log.Printf("Loading profile path: %s", prefPath)
-		prefString, _ = ioutil.ReadFile(prefPath)
-	}
-	var prefMap map[string]interface{}
-	err := hcl.Decode(&prefMap, string(prefString))
-	if err != nil {
-		return nil, err
-	}
-	return prefMap, nil
 }
 
 func (app *App) Run() error {
@@ -190,7 +176,20 @@ func (app *App) Run() error {
 	}
 
 	var siteMux = http.NewServeMux()
-	siteMux.Handle(path+"/", http.StripPrefix(path+"/", staticHandler))
+
+	if app.options.IndexFile != "" {
+		log.Printf("Using index file at " + app.options.IndexFile)
+		indexHandler := http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				http.ServeFile(w, r, ExpandHomeDir(app.options.IndexFile))
+			},
+		)
+		siteMux.Handle(path+"/", indexHandler)
+	} else {
+		siteMux.Handle(path+"/", http.StripPrefix(path+"/", staticHandler))
+	}
+
+	siteMux.Handle(path+"/js/", http.StripPrefix(path+"/", staticHandler))
 	siteMux.Handle(path+"/ws", wsHandler)
 
 	siteHandler := http.Handler(siteMux)

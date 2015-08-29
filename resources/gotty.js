@@ -40,7 +40,7 @@
                 term.installKeyboard();
             };
 
-            term.decorate(document.body);
+            term.decorate(document.getElementById("terminal"));
         };
 
         ws.onmessage = function(event) {

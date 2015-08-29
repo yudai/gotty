@@ -58,26 +58,36 @@ By default, gotty starts a web server at port 8080. Open the URL on your web bro
 --tls, -t                                                    Enable TLS/SSL [$GOTTY_TLS]
 --tls-crt "~/.gotty.key"                                     TLS/SSL crt file path [$GOTTY_TLS_CRT]
 --tls-key "~/.gotty.crt"                                     TLS/SSL key file path [$GOTTY_TLS_KEY]
---profile "~/.gotty.prf"                                     Profile file path [$GOTTY_PROFILE]
+--index                                                      Custom index file [$GOTTY_INDEX]
 --title-format "GoTTY - {{ .Command }} ({{ .Hostname }})"    Title format of browser window [$GOTTY_TITLE_FORMAT]
 --reconnect                                                  Enable reconnection [$GOTTY_RECONNECT]
 --reconnect-time "10"                                        Time to reconnect [$GOTTY_RECONNECT_TIME]
 --once                                                       Accept only one client and exit on disconnection [$GOTTY_ONCE]
 --config "~/.gotty"                                          Config file path [$GOTTY_CONFIG]
-```
-
-### Profile File
-
-You can customize your terminal (hterm) by providing a profile file to the `gotty` command, which is a HCL file that has a map of preference keys and values. Gotty loads a profile file at `~/.gotty` by default when it exists.
-
-The following example makes the font size smaller and the background color a little bit blue.
+--version, -v                                                print the version
 
 ```
-font-size = 5,
-background-color = "rgb(16, 16, 32)"
+
+### Config File
+
+You can customize default options and your terminal (hterm) by providing a config file to the `gotty` command. Gotty loads a profile file at `~/.gotty` by default when it exists.
+
+```
+// Listen at port 9000 by default
+port = "9000"
+
+// Enable TSL/SSL by default
+enable_tls = true
+
+// hterm preferences
+// Smaller font and a little bit bluer background color
+preferences {
+    font_size = 5,
+    background_color = "rgb(16, 16, 32)"
+}
 ```
 
-Available preferences are listed in [the hterm source code](https://chromium.googlesource.com/apps/libapps/+/master/hterm/js/hterm_preference_manager.js)
+Available hterm preference options are listed in [the hterm source code](https://chromium.googlesource.com/apps/libapps/+/master/hterm/js/hterm_preference_manager.js). Note that hifens (`-`) in the preference names must be replaced by underscores (`_`).
 
 ### Security Options
 

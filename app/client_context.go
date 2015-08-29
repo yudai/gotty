@@ -126,7 +126,7 @@ func (context *clientContext) sendInitialize() error {
 	}
 	writer.Close()
 
-	prefs, _ := json.Marshal(context.app.preferences)
+	prefs, _ := json.Marshal(context.app.options.Preferences)
 	context.connection.WriteMessage(
 		websocket.TextMessage,
 		append([]byte{SetPreferences}, prefs...),

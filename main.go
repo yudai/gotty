@@ -28,7 +28,7 @@ func main() {
 		flag{"tls", "t", "Enable TLS/SSL"},
 		flag{"tls-crt", "", "TLS/SSL crt file path"},
 		flag{"tls-key", "", "TLS/SSL key file path"},
-		flag{"profile", "", "Profile file path"},
+		flag{"index", "", "Custom index file"},
 		flag{"title-format", "", "Title format of browser window"},
 		flag{"reconnect", "", "Enable reconnection"},
 		flag{"reconnect-time", "", "Time to reconnect"},
@@ -36,7 +36,7 @@ func main() {
 	}
 
 	mappingHint := map[string]string{
-		"profile":    "ProfileFile",
+		"index":      "IndexFile",
 		"tls":        "EnableTLS",
 		"tls-crt":    "TLSCrtFile",
 		"tls-key":    "TLSKeyFile",
