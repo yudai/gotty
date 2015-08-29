@@ -87,7 +87,7 @@ preferences {
 }
 ```
 
-See the [`.gotty`](https://github.com/yudai/gotty/.gotty) file in this repository for the list of configuration options.
+See the [`.gotty`](https://github.com/yudai/gotty/blob/master/.gotty) file in this repository for the list of configuration options.
 
 ### Security Options
 
