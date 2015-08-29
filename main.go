@@ -69,7 +69,7 @@ func main() {
 		options := app.DefaultOptions
 
 		configFile := c.String("config")
-		_, err := os.Stat(configFile)
+		_, err := os.Stat(app.ExpandHomeDir(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
 			if err := app.ApplyConfigFile(&options, configFile); err != nil {
 				exit(err, 2)
@@ -101,7 +101,9 @@ func main() {
 }
 
 func exit(err error, code int) {
-	fmt.Println(err)
+	if err != nil {
+		fmt.Println(err)
+	}
 	os.Exit(code)
 }
 

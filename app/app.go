@@ -106,7 +106,7 @@ func ApplyConfigFile(options *Options, configFilePath string) error {
 }
 
 func applyConfigFile(options *Options, filePath string) error {
-	filePath = expandHomeDir(filePath)
+	filePath = ExpandHomeDir(filePath)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return err
 	}
@@ -138,7 +138,7 @@ func applyConfigFile(options *Options, filePath string) error {
 	return nil
 }
 
-func expandHomeDir(path string) string {
+func ExpandHomeDir(path string) string {
 	if path[0:2] == "~/" {
 		return os.Getenv("HOME") + path[1:]
 	} else {
@@ -234,8 +234,8 @@ func (app *App) Run() error {
 	)
 	if app.options.EnableTLS {
 		err = app.server.ListenAndServeTLS(
-			expandHomeDir(app.options.TLSCrtFile),
-			expandHomeDir(app.options.TLSKeyFile),
+			ExpandHomeDir(app.options.TLSCrtFile),
+			ExpandHomeDir(app.options.TLSKeyFile),
 		)
 	} else {
 		err = app.server.ListenAndServe()
