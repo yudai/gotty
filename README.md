@@ -87,7 +87,7 @@ preferences {
 }
 ```
 
-Available hterm preference options are listed in [the hterm source code](https://chromium.googlesource.com/apps/libapps/+/master/hterm/js/hterm_preference_manager.js). Note that hifens (`-`) in the preference names must be replaced by underscores (`_`).
+See the [`.gotty`](https://github.com/yudai/gotty/.gotty) file in this repository for the list of configuration options.
 
 ### Security Options
 
