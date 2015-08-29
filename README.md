@@ -95,7 +95,7 @@ By default, gotty doesn't allow clients to send any keystrokes or commands excep
 
 To restrict client access, you can use the `-c` option to enable the basic authentication. With option, clients need to input the specified username and passwords to connect to the gotty server. The `-r` option is a little bit casualer way to restrict access. With this option, gotty generates a random URL so that only people who know the URL can get access to the server.
 
-All traffic between servers and clients are NOT encrypted by default. When you send secret information through gotty, we strongly recommend you use the `-t` option which enables TLS/SSL on the session. By default, gotty loads the crt and key files placed at `~/.gotty.crt` and `~/.gotty.key`. You can overwrite these file paths with the `--tls-cert` and `--tls-key` options. When you need to generate a self-signed certification file, you can use the `openssl` command.
+All traffic between servers and clients are NOT encrypted by default. When you send secret information through gotty, we strongly recommend you use the `-t` option which enables TLS/SSL on the session. By default, gotty loads the crt and key files placed at `~/.gotty.crt` and `~/.gotty.key`. You can overwrite these file paths with the `--tls-crt` and `--tls-key` options. When you need to generate a self-signed certification file, you can use the `openssl` command.
 
 ```sh
 openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
