@@ -21,7 +21,7 @@ Download the latest binary file from the [Releases](https://github.com/yudai/got
 
 ## Homebrew Installation
 
-You can install gotty with [Homebrew](http://brew.sh/) as well.
+You can install GoTTY with [Homebrew](http://brew.sh/) as well.
 
 ```sh
 $ brew tap yudai/gotty
@@ -30,7 +30,7 @@ $ brew install gotty
 
 ## `go get` Installation
 
-If you have a Go language environment, you can install gotty with the `go get` command.
+If you have a Go language environment, you can install GoTTY with the `go get` command.
 
 ```sh
 $ go get github.com/yudai/gotty
@@ -44,7 +44,7 @@ Usage: gotty [options] <command> [<arguments...>]
 
 Run `gotty` with your preferred command as its arguments (e.g. `gotty top`).
 
-By default, gotty starts a web server at port 8080. Open the URL on your web browser and you can see the running command as if it's running on your terminal.
+By default, GoTTY starts a web server at port 8080. Open the URL on your web browser and you can see the running command as if it's running on your terminal.
 
 ## Options
 
@@ -70,7 +70,7 @@ By default, gotty starts a web server at port 8080. Open the URL on your web bro
 
 ### Config File
 
-You can customize default options and your terminal (hterm) by providing a config file to the `gotty` command. Gotty loads a profile file at `~/.gotty` by default when it exists.
+You can customize default options and your terminal (hterm) by providing a config file to the `gotty` command. GoTTY loads a profile file at `~/.gotty` by default when it exists.
 
 ```
 // Listen at port 9000 by default
@@ -91,11 +91,11 @@ See the [`.gotty`](https://github.com/yudai/gotty/blob/master/.gotty) file in th
 
 ### Security Options
 
-By default, gotty doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. When you need interaction with the PTY for some reasons, consider starting gotty with tmux or GNU Screen and run your main command on it (see "Sharing with Multiple Clients" section for detail).
+By default, GoTTY doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the PTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. When you need interaction with the PTY for some reasons, consider starting GoTTY with tmux or GNU Screen and run your main command on it (see "Sharing with Multiple Clients" section for detail).
 
-To restrict client access, you can use the `-c` option to enable the basic authentication. With option, clients need to input the specified username and passwords to connect to the gotty server. The `-r` option is a little bit casualer way to restrict access. With this option, gotty generates a random URL so that only people who know the URL can get access to the server.
+To restrict client access, you can use the `-c` option to enable the basic authentication. With option, clients need to input the specified username and passwords to connect to the GoTTY server. The `-r` option is a little bit casualer way to restrict access. With this option, GoTTY generates a random URL so that only people who know the URL can get access to the server.
 
-All traffic between servers and clients are NOT encrypted by default. When you send secret information through gotty, we strongly recommend you use the `-t` option which enables TLS/SSL on the session. By default, gotty loads the crt and key files placed at `~/.gotty.crt` and `~/.gotty.key`. You can overwrite these file paths with the `--tls-crt` and `--tls-key` options. When you need to generate a self-signed certification file, you can use the `openssl` command.
+All traffic between servers and clients are NOT encrypted by default. When you send secret information through GoTTY, we strongly recommend you use the `-t` option which enables TLS/SSL on the session. By default, GoTTY loads the crt and key files placed at `~/.gotty.crt` and `~/.gotty.key`. You can overwrite these file paths with the `--tls-crt` and `--tls-key` options. When you need to generate a self-signed certification file, you can use the `openssl` command.
 
 ```sh
 openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
@@ -103,7 +103,7 @@ openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~
 
 ## Sharing with Multiple Clients
 
-Gotty starts a new process when a new client connects to the server. This means users cannot share a single terminal with others by default. However, you can use terminal multiplexers for sharing a single process with multiple clients.
+GoTTY starts a new process when a new client connects to the server. This means users cannot share a single terminal with others by default. However, you can use terminal multiplexers for sharing a single process with multiple clients.
 
 For example, you can start a new tmux session named `gotty` with `top` command by the command below.
 
@@ -124,7 +124,7 @@ By using terminal multiplexers, you can have the control of your terminal and al
 To share your current session with others by a shortcut key, you can add a line like below to your `.tmux.conf`.
 
 ```
-# Start gotty in a new window with C-t
+# Start GoTTY in a new window with C-t
 bind-key C-t new-window "gotty tmux attach -t `tmux display -p '#S'`"
 ```
 
@@ -157,7 +157,7 @@ make
 
 ## Architecture
 
-Gotty uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-hterm) to run a JavaScript based terminal on web browsers. Gotty itself provides a websocket server that simply relays output from the PTY to clients and receives input from clients and forwards to the PTY. This hterm + websocket idea is highly inspired by [Wetty](https://github.com/krishnasrinivas/wetty).
+GoTTY uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-hterm) to run a JavaScript based terminal on web browsers. GoTTY itself provides a websocket server that simply relays output from the PTY to clients and receives input from clients and forwards to the PTY. This hterm + websocket idea is highly inspired by [Wetty](https://github.com/krishnasrinivas/wetty).
 
 # License
 
