@@ -15,7 +15,7 @@
 // credential = "user:pass"
 
 // [bool] Enable random URL generation
-// enable_random_url bool
+// enable_random_url = false
 
 // [int] Default length of random strings appended to URL
 //       To enable random URL generation, set `true` to `enable_random_url`
