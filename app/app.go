@@ -64,8 +64,8 @@ var DefaultOptions = Options{
 	RandomUrlLength: 8,
 	IndexFile:       "",
 	EnableTLS:       false,
-	TLSCrtFile:      "~/.gotty.key",
-	TLSKeyFile:      "~/.gotty.crt",
+	TLSCrtFile:      "~/.gotty.crt",
+	TLSKeyFile:      "~/.gotty.key",
 	TitleFormat:     "GoTTY - {{ .Command }} ({{ .Hostname }})",
 	EnableReconnect: false,
 	ReconnectTime:   10,
@@ -233,10 +233,11 @@ func (app *App) Run() error {
 		&http.Server{Addr: endpoint, Handler: siteHandler},
 	)
 	if app.options.EnableTLS {
-		err = app.server.ListenAndServeTLS(
-			ExpandHomeDir(app.options.TLSCrtFile),
-			ExpandHomeDir(app.options.TLSKeyFile),
-		)
+		crtFile := ExpandHomeDir(app.options.TLSCrtFile)
+		keyFile := ExpandHomeDir(app.options.TLSKeyFile)
+		log.Printf("TLS crt file: " + crtFile)
+		log.Printf("TLS key file: " + keyFile)
+		err = app.server.ListenAndServeTLS(crtFile, keyFile)
 	} else {
 		err = app.server.ListenAndServe()
 	}
