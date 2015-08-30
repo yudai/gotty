@@ -28,7 +28,10 @@
 // tls_crt_file = "~/.gotty.crt"
 
 // [string] Default TLS key file path
-// tls_key_file  = "~/.gotty.key"
+// tls_key_file = "~/.gotty.key"
+
+// [string] Custom index.html file
+// index_file = ""
 
 // [string] Title format of browser window
 //          Available variables are:
@@ -47,6 +50,8 @@
 
 // [bool] Accept only one client and exit gotty once the client exits
 // once = false
+
+
 
 // [object] Client terminal (hterm) preferences
 //          Examples below are some of commonly used options.

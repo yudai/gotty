@@ -28,7 +28,7 @@ func main() {
 		flag{"tls", "t", "Enable TLS/SSL"},
 		flag{"tls-crt", "", "TLS/SSL crt file path"},
 		flag{"tls-key", "", "TLS/SSL key file path"},
-		flag{"index", "", "Custom index file"},
+		flag{"index", "", "Custom index.html file"},
 		flag{"title-format", "", "Title format of browser window"},
 		flag{"reconnect", "", "Enable reconnection"},
 		flag{"reconnect-time", "", "Time to reconnect"},
