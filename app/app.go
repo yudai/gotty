@@ -190,6 +190,7 @@ func (app *App) Run() error {
 	}
 
 	siteMux.Handle(path+"/js/", http.StripPrefix(path+"/", staticHandler))
+	siteMux.Handle(path+"/favicon.png", http.StripPrefix(path+"/", staticHandler))
 	siteMux.Handle(path+"/ws", wsHandler)
 
 	siteHandler := http.Handler(siteMux)
