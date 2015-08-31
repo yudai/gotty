@@ -29,8 +29,9 @@ type App struct {
 	command []string
 	options *Options
 
-	upgrader *websocket.Upgrader
-	server   *manners.GracefulServer
+	upgrader  *websocket.Upgrader
+	server    *manners.GracefulServer
+	authToken string
 
 	titleTemplate *template.Template
 }
@@ -88,19 +89,13 @@ func New(command []string, options *Options) (*App, error) {
 			WriteBufferSize: 1024,
 			Subprotocols:    []string{"gotty"},
 		},
+		authToken: generateRandomString(20),
 
 		titleTemplate: titleTemplate,
 	}, nil
 }
 
-func ApplyConfigFile(options *Options, configFilePath string) error {
-	if err := applyConfigFile(options, configFilePath); err != nil {
-		return err
-	}
-	return nil
-}
-
-func applyConfigFile(options *Options, filePath string) error {
+func ApplyConfigFile(options *Options, filePath string) error {
 	filePath = ExpandHomeDir(filePath)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return err
@@ -146,17 +141,13 @@ func applyConfigFile(options *Options, filePath string) error {
 	return nil
 }
 
-func ExpandHomeDir(path string) string {
-	if path[0:2] == "~/" {
-		return os.Getenv("HOME") + path[1:]
-	} else {
-		return path
-	}
-}
-
 func (app *App) Run() error {
 	if app.options.PermitWrite {
 		log.Printf("Permitting clients to write input to the PTY.")
+	}
+
+	if app.options.Once {
+		log.Printf("Once option is provided, accepting only one client")
 	}
 
 	path := ""
@@ -167,31 +158,23 @@ func (app *App) Run() error {
 	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
 
 	wsHandler := http.HandlerFunc(app.handleWS)
+	customIndexHandler := http.HandlerFunc(app.handleCustomIndex)
+	authTokenHandler := http.HandlerFunc(app.handleAuthToken)
 	staticHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
-
-	if app.options.Once {
-		log.Printf("Once option is provided, accepting only one client")
-	}
 
 	var siteMux = http.NewServeMux()
 
 	if app.options.IndexFile != "" {
 		log.Printf("Using index file at " + app.options.IndexFile)
-		indexHandler := http.HandlerFunc(
-			func(w http.ResponseWriter, r *http.Request) {
-				http.ServeFile(w, r, ExpandHomeDir(app.options.IndexFile))
-			},
-		)
-		siteMux.Handle(path+"/", indexHandler)
+		siteMux.Handle(path+"/", customIndexHandler)
 	} else {
 		siteMux.Handle(path+"/", http.StripPrefix(path+"/", staticHandler))
 	}
-
+	siteMux.Handle(path+"/auth_token.js", authTokenHandler)
 	siteMux.Handle(path+"/js/", http.StripPrefix(path+"/", staticHandler))
 	siteMux.Handle(path+"/favicon.png", http.StripPrefix(path+"/", staticHandler))
-	siteMux.Handle(path+"/ws", wsHandler)
 
 	siteHandler := http.Handler(siteMux)
 
@@ -199,6 +182,11 @@ func (app *App) Run() error {
 		log.Printf("Using Basic Authentication")
 		siteHandler = wrapBasicAuth(siteHandler, app.options.Credential)
 	}
+
+	wsMux := http.NewServeMux()
+	wsMux.Handle("/", siteHandler)
+	wsMux.Handle(path+"/ws", wsHandler)
+	siteHandler = (http.Handler(wsMux))
 
 	siteHandler = wrapLogger(siteHandler)
 
@@ -264,6 +252,12 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, initMessage, err := conn.ReadMessage()
+	if err != nil || string(initMessage) != app.authToken {
+		log.Print("Failed to authenticate websocket connection")
+		return
+	}
+
 	cmd := exec.Command(app.command[0], app.command[1:]...)
 	ptyIo, err := pty.Start(cmd)
 	if err != nil {
@@ -281,6 +275,14 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	context.goHandleClient()
+}
+
+func (app *App) handleCustomIndex(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, ExpandHomeDir(app.options.IndexFile))
+}
+
+func (app *App) handleAuthToken(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("var gotty_auth_token = '" + app.authToken + "';"))
 }
 
 func (app *App) Exit() (firstCall bool) {
@@ -354,4 +356,12 @@ func listAddresses() (addresses []string) {
 	}
 
 	return
+}
+
+func ExpandHomeDir(path string) string {
+	if path[0:2] == "~/" {
+		return os.Getenv("HOME") + path[1:]
+	} else {
+		return path
+	}
 }

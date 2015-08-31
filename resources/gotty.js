@@ -10,6 +10,8 @@
         var term;
 
         ws.onopen = function(event) {
+            ws.send(gotty_auth_token);
+
             hterm.defaultStorage = new lib.Storage.Local();
             hterm.defaultStorage.clear();
 
