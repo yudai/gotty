@@ -101,6 +101,8 @@ All traffic between the server and clients are NOT encrypted by default. When yo
 openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
 ```
 
+(NOTE: Safari doesn't support self-signed certifications for WebSockets)
+
 ## Sharing with Multiple Clients
 
 GoTTY starts a new process with the given command when a new client connects to the server. This means users cannot share a single terminal with others by default. However, you can use terminal multiplexers for sharing a single process with multiple clients.
