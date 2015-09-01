@@ -29,9 +29,8 @@ type App struct {
 	command []string
 	options *Options
 
-	upgrader  *websocket.Upgrader
-	server    *manners.GracefulServer
-	authToken string
+	upgrader *websocket.Upgrader
+	server   *manners.GracefulServer
 
 	titleTemplate *template.Template
 }
@@ -89,7 +88,6 @@ func New(command []string, options *Options) (*App, error) {
 			WriteBufferSize: 1024,
 			Subprotocols:    []string{"gotty"},
 		},
-		authToken: generateRandomString(20),
 
 		titleTemplate: titleTemplate,
 	}, nil
@@ -253,8 +251,9 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, initMessage, err := conn.ReadMessage()
-	if err != nil || string(initMessage) != app.authToken {
+	if err != nil || string(initMessage) != app.options.Credential {
 		log.Print("Failed to authenticate websocket connection")
+		conn.Close()
 		return
 	}
 
@@ -282,7 +281,7 @@ func (app *App) handleCustomIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) handleAuthToken(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("var gotty_auth_token = '" + app.authToken + "';"))
+	w.Write([]byte("var gotty_auth_token = '" + app.options.Credential + "';"))
 }
 
 func (app *App) Exit() (firstCall bool) {
