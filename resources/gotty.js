@@ -9,8 +9,12 @@
 
         var term;
 
+        var pingTimer;
+
         ws.onopen = function(event) {
             ws.send(gotty_auth_token);
+
+            pingTimer = setInterval(sendPing, 30 * 1000, ws);
 
             hterm.defaultStorage = new lib.Storage.Local();
             hterm.defaultStorage.clear();
@@ -30,7 +34,7 @@
 
                 io.onTerminalResize = function(columns, rows) {
                     ws.send(
-                        "1" + JSON.stringify(
+                        "2" + JSON.stringify(
                             {
                                 columns: columns,
                                 rows: rows,
@@ -52,39 +56,40 @@
                 term.io.writeUTF16(data);
                 break;
             case '1':
+                // pong
+            case '2':
                 term.setWindowTitle(data);
                 break;
-            case '2':
+            case '3':
                 preferences = JSON.parse(data);
                 Object.keys(preferences).forEach(function(key) {
                     console.log("Setting " + key + ": " +  preferences[key]);
                     term.getPrefs().set(key, preferences[key]);
                 });
                 break;
-            case '3':
+            case '4':
                 autoReconnect = JSON.parse(data);
+                console.log("Enabling reconnect: " + autoReconnect + " seconds")
                 break;
             }
-        }
+        };
 
         ws.onclose = function(event) {
             if (term) {
                 term.uninstallKeyboard();
                 term.io.showOverlay("Connection Closed", null);
             }
-            tryReconnect();
-        }
+            clearInterval(pingTimer);
+            if (autoReconnect > 0) {
+                setTimeout(openWs, autoReconnect * 1000);
+            }
+        };
+    }
 
-        ws.onerror = function(error) {
-            tryReconnect();
-        }
+
+    var sendPing = function(ws) {
+        ws.send("1");
     }
 
     openWs();
-
-    var tryReconnect = function() {
-        if (autoReconnect >= 0) {
-            setTimeout(openWs, autoReconnect * 1000);
-        }
-    }
 })()

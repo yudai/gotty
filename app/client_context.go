@@ -24,14 +24,16 @@ type clientContext struct {
 
 const (
 	Input          = '0'
-	ResizeTerminal = '1'
+	Ping           = '1'
+	ResizeTerminal = '2'
 )
 
 const (
 	Output         = '0'
-	SetWindowTitle = '1'
-	SetPreferences = '2'
-	SetReconnect   = '3'
+	Pong           = '1'
+	SetWindowTitle = '2'
+	SetPreferences = '3'
+	SetReconnect   = '4'
 )
 
 type argResizeTerminal struct {
@@ -161,6 +163,8 @@ func (context *clientContext) processReceive() {
 				return
 			}
 
+		case Ping:
+			context.connection.WriteMessage(websocket.TextMessage, []byte{Pong})
 		case ResizeTerminal:
 			var args argResizeTerminal
 			err = json.Unmarshal(data[1:], &args)
