@@ -120,7 +120,9 @@ func registerSignals(app *app.App) {
 			s := <-sigChan
 			switch s {
 			case syscall.SIGINT, syscall.SIGTERM:
-				if !app.Exit() {
+				if app.Exit() {
+					fmt.Println("Send ^C to force exit.")
+				} else {
 					os.Exit(5)
 				}
 			}

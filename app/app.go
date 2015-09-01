@@ -286,8 +286,11 @@ func (app *App) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) Exit() (firstCall bool) {
 	if app.server != nil {
-		log.Printf("Received Exit command, waiting for all clients to close sessions...")
-		return app.server.Close()
+		firstCall = app.server.Close()
+		if firstCall {
+			log.Printf("Received Exit command, waiting for all clients to close sessions...")
+		}
+		return firstCall
 	}
 	return true
 }
