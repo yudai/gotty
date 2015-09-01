@@ -101,7 +101,7 @@ All traffic between the server and clients are NOT encrypted by default. When yo
 openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
 ```
 
-(NOTE: Safari doesn't support self-signed certifications for WebSockets)
+(NOTE: For Safari uses, see [how to enable self-signed certificates for WebSockets](http://blog.marcon.me/post/24874118286/secure-websockets-safari) when use self-signed certificates)
 
 ## Sharing with Multiple Clients
 
