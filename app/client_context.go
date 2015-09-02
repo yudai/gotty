@@ -128,7 +128,11 @@ func (context *clientContext) sendInitialize() error {
 	}
 	writer.Close()
 
-	prefs, _ := json.Marshal(context.app.options.Preferences)
+	htermPrefs := make(map[string]interface{})
+	for key, value := range context.app.options.Preferences {
+		htermPrefs[strings.Replace(key, "_", "-", -1)] = value
+	}
+	prefs, _ := json.Marshal(htermPrefs)
 	context.connection.WriteMessage(
 		websocket.TextMessage,
 		append([]byte{SetPreferences}, prefs...),

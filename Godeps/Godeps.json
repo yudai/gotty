@@ -17,10 +17,6 @@
 			"Rev": "d5cac425555ca5cf00694df246e04f05e6a55150"
 		},
 		{
-			"ImportPath": "github.com/fatih/camelcase",
-			"Rev": "332844f2fb0193cce955f4687646abbdcc43ceeb"
-		},
-		{
 			"ImportPath": "github.com/fatih/structs",
 			"Rev": "a9f7daa9c2729e97450c2da2feda19130a367d8f"
 		},

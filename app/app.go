@@ -18,8 +18,6 @@ import (
 
 	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
-	"github.com/fatih/camelcase"
-	"github.com/fatih/structs"
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/hcl"
 	"github.com/kr/pty"
@@ -36,22 +34,22 @@ type App struct {
 }
 
 type Options struct {
-	Address         string
-	Port            string
-	PermitWrite     bool
-	EnableBasicAuth bool
-	Credential      string
-	EnableRandomUrl bool
-	RandomUrlLength int
-	IndexFile       string
-	EnableTLS       bool
-	TLSCrtFile      string
-	TLSKeyFile      string
-	TitleFormat     string
-	EnableReconnect bool
-	ReconnectTime   int
-	Once            bool
-	Preferences     map[string]interface{}
+	Address         string                 `hcl:"address"`
+	Port            string                 `hcl:"port"`
+	PermitWrite     bool                   `hcl:"permit_write"`
+	EnableBasicAuth bool                   `hcl:"enable_basic_auth"`
+	Credential      string                 `hcl:"credential"`
+	EnableRandomUrl bool                   `hcl:"enable_random_url"`
+	RandomUrlLength int                    `hcl:"random_url_length"`
+	IndexFile       string                 `hcl:"index_file"`
+	EnableTLS       bool                   `hcl:"enable_tls"`
+	TLSCrtFile      string                 `hcl:"tls_crt_file"`
+	TLSKeyFile      string                 `hcl:"tls_key_file"`
+	TitleFormat     string                 `hcl:"title_format"`
+	EnableReconnect bool                   `hcl:"enable_reconnect"`
+	ReconnectTime   int                    `hcl:"reconnect_time"`
+	Once            bool                   `hcl:"once"`
+	Preferences     map[string]interface{} `hcl:"preferences"`
 }
 
 var DefaultOptions = Options{
@@ -106,34 +104,8 @@ func ApplyConfigFile(options *Options, filePath string) error {
 		return err
 	}
 
-	config := make(map[string]interface{})
-	hcl.Decode(&config, string(fileString))
-	o := structs.New(options)
-	for _, name := range o.Names() {
-		configName := strings.ToLower(strings.Join(camelcase.Split(name), "_"))
-		if val, ok := config[configName]; ok {
-			field, ok := o.FieldOk(name)
-			if !ok {
-				return errors.New("No such option: " + name)
-			}
-
-			var err error
-			if name == "Preferences" {
-				prefs := val.([]map[string]interface{})[0]
-				htermPrefs := make(map[string]interface{})
-				for key, value := range prefs {
-					htermPrefs[strings.Replace(key, "_", "-", -1)] = value
-				}
-				err = field.Set(htermPrefs)
-			} else {
-				err = field.Set(val)
-			}
-
-			if err != nil {
-				return err
-			}
-
-		}
+	if err := hcl.Decode(options, string(fileString)); err != nil {
+		return err
 	}
 
 	return nil
