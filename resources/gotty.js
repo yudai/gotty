@@ -53,7 +53,7 @@
             data = event.data.slice(1);
             switch(event.data[0]) {
             case '0':
-                term.io.writeUTF16(data);
+                term.io.writeUTF8(window.atob(data));
                 break;
             case '1':
                 // pong

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"unsafe"
 
 	"github.com/gorilla/websocket"
-	"github.com/yudai/utf8reader"
 )
 
 type clientContext struct {
@@ -93,16 +93,16 @@ func (context *clientContext) processSend() {
 	}
 
 	buf := make([]byte, 1024)
-	utf8f := utf8reader.New(context.pty)
 
 	for {
-		size, err := utf8f.Read(buf)
+		size, err := context.pty.Read(buf)
+		safeMessage := base64.StdEncoding.EncodeToString([]byte(buf[:size]))
 		if err != nil {
 			log.Printf("Command exited for: %s", context.request.RemoteAddr)
 			return
 		}
 
-		err = context.connection.WriteMessage(websocket.TextMessage, append([]byte{Output}, buf[:size]...))
+		err = context.connection.WriteMessage(websocket.TextMessage, append([]byte{Output}, []byte(safeMessage)...))
 		if err != nil {
 			return
 		}
