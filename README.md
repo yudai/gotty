@@ -161,6 +161,19 @@ make
 
 GoTTY uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-hterm) to run a JavaScript based terminal on web browsers. GoTTY itself provides a websocket server that simply relays output from the TTY to clients and receives input from clients and forwards it to the TTY. This hterm + websocket idea is inspired by [Wetty](https://github.com/krishnasrinivas/wetty).
 
+## Alternatives
+
+### Terminal/SSH on Web Browsers
+
+* [Secure Shell (Chrome App)](https://chrome.google.com/webstore/detail/secure-shell/pnhechapfaindjhompbnflcldabbghjo): If you are a chrome user and need a "real" SSH client on your web browser, perhaps the Secure Shell app is what you want
+* [Wetty](https://github.com/krishnasrinivas/wetty): Node based web terminal (SSH/login)
+
+### Terminal Sharing
+
+* [tmate](http://tmate.io/): Forked-Tmux based Terminal-Terminal sharing
+* [termshare](http://tmate.io/): Terminal-Terminal sharing through a HTTP server
+* [tmux](https://tmux.github.io/): Tmux itself also supports TTY sharing through SSH)
+
 # License
 
 The MIT License
