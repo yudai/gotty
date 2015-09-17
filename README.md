@@ -171,7 +171,7 @@ GoTTY uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromi
 ### Terminal Sharing
 
 * [tmate](http://tmate.io/): Forked-Tmux based Terminal-Terminal sharing
-* [termshare](http://tmate.io/): Terminal-Terminal sharing through a HTTP server
+* [termshare](https://termsha.re): Terminal-Terminal sharing through a HTTP server
 * [tmux](https://tmux.github.io/): Tmux itself also supports TTY sharing through SSH)
 
 # License
