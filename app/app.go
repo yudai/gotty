@@ -218,7 +218,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := app.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("Failed to upgrade connection")
+		log.Print("Failed to upgrade connection: " + err.Error())
 		return
 	}
 
@@ -269,8 +269,9 @@ func (app *App) Exit() (firstCall bool) {
 
 func wrapLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s", r.Method, r.URL.Path)
-		handler.ServeHTTP(w, r)
+		rw := &responseWrapper{w, 200}
+		handler.ServeHTTP(rw, r)
+		log.Printf("%s %d %s %s", r.RemoteAddr, rw.status, r.Method, r.URL.Path)
 	})
 }
 
