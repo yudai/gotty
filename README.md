@@ -163,6 +163,10 @@ GoTTY uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromi
 
 ## Alternatives
 
+### Command line client
+
+* [gotty-client](https://github.com/moul/gotty-client): If you want to connect to GoTTY server from your terminal
+
 ### Terminal/SSH on Web Browsers
 
 * [Secure Shell (Chrome App)](https://chrome.google.com/webstore/detail/secure-shell/pnhechapfaindjhompbnflcldabbghjo): If you are a chrome user and need a "real" SSH client on your web browser, perhaps the Secure Shell app is what you want
