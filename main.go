@@ -8,7 +8,7 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/yudai/gotty/app"
+	"github.com/QuentinPerez/gotty/app"
 )
 
 func main() {
@@ -33,6 +33,7 @@ func main() {
 		flag{"reconnect", "", "Enable reconnection"},
 		flag{"reconnect-time", "", "Time to reconnect"},
 		flag{"once", "", "Accept only one client and exit on disconnection"},
+		flag{"permit-argv", "", "Permits"},
 	}
 
 	mappingHint := map[string]string{

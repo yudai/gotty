@@ -1,5 +1,6 @@
 (function() {
     var httpsEnabled = window.location.protocol == "https:";
+    var args = window.location.search;
     var url = (httpsEnabled ? 'wss://' : 'ws://') + window.location.host + window.location.pathname + 'ws';
     var protocols = ["gotty"];
     var autoReconnect = -1;
@@ -12,8 +13,7 @@
         var pingTimer;
 
         ws.onopen = function(event) {
-            ws.send(gotty_auth_token);
-
+            ws.send(JSON.stringify({ Params: args, AuthToken: gotty_auth_token,}));
             pingTimer = setInterval(sendPing, 30 * 1000, ws);
 
             hterm.defaultStorage = new lib.Storage.Local();
