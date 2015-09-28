@@ -2,6 +2,8 @@ package app
 
 import (
 	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"errors"
 	"io/ioutil"
@@ -34,41 +36,45 @@ type App struct {
 }
 
 type Options struct {
-	Address         string                 `hcl:"address"`
-	Port            string                 `hcl:"port"`
-	PermitWrite     bool                   `hcl:"permit_write"`
-	EnableBasicAuth bool                   `hcl:"enable_basic_auth"`
-	Credential      string                 `hcl:"credential"`
-	EnableRandomUrl bool                   `hcl:"enable_random_url"`
-	RandomUrlLength int                    `hcl:"random_url_length"`
-	IndexFile       string                 `hcl:"index_file"`
-	EnableTLS       bool                   `hcl:"enable_tls"`
-	TLSCrtFile      string                 `hcl:"tls_crt_file"`
-	TLSKeyFile      string                 `hcl:"tls_key_file"`
-	TitleFormat     string                 `hcl:"title_format"`
-	EnableReconnect bool                   `hcl:"enable_reconnect"`
-	ReconnectTime   int                    `hcl:"reconnect_time"`
-	Once            bool                   `hcl:"once"`
-	Preferences     map[string]interface{} `hcl:"preferences"`
+	Address          string                 `hcl:"address"`
+	Port             string                 `hcl:"port"`
+	PermitWrite      bool                   `hcl:"permit_write"`
+	EnableBasicAuth  bool                   `hcl:"enable_basic_auth"`
+	Credential       string                 `hcl:"credential"`
+	EnableRandomUrl  bool                   `hcl:"enable_random_url"`
+	RandomUrlLength  int                    `hcl:"random_url_length"`
+	IndexFile        string                 `hcl:"index_file"`
+	EnableTLS        bool                   `hcl:"enable_tls"`
+	TLSCrtFile       string                 `hcl:"tls_crt_file"`
+	TLSKeyFile       string                 `hcl:"tls_key_file"`
+	VerifyClientCert bool                   `hcl:"verify_client_cert"`
+	ClientCAs        []string               `hcl:"client_cas"`
+	TitleFormat      string                 `hcl:"title_format"`
+	EnableReconnect  bool                   `hcl:"enable_reconnect"`
+	ReconnectTime    int                    `hcl:"reconnect_time"`
+	Once             bool                   `hcl:"once"`
+	Preferences      map[string]interface{} `hcl:"preferences"`
 }
 
 var DefaultOptions = Options{
-	Address:         "",
-	Port:            "8080",
-	PermitWrite:     false,
-	EnableBasicAuth: false,
-	Credential:      "",
-	EnableRandomUrl: false,
-	RandomUrlLength: 8,
-	IndexFile:       "",
-	EnableTLS:       false,
-	TLSCrtFile:      "~/.gotty.crt",
-	TLSKeyFile:      "~/.gotty.key",
-	TitleFormat:     "GoTTY - {{ .Command }} ({{ .Hostname }})",
-	EnableReconnect: false,
-	ReconnectTime:   10,
-	Once:            false,
-	Preferences:     make(map[string]interface{}),
+	Address:          "",
+	Port:             "8080",
+	PermitWrite:      false,
+	EnableBasicAuth:  false,
+	Credential:       "",
+	EnableRandomUrl:  false,
+	RandomUrlLength:  8,
+	IndexFile:        "",
+	EnableTLS:        false,
+	TLSCrtFile:       "~/.gotty.crt",
+	TLSKeyFile:       "~/.gotty.key",
+	VerifyClientCert: false,
+	ClientCAs:        []string{},
+	TitleFormat:      "GoTTY - {{ .Command }} ({{ .Hostname }})",
+	EnableReconnect:  false,
+	ReconnectTime:    10,
+	Once:             false,
+	Preferences:      make(map[string]interface{}),
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -186,9 +192,44 @@ func (app *App) Run() error {
 		}
 	}
 
+	serverMaker := func() *http.Server {
+		return &http.Server{
+			Addr:    endpoint,
+			Handler: siteHandler}
+	}
+	if app.options.VerifyClientCert && app.options.EnableTLS {
+		serverMaker = func() *http.Server {
+			clientCaPool := x509.NewCertPool()
+			for _, path := range app.options.ClientCAs {
+				pem, err := ioutil.ReadFile(path)
+				if err != nil {
+					log.Printf("Could not read pem file at: " + path)
+					return nil
+				}
+				if clientCaPool.AppendCertsFromPEM(pem) {
+					log.Printf("Could not parse pem file at: " + path)
+					return nil
+				}
+			}
+			return &http.Server{
+				Addr:    endpoint,
+				Handler: siteHandler,
+				TLSConfig: &tls.Config{
+					ClientAuth:               tls.RequireAndVerifyClientCert,
+					ClientCAs:                clientCaPool,
+					PreferServerCipherSuites: true}}
+		}
+	}
+
+	server := serverMaker()
+	if server == nil {
+		log.Printf("Failed to build server.")
+		return errors.New("Failed to build server.")
+	}
+
 	var err error
 	app.server = manners.NewWithServer(
-		&http.Server{Addr: endpoint, Handler: siteHandler},
+		server,
 	)
 	if app.options.EnableTLS {
 		crtFile := ExpandHomeDir(app.options.TLSCrtFile)
