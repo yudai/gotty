@@ -28,6 +28,9 @@ func main() {
 		flag{"tls", "t", "Enable TLS/SSL"},
 		flag{"tls-crt", "", "TLS/SSL crt file path"},
 		flag{"tls-key", "", "TLS/SSL key file path"},
+		flag{"client", "C", "Enable Client Certificate"},
+		flag{"client-ca-file", "", "Client CA certificate file"},
+		flag{"client-verify", "", "Enable verification of client certificate"},
 		flag{"index", "", "Custom index.html file"},
 		flag{"title-format", "", "Title format of browser window"},
 		flag{"reconnect", "", "Enable reconnection"},
@@ -36,12 +39,15 @@ func main() {
 	}
 
 	mappingHint := map[string]string{
-		"index":      "IndexFile",
-		"tls":        "EnableTLS",
-		"tls-crt":    "TLSCrtFile",
-		"tls-key":    "TLSKeyFile",
-		"random-url": "EnableRandomUrl",
-		"reconnect":  "EnableReconnect",
+		"index":          "IndexFile",
+		"tls":            "EnableTLS",
+		"tls-crt":        "TLSCrtFile",
+		"tls-key":        "TLSKeyFile",
+		"client":         "EnableClientCertificate",
+		"client-ca-file": "ClientCAFile",
+		"client-verify":  "EnableClientCertificateVerification",
+		"random-url":     "EnableRandomUrl",
+		"reconnect":      "EnableReconnect",
 	}
 
 	cliFlags, err := generateFlags(flags, mappingHint)
