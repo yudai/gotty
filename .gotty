@@ -30,6 +30,15 @@
 // [string] Default TLS key file path
 // tls_key_file = "~/.gotty.key"
 
+// [bool] Enable client certificate authentication
+// enable_client_certificate = false
+
+// [string] Client Certificate CA file for validation
+// client_ca_file = "~/.gotty.ca.crt"
+
+// [bool] Enable client certificate validation against the provided CA file
+// enable_client_certificate_verification = false
+
 // [string] Custom index.html file
 // index_file = ""
 
