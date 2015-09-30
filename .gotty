@@ -46,7 +46,7 @@
 
 // [int] Interval time to try reconnection (seconds)
 //       To enable reconnection, set `true` to `enable_reconnect`
-// reconnec_ttime = false
+// reconnect_time = false
 
 // [bool] Accept only one client and exit gotty once the client exits
 // once = false
