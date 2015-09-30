@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/braintree/manners"
@@ -243,6 +244,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		connection: conn,
 		command:    cmd,
 		pty:        ptyIo,
+		writeMutex: &sync.Mutex{},
 	}
 
 	context.goHandleClient()
