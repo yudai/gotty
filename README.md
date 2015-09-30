@@ -58,6 +58,9 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --tls, -t                                                    Enable TLS/SSL [$GOTTY_TLS]
 --tls-crt "~/.gotty.key"                                     TLS/SSL crt file path [$GOTTY_TLS_CRT]
 --tls-key "~/.gotty.crt"                                     TLS/SSL key file path [$GOTTY_TLS_KEY]
+--client, -C                                                 Enable Client Certificate [$GOTTY_CLIENT]
+--client-ca-file "~/.gotty.ca.crt"                           Client CA certificate file [$GOTTY_CLIENT_CA_FILE]
+--client-verify                                              Enable verification of client certificate [$GOTTY_CLIENT_VERIFY]
 --index                                                      Custom index file [$GOTTY_INDEX]
 --title-format "GoTTY - {{ .Command }} ({{ .Hostname }})"    Title format of browser window [$GOTTY_TITLE_FORMAT]
 --reconnect                                                  Enable reconnection [$GOTTY_RECONNECT]
@@ -100,6 +103,8 @@ All traffic between the server and clients are NOT encrypted by default. When yo
 ```sh
 openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
 ```
+
+For added security you can use an SSL/TLS client certificate by enabling it with the `-C` option (this requires the `-t` or `--tls` flag to be set). This requires all client connecting to provide a valid certificate that can be validated (use the `--client-verify` option to make verification mandatory) against the CA file that is provided via the `--client-ca-file` option.
 
 (NOTE: For Safari uses, see [how to enable self-signed certificates for WebSockets](http://blog.marcon.me/post/24874118286/secure-websockets-safari) when use self-signed certificates)
 
