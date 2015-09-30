@@ -2,6 +2,8 @@ package app
 
 import (
 	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"errors"
 	"io/ioutil"
@@ -34,41 +36,47 @@ type App struct {
 }
 
 type Options struct {
-	Address         string                 `hcl:"address"`
-	Port            string                 `hcl:"port"`
-	PermitWrite     bool                   `hcl:"permit_write"`
-	EnableBasicAuth bool                   `hcl:"enable_basic_auth"`
-	Credential      string                 `hcl:"credential"`
-	EnableRandomUrl bool                   `hcl:"enable_random_url"`
-	RandomUrlLength int                    `hcl:"random_url_length"`
-	IndexFile       string                 `hcl:"index_file"`
-	EnableTLS       bool                   `hcl:"enable_tls"`
-	TLSCrtFile      string                 `hcl:"tls_crt_file"`
-	TLSKeyFile      string                 `hcl:"tls_key_file"`
-	TitleFormat     string                 `hcl:"title_format"`
-	EnableReconnect bool                   `hcl:"enable_reconnect"`
-	ReconnectTime   int                    `hcl:"reconnect_time"`
-	Once            bool                   `hcl:"once"`
-	Preferences     map[string]interface{} `hcl:"preferences"`
+	Address                             string                 `hcl:"address"`
+	Port                                string                 `hcl:"port"`
+	PermitWrite                         bool                   `hcl:"permit_write"`
+	EnableBasicAuth                     bool                   `hcl:"enable_basic_auth"`
+	Credential                          string                 `hcl:"credential"`
+	EnableRandomUrl                     bool                   `hcl:"enable_random_url"`
+	RandomUrlLength                     int                    `hcl:"random_url_length"`
+	IndexFile                           string                 `hcl:"index_file"`
+	EnableTLS                           bool                   `hcl:"enable_tls"`
+	TLSCrtFile                          string                 `hcl:"tls_crt_file"`
+	TLSKeyFile                          string                 `hcl:"tls_key_file"`
+	EnableClientCertificate             bool                   `hcl:"enable_client_certificate"`
+	ClientCAFile                        string                 `hcl:"client_ca_file"`
+	EnableClientCertificateVerification bool                   `hcl:"enable_client_certificate_verification"`
+	TitleFormat                         string                 `hcl:"title_format"`
+	EnableReconnect                     bool                   `hcl:"enable_reconnect"`
+	ReconnectTime                       int                    `hcl:"reconnect_time"`
+	Once                                bool                   `hcl:"once"`
+	Preferences                         map[string]interface{} `hcl:"preferences"`
 }
 
 var DefaultOptions = Options{
-	Address:         "",
-	Port:            "8080",
-	PermitWrite:     false,
-	EnableBasicAuth: false,
-	Credential:      "",
-	EnableRandomUrl: false,
-	RandomUrlLength: 8,
-	IndexFile:       "",
-	EnableTLS:       false,
-	TLSCrtFile:      "~/.gotty.crt",
-	TLSKeyFile:      "~/.gotty.key",
-	TitleFormat:     "GoTTY - {{ .Command }} ({{ .Hostname }})",
-	EnableReconnect: false,
-	ReconnectTime:   10,
-	Once:            false,
-	Preferences:     make(map[string]interface{}),
+	Address:                             "",
+	Port:                                "8080",
+	PermitWrite:                         false,
+	EnableBasicAuth:                     false,
+	Credential:                          "",
+	EnableRandomUrl:                     false,
+	RandomUrlLength:                     8,
+	IndexFile:                           "",
+	EnableTLS:                           false,
+	TLSCrtFile:                          "~/.gotty.crt",
+	TLSKeyFile:                          "~/.gotty.key",
+	EnableClientCertificate:             false,
+	ClientCAFile:                        "~/.gotty.ca.crt",
+	EnableClientCertificateVerification: false,
+	TitleFormat:                         "GoTTY - {{ .Command }} ({{ .Hostname }})",
+	EnableReconnect:                     false,
+	ReconnectTime:                       10,
+	Once:                                false,
+	Preferences:                         make(map[string]interface{}),
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -195,6 +203,28 @@ func (app *App) Run() error {
 		keyFile := ExpandHomeDir(app.options.TLSKeyFile)
 		log.Printf("TLS crt file: " + crtFile)
 		log.Printf("TLS key file: " + keyFile)
+		if app.options.EnableClientCertificate {
+			caFile := ExpandHomeDir(app.options.ClientCAFile)
+			log.Printf("Client CA file: " + caFile)
+			caCert, err := ioutil.ReadFile(caFile)
+			if err != nil {
+				return errors.New("Cannot open CA file " + caFile)
+			}
+			caCertPool := x509.NewCertPool()
+			if !caCertPool.AppendCertsFromPEM(caCert) {
+				return errors.New("Cannot parse CA file data in " + caFile)
+			}
+			tlsVerifyPolicy := tls.RequireAnyClientCert
+			if app.options.EnableClientCertificateVerification {
+				log.Print("Enabling verification of client certificate")
+				tlsVerifyPolicy = tls.RequireAndVerifyClientCert
+			}
+			tlsConfig := &tls.Config{
+				ClientCAs:  caCertPool,
+				ClientAuth: tlsVerifyPolicy,
+			}
+			app.server.TLSConfig = tlsConfig
+		}
 		err = app.server.ListenAndServeTLS(crtFile, keyFile)
 	} else {
 		err = app.server.ListenAndServe()
