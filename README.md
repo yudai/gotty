@@ -66,6 +66,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --once                                                       Accept only one client and exit on disconnection [$GOTTY_ONCE]
 --config "~/.gotty"                                          Config file path [$GOTTY_CONFIG]
 --version, -v                                                print the version
+--permit-arguments                                           Allow to send arguments like this http://exemple.com:8080/?arg=AAA&arg=BBB
 
 ```
 
