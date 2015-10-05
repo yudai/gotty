@@ -37,47 +37,47 @@ type App struct {
 }
 
 type Options struct {
-	Address          string                 `hcl:"address"`
-	Port             string                 `hcl:"port"`
-	PermitWrite      bool                   `hcl:"permit_write"`
-	EnableBasicAuth  bool                   `hcl:"enable_basic_auth"`
-	Credential       string                 `hcl:"credential"`
-	EnableRandomUrl  bool                   `hcl:"enable_random_url"`
-	RandomUrlLength  int                    `hcl:"random_url_length"`
-	IndexFile        string                 `hcl:"index_file"`
-	EnableTLS        bool                   `hcl:"enable_tls"`
-	TLSCrtFile       string                 `hcl:"tls_crt_file"`
-	TLSKeyFile       string                 `hcl:"tls_key_file"`
-	VerifyClientCert bool                   `hcl:"verify_client_cert"`
-	ClientCAs        []string               `hcl:"client_cas"`
-	TitleFormat      string                 `hcl:"title_format"`
-	EnableReconnect  bool                   `hcl:"enable_reconnect"`
-	ReconnectTime    int                    `hcl:"reconnect_time"`
-	Once             bool                   `hcl:"once"`
-	Preferences      map[string]interface{} `hcl:"preferences"`
+	Address             string                 `hcl:"address"`
+	Port                string                 `hcl:"port"`
+	PermitWrite         bool                   `hcl:"permit_write"`
+	EnableBasicAuth     bool                   `hcl:"enable_basic_auth"`
+	Credential          string                 `hcl:"credential"`
+	EnableRandomUrl     bool                   `hcl:"enable_random_url"`
+	RandomUrlLength     int                    `hcl:"random_url_length"`
+	IndexFile           string                 `hcl:"index_file"`
+	EnableTLS           bool                   `hcl:"enable_tls"`
+	TLSCrtFile          string                 `hcl:"tls_crt_file"`
+	TLSKeyFile          string                 `hcl:"tls_key_file"`
+	EnableTLSClientAuth bool                   `hcl:"enable_tls_client_auth"`
+	TLSCACrtFile        string                 `hcl:"tls_ca_crt_file"`
+	TitleFormat         string                 `hcl:"title_format"`
+	EnableReconnect     bool                   `hcl:"enable_reconnect"`
+	ReconnectTime       int                    `hcl:"reconnect_time"`
+	Once                bool                   `hcl:"once"`
+	Preferences         map[string]interface{} `hcl:"preferences"`
 }
 
 var Version = "0.0.10"
 
 var DefaultOptions = Options{
-	Address:          "",
-	Port:             "8080",
-	PermitWrite:      false,
-	EnableBasicAuth:  false,
-	Credential:       "",
-	EnableRandomUrl:  false,
-	RandomUrlLength:  8,
-	IndexFile:        "",
-	EnableTLS:        false,
-	TLSCrtFile:       "~/.gotty.crt",
-	TLSKeyFile:       "~/.gotty.key",
-	VerifyClientCert: false,
-	ClientCAs:        []string{},
-	TitleFormat:      "GoTTY - {{ .Command }} ({{ .Hostname }})",
-	EnableReconnect:  false,
-	ReconnectTime:    10,
-	Once:             false,
-	Preferences:      make(map[string]interface{}),
+	Address:             "",
+	Port:                "8080",
+	PermitWrite:         false,
+	EnableBasicAuth:     false,
+	Credential:          "",
+	EnableRandomUrl:     false,
+	RandomUrlLength:     8,
+	IndexFile:           "",
+	EnableTLS:           false,
+	TLSCrtFile:          "~/.gotty.crt",
+	TLSKeyFile:          "~/.gotty.key",
+	EnableTLSClientAuth: false,
+	TLSCACrtFile:        "~/.gotty.ca.crt",
+	TitleFormat:         "GoTTY - {{ .Command }} ({{ .Hostname }})",
+	EnableReconnect:     false,
+	ReconnectTime:       10,
+	Once:                false,
+	Preferences:         make(map[string]interface{}),
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -117,6 +117,13 @@ func ApplyConfigFile(options *Options, filePath string) error {
 		return err
 	}
 
+	return nil
+}
+
+func CheckConfig(options *Options) error {
+	if options.EnableTLSClientAuth && !options.EnableTLS {
+		return errors.New("TLS client authentication is enabled, but TLS is not enabled")
+	}
 	return nil
 }
 
@@ -197,50 +204,20 @@ func (app *App) Run() error {
 		}
 	}
 
-	serverMaker := func() *http.Server {
-		return &http.Server{
-			Addr:    endpoint,
-			Handler: siteHandler}
+	server, err := app.makeServer(endpoint, &siteHandler)
+	if err != nil {
+		return errors.New("Failed to build server: " + err.Error())
 	}
-	if app.options.VerifyClientCert && app.options.EnableTLS {
-		serverMaker = func() *http.Server {
-			clientCaPool := x509.NewCertPool()
-			for _, path := range app.options.ClientCAs {
-				pem, err := ioutil.ReadFile(path)
-				if err != nil {
-					log.Printf("Could not read pem file at: " + path)
-					return nil
-				}
-				if clientCaPool.AppendCertsFromPEM(pem) {
-					log.Printf("Could not parse pem file at: " + path)
-					return nil
-				}
-			}
-			return &http.Server{
-				Addr:    endpoint,
-				Handler: siteHandler,
-				TLSConfig: &tls.Config{
-					ClientAuth:               tls.RequireAndVerifyClientCert,
-					ClientCAs:                clientCaPool,
-					PreferServerCipherSuites: true}}
-		}
-	}
-
-	server := serverMaker()
-	if server == nil {
-		log.Printf("Failed to build server.")
-		return errors.New("Failed to build server.")
-	}
-
-	var err error
 	app.server = manners.NewWithServer(
 		server,
 	)
+
 	if app.options.EnableTLS {
 		crtFile := ExpandHomeDir(app.options.TLSCrtFile)
 		keyFile := ExpandHomeDir(app.options.TLSKeyFile)
 		log.Printf("TLS crt file: " + crtFile)
 		log.Printf("TLS key file: " + keyFile)
+
 		err = app.server.ListenAndServeTLS(crtFile, keyFile)
 	} else {
 		err = app.server.ListenAndServe()
@@ -252,6 +229,33 @@ func (app *App) Run() error {
 	log.Printf("Exiting...")
 
 	return nil
+}
+
+func (app *App) makeServer(addr string, handler *http.Handler) (*http.Server, error) {
+	server := &http.Server{
+		Addr:    addr,
+		Handler: *handler,
+	}
+
+	if app.options.EnableTLSClientAuth {
+		caFile := ExpandHomeDir(app.options.TLSCACrtFile)
+		log.Printf("CA file: " + caFile)
+		caCert, err := ioutil.ReadFile(caFile)
+		if err != nil {
+			return nil, errors.New("Could not open CA crt file " + caFile)
+		}
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			return nil, errors.New("Could not parse CA crt file data in " + caFile)
+		}
+		tlsConfig := &tls.Config{
+			ClientCAs:  caCertPool,
+			ClientAuth: tls.RequireAndVerifyClientCert,
+		}
+		server.TLSConfig = tlsConfig
+	}
+
+	return server, nil
 }
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {

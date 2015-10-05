@@ -26,8 +26,9 @@ func main() {
 		flag{"random-url", "r", "Add a random string to the URL"},
 		flag{"random-url-length", "", "Random URL length"},
 		flag{"tls", "t", "Enable TLS/SSL"},
-		flag{"tls-crt", "", "TLS/SSL crt file path"},
+		flag{"tls-crt", "", "TLS/SSL certificate file path"},
 		flag{"tls-key", "", "TLS/SSL key file path"},
+		flag{"tls-ca-crt", "", "TLS/SSL CA certificate file for client certifications"},
 		flag{"index", "", "Custom index.html file"},
 		flag{"title-format", "", "Title format of browser window"},
 		flag{"reconnect", "", "Enable reconnection"},
@@ -40,6 +41,7 @@ func main() {
 		"tls":        "EnableTLS",
 		"tls-crt":    "TLSCrtFile",
 		"tls-key":    "TLSKeyFile",
+		"tls-ca-crt": "TLSCACrtFile",
 		"random-url": "EnableRandomUrl",
 		"reconnect":  "EnableReconnect",
 	}
@@ -80,6 +82,13 @@ func main() {
 
 		if c.IsSet("credential") {
 			options.EnableBasicAuth = true
+		}
+		if c.IsSet("tls-ca-crt") {
+			options.EnableTLSClientAuth = true
+		}
+
+		if err := app.CheckConfig(&options); err != nil {
+			exit(err, 6)
 		}
 
 		app, err := app.New(c.Args(), &options)
