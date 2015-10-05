@@ -53,6 +53,8 @@ type Options struct {
 	Preferences     map[string]interface{} `hcl:"preferences"`
 }
 
+var Version = "0.0.10"
+
 var DefaultOptions = Options{
 	Address:         "",
 	Port:            "8080",
@@ -153,6 +155,8 @@ func (app *App) Run() error {
 		log.Printf("Using Basic Authentication")
 		siteHandler = wrapBasicAuth(siteHandler, app.options.Credential)
 	}
+
+	siteHandler = wrapHeaders(siteHandler)
 
 	wsMux := http.NewServeMux()
 	wsMux.Handle("/", siteHandler)
@@ -274,6 +278,13 @@ func wrapLogger(handler http.Handler) http.Handler {
 		rw := &responseWrapper{w, 200}
 		handler.ServeHTTP(rw, r)
 		log.Printf("%s %d %s %s", r.RemoteAddr, rw.status, r.Method, r.URL.Path)
+	})
+}
+
+func wrapHeaders(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Server", "GoTTY/"+Version)
+		handler.ServeHTTP(w, r)
 	})
 }
 
