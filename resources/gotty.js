@@ -57,6 +57,7 @@
                 break;
             case '1':
                 // pong
+                break;
             case '2':
                 term.setWindowTitle(data);
                 break;
