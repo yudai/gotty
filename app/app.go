@@ -64,7 +64,7 @@ type Options struct {
 	Preferences         map[string]interface{} `hcl:"preferences"`
 }
 
-var Version = "0.0.10"
+var Version = "0.0.11"
 
 var DefaultOptions = Options{
 	Address:             "",
