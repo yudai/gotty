@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"log"
@@ -118,19 +119,14 @@ func (context *clientContext) sendInitialize() error {
 		RemoteAddr: context.request.RemoteAddr,
 	}
 
-	context.writeMutex.Lock()
-	writer, err := context.connection.NextWriter(websocket.TextMessage)
-	if err != nil {
+	titleBuffer := new(bytes.Buffer)
+	if err := context.app.titleTemplate.Execute(titleBuffer, titleVars); err != nil {
 		context.writeMutex.Unlock()
 		return err
 	}
-	writer.Write([]byte{SetWindowTitle})
-	if err = context.app.titleTemplate.Execute(writer, titleVars); err != nil {
-		context.writeMutex.Unlock()
+	if err := context.write(append([]byte{SetWindowTitle}, titleBuffer.Bytes()...)); err != nil {
 		return err
 	}
-	writer.Close()
-	context.writeMutex.Unlock()
 
 	htermPrefs := make(map[string]interface{})
 	for key, value := range context.app.options.Preferences {

@@ -38,8 +38,8 @@
 			"Rev": "5cf931ef8f76dccd0910001d74a58a7fca84a83d"
 		},
 		{
-			"ImportPath": "github.com/yudai/utf8reader",
-			"Rev": "0ccad3e5e2d8dc2493179319c4c8d1172f583ea4"
+			"ImportPath": "github.com/yudai/umutex",
+			"Rev": "18216d265c6bc72c3bb0ad9c8103d47d530b7003"
 		}
 	]
 }
