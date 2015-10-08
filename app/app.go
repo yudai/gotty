@@ -25,6 +25,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/hashicorp/hcl"
 	"github.com/kr/pty"
+	"github.com/yudai/umutex"
 )
 
 type InitMessage struct {
@@ -40,6 +41,8 @@ type App struct {
 	server   *manners.GracefulServer
 
 	titleTemplate *template.Template
+
+	onceMutex *umutex.UnblockingMutex
 }
 
 type Options struct {
@@ -104,6 +107,8 @@ func New(command []string, options *Options) (*App, error) {
 		},
 
 		titleTemplate: titleTemplate,
+
+		onceMutex: umutex.New(),
 	}, nil
 }
 
@@ -314,6 +319,20 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 			argv = append(argv, params...)
 		}
 	}
+
+	app.server.StartRoutine()
+
+	if app.options.Once {
+		if app.onceMutex.TryLock() { // no unlock required, it will die soon
+			log.Printf("Last client accepted, closing the listener.")
+			app.server.Close()
+		} else {
+			log.Printf("Server is already closing.")
+			conn.Close()
+			return
+		}
+	}
+
 	cmd := exec.Command(app.command[0], argv...)
 	ptyIo, err := pty.Start(cmd)
 	if err != nil {

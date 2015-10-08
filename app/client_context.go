@@ -65,13 +65,6 @@ func (context *clientContext) goHandleClient() {
 		context.processReceive()
 	}()
 
-	context.app.server.StartRoutine()
-
-	if context.app.options.Once {
-		log.Printf("Last client accepted, closing the listener.")
-		context.app.server.Close()
-	}
-
 	go func() {
 		defer context.app.server.FinishRoutine()
 
