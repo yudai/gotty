@@ -1,5 +1,7 @@
 # ![](https://raw.githubusercontent.com/yudai/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
 
+[![Join the chat at https://gitter.im/yudai/gotty](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yudai/gotty?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![GitHub release](http://img.shields.io/github/release/yudai/gotty.svg?style=flat-square)][release]
 [![Wercker](http://img.shields.io/wercker/ci/55d0eeff7331453f0801982c.svg?style=flat-square)][wercker]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
