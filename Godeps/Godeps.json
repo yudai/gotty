@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/yudai/gotty",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.5.1",
 	"Deps": [
 		{
 			"ImportPath": "github.com/braintree/manners",

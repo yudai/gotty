@@ -1,3 +1,5 @@
+OUTPUT_DIR = ./builds
+
 gotty: app/resource.go main.go app/*.go
 	go build
 
@@ -28,3 +30,24 @@ bindata/static/js/hterm.js: bindata/static/js libapps/hterm/js/*.js
 
 bindata/static/js/gotty.js: bindata/static/js resources/gotty.js
 	cp resources/gotty.js bindata/static/js/gotty.js
+
+tools:
+	go get github.com/tools/godep
+	go get github.com/mitchellh/gox
+	go get github.com/tcnksm/ghr
+
+deps:
+	godep restore
+
+test:
+	if [ `go fmt ./... | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
+
+cross_compile:
+	GOARM=5 gox -os="darwin linux freebsd netbsd openbsd" -arch="386 amd64 arm" -output "${OUTPUT_DIR}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
+
+targz:
+	mkdir -p ${OUTPUT_DIR}/dist
+	cd ${OUTPUT_DIR}/pkg/; for osarch in *; do (cd $$osarch; tar zcvf ../../dist/gotty_$$osarch.tar.gz ./*); done;
+
+release:
+	ghr --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist

@@ -1,27 +1,32 @@
-box: tcnksm/gox
+box: golang:1.5.1
 
 build:
   steps:
     - setup-go-workspace
     - script:
-        name: go get
-        code: |
-          go get github.com/tools/godep
-          godep restore
+        name: tools
+        code: make tools
     - script:
-        name: check format
-        code: |
-          if [ `go fmt ./... | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
-    - tcnksm/gox:
-        os: "darwin linux freebsd netbsd openbsd"
-        arch: "386 amd64 arm"
-    - yudai/targz:
-        input: $WERCKER_OUTPUT_DIR/pkg
-        output: $WERCKER_OUTPUT_DIR/dist
+        name: deps
+        code: make deps
+    - script:
+        name: test
+        code: make test
+    - script:
+        name: cross compile
+        code: make cross_compile OUTPUT_DIR=$WERCKER_OUTPUT_DIR
+    - script:
+        name: targz
+        code: make targz OUTPUT_DIR=$WERCKER_OUTPUT_DIR
+    - script:
+        name: store Makefile
+        code: cp Makefile $WERCKER_OUTPUT_DIR/
 
 deploy:
   steps:
-    - tcnksm/ghr:
-        token: $GITHUB_TOKEN
-        input: dist
-        replace: true
+    - script:
+        name: tools
+        code: make tools
+    - script:
+        name: release
+        code: make release OUTPUT_DIR=.
