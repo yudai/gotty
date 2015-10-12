@@ -34,7 +34,7 @@ func main() {
 		flag{"reconnect", "", "Enable reconnection"},
 		flag{"reconnect-time", "", "Time to reconnect"},
 		flag{"once", "", "Accept only one client and exit on disconnection"},
-		flag{"permit-arguments", "", "Allow to send arguments like this http://example.com:8080/?arg=AAA&arg=BBB"},
+		flag{"permit-arguments", "", "Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB)"},
 	}
 
 	mappingHint := map[string]string{

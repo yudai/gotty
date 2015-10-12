@@ -57,7 +57,7 @@
 // [bool] Accept only one client and exit gotty once the client exits
 // once = false
 
-// [bool] Allow clients to send command line arguments
+// [bool] Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB)
 // permit_arguments = false
 
 // [object] Client terminal (hterm) preferences
