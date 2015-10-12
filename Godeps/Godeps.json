@@ -29,13 +29,13 @@
 			"Rev": "56912fb08d85084aa318edcf2bba735b97cf35c5"
 		},
 		{
-			"ImportPath": "github.com/hashicorp/hcl",
-			"Rev": "54864211433d45cb780682431585b3e573b49e4a"
-		},
-		{
 			"ImportPath": "github.com/kr/pty",
 			"Comment": "release.r56-28-g5cf931e",
 			"Rev": "5cf931ef8f76dccd0910001d74a58a7fca84a83d"
+		},
+		{
+			"ImportPath": "github.com/yudai/hcl",
+			"Rev": "7227a719113b77a78318a43dba44951556ff9e3d"
 		},
 		{
 			"ImportPath": "github.com/yudai/umutex",

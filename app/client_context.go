@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/fatih/structs"
 	"github.com/gorilla/websocket"
 )
 
@@ -128,11 +129,20 @@ func (context *clientContext) sendInitialize() error {
 		return err
 	}
 
+	prefStruct := structs.New(context.app.options.Preferences)
+	prefMap := prefStruct.Map()
 	htermPrefs := make(map[string]interface{})
-	for key, value := range context.app.options.Preferences {
-		htermPrefs[strings.Replace(key, "_", "-", -1)] = value
+	for key, value := range prefMap {
+		rawKey := prefStruct.Field(key).Tag("hcl")
+		if _, ok := context.app.options.RawPreferences[rawKey]; ok {
+			htermPrefs[strings.Replace(rawKey, "_", "-", -1)] = value
+		}
 	}
-	prefs, _ := json.Marshal(htermPrefs)
+	prefs, err := json.Marshal(htermPrefs)
+	if err != nil {
+		return err
+	}
+
 	if err := context.write(append([]byte{SetPreferences}, prefs...)); err != nil {
 		return err
 	}

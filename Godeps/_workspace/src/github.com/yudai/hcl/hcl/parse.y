@@ -29,9 +29,10 @@ import (
 %token  <b> BOOL
 %token  <f> FLOAT
 %token  <num> NUMBER
-%token  <str> COMMA COMMAEND IDENTIFIER EQUAL NEWLINE STRING MINUS
+%token  <str> COMMA IDENTIFIER EQUAL NEWLINE STRING MINUS
 %token  <str> LEFTBRACE RIGHTBRACE LEFTBRACKET RIGHTBRACKET PERIOD
 %token  <str> EPLUS EMINUS
+%token  <str> NULL
 
 %%
 
@@ -96,6 +97,13 @@ objectitem:
 			Value: $3,
 		}
 	}
+|	objectkey EQUAL NULL
+	{
+		$$ = &Object{
+			Key:   $1,
+			Type:  ValueTypeNil,
+		}
+	}
 |	objectkey EQUAL STRING
 	{
 		$$ = &Object{
@@ -152,6 +160,10 @@ list:
 	{
 		$$ = $2
 	}
+|	LEFTBRACKET listitems COMMA RIGHTBRACKET
+	{
+		$$ = $2
+	}
 |	LEFTBRACKET RIGHTBRACKET
 	{
 		$$ = nil
@@ -166,10 +178,6 @@ listitems:
 	{
 		$$ = append($1, $3)
 	}
-|	listitems COMMAEND
-	{
-		$$ = $1
-	}
 
 listitem:
 	number
@@ -183,6 +191,20 @@ listitem:
 			Value: $1,
 		}
 	}
+|	BOOL
+	{
+		$$ = &Object{
+			Type:  ValueTypeBool,
+			Value: $1,
+		}
+	}
+|	NULL
+	{
+		$$ = &Object{
+			Type:  ValueTypeNil,
+		}
+	}
+
 
 number:
 	int

@@ -23,8 +23,8 @@ import (
 	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
-	"github.com/hashicorp/hcl"
 	"github.com/kr/pty"
+	"github.com/yudai/hcl"
 	"github.com/yudai/umutex"
 )
 
@@ -64,7 +64,8 @@ type Options struct {
 	ReconnectTime       int                    `hcl:"reconnect_time"`
 	Once                bool                   `hcl:"once"`
 	PermitArguments     bool                   `hcl:"permit_arguments"`
-	Preferences         map[string]interface{} `hcl:"preferences"`
+	Preferences         HtermPrefernces        `hcl:"preferences"`
+	RawPreferences      map[string]interface{} `hcl:"preferences"`
 }
 
 var Version = "0.0.11"
@@ -87,7 +88,7 @@ var DefaultOptions = Options{
 	EnableReconnect:     false,
 	ReconnectTime:       10,
 	Once:                false,
-	Preferences:         make(map[string]interface{}),
+	Preferences:         HtermPrefernces{},
 }
 
 func New(command []string, options *Options) (*App, error) {

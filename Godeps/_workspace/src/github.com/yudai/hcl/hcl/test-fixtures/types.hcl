@@ -5,3 +5,4 @@ foo = -12
 bar = 3.14159
 foo = true
 bar = false
+baz = null

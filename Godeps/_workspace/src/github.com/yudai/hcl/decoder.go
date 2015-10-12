@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/hcl/hcl"
+	"github.com/yudai/hcl/hcl"
 )
 
 // This is the tag to use with structures to have settings for HCL
@@ -173,6 +173,8 @@ func (d *decoder) decodeInterface(name string, o *hcl.Object, result reflect.Val
 		set = reflect.Indirect(reflect.New(reflect.TypeOf(result)))
 	case hcl.ValueTypeString:
 		set = reflect.Indirect(reflect.New(reflect.TypeOf("")))
+	case hcl.ValueTypeNil:
+		return nil
 	default:
 		return fmt.Errorf(
 			"%s: cannot decode into interface: %T",
@@ -259,14 +261,19 @@ func (d *decoder) decodeMap(name string, o *hcl.Object, result reflect.Value) er
 func (d *decoder) decodePtr(name string, o *hcl.Object, result reflect.Value) error {
 	// Create an element of the concrete (non pointer) type and decode
 	// into that. Then set the value of the pointer to this type.
-	resultType := result.Type()
-	resultElemType := resultType.Elem()
-	val := reflect.New(resultElemType)
-	if err := d.decode(name, o, reflect.Indirect(val)); err != nil {
-		return err
-	}
+	switch o.Type {
+	case hcl.ValueTypeNil:
+		// NIL
+	default:
+		resultType := result.Type()
+		resultElemType := resultType.Elem()
+		val := reflect.New(resultElemType)
+		if err := d.decode(name, o, reflect.Indirect(val)); err != nil {
+			return err
+		}
 
-	result.Set(val)
+		result.Set(val)
+	}
 	return nil
 }
 
