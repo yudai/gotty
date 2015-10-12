@@ -122,7 +122,6 @@ func (context *clientContext) sendInitialize() error {
 
 	titleBuffer := new(bytes.Buffer)
 	if err := context.app.titleTemplate.Execute(titleBuffer, titleVars); err != nil {
-		context.writeMutex.Unlock()
 		return err
 	}
 	if err := context.write(append([]byte{SetWindowTitle}, titleBuffer.Bytes()...)); err != nil {
