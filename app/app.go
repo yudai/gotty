@@ -317,6 +317,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		}
 		params := query.Query()["arg"]
 		if len(params) != 0 {
+			log.Printf("%s passed arguments are: %q", r.RemoteAddr, strings.Join(params, " "))
 			argv = append(argv, params...)
 		}
 	}
