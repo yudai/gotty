@@ -82,9 +82,8 @@
   //     Controls how the alt key is handled.
   //       "escape"....... Send an ESC prefix.
   //       "8-bit"........ Add 128 to the unshifted character as in xterm.
-  //       "browser-key".. Wait for the keypress event and see what the browser
-  //                       says.  (This won't work well on platforms where the
-  //                       browser performs a default action for some alt sequences.)
+  //       "browser-key".. Wait for the keypress event and see what the browser says.
+  //                       (This won't work well on platforms where the browser performs a default action for some alt sequences.)
   // alt_sends_what = "escape"
 
   // [string] URL of the terminal bell sound.  Empty string for no audible bell.
@@ -92,8 +91,7 @@
 
   // [bool] If true, terminal bells in the background will create a Web Notification. http://www.w3.org/TR/notifications/
   //        Displaying notifications requires permission from the user.
-  //        When this option is set to true, hterm will attempt to ask the user for
-  //        permission if necessary.
+  //        When this option is set to true, hterm will attempt to ask the user for permission if necessary.
   //        Note browsers may not show this permission request
   //        if it did not originate from a user action.
   // desktop_notification_bell = false
@@ -118,7 +116,8 @@
   // backspace_sends_backspace = false
 
   // [map[string]map[string]string]
-  //     A nested map where each property is the character set code and the value is a map that is a sparse array itself. In that sparse array, each property is the received character and the value is the displayed character.
+  //     A nested map where each property is the character set code and the value is a map that is a sparse array itself.
+  //     In that sparse array, each property is the received character and the value is the displayed character.
   //     For example:
   //       {"0" = {"+" = "\u2192"
   //               "," = "\u2190"
@@ -142,7 +141,7 @@
 
   // [[]string]
   //     Override colors in the default palette.
-  //     This can be specified as an array or an object. 
+  //     This can be specified as an array or an object.
   //     Values can be specified as almost any css color value.
   //     This includes #RGB, #RRGGBB, rgb(...), rgba(...), and any color names that are also part of the stock X11 rgb.txt file.
   //     You can use 'null' to specify that the default value should be not be changed.
@@ -211,7 +210,8 @@
   // [string] The foreground color for text with no other color attributes.
   // foreground_color = "rgb(240, 240, 240)"
 
-  // [bool] If true, home/end will control the terminal scrollbar and shift home/end will send the VT keycodes.  If false then home/end sends VT codes and shift home/end scrolls.
+  // [bool] If true, home/end will control the terminal scrollbar and shift home/end will send the VT keycodes.
+  //        If false then home/end sends VT codes and shift home/end scrolls.
   // home_keys_scroll = false
 
   // [map[string]string]
@@ -248,7 +248,8 @@
 
   // [enum(null, true, false)]
   //     Set whether we should pass Alt-1..9 to the browser.
-  //     This is handy when running hterm in a browser tab, so that you don't lose Chrome's "switch to tab" keyboard accelerators.  When not running in a tab it's better to send these keys to the host so they can be used in vim or emacs.
+  //     This is handy when running hterm in a browser tab, so that you don't lose Chrome's "switch to tab" keyboard accelerators.
+  //     When not running in a tab it's better to send these keys to the host so they can be used in vim or emacs.
   //     If true, Alt-1..9 will be handled by the browser.
   //     If false, Alt-1..9 will be sent to the host.
   //     If null, autodetect based on browser platform and window type.
@@ -256,7 +257,8 @@
 
   // [enum(null, true, false)]
   //     Set whether we should pass Ctrl-1..9 to the browser.
-  //     This is handy when running hterm in a browser tab, so that you don't lose Chrome's "switch to tab" keyboard accelerators.  When not running in a tab it's better to send these keys to the host so they can be used in vim or emacs.
+  //     This is handy when running hterm in a browser tab, so that you don't lose Chrome's "switch to tab" keyboard accelerators.
+  //     When not running in a tab it's better to send these keys to the host so they can be used in vim or emacs.
   //     If true, Ctrl-1..9 will be handled by the browser.
   //     If false, Ctrl-1..9 will be sent to the host.
   //     If null, autodetect based on browser platform and window type.
@@ -264,7 +266,8 @@
 
   // [enum(null, true, false)]
   //     Set whether we should pass Meta-1..9 to the browser.
-  //     This is handy when running hterm in a browser tab, so that you don't lose Chrome's "switch to tab" keyboard accelerators.  When not running in a tab it's better to send these keys to the host so they can be used in vim or emacs.
+  //     This is handy when running hterm in a browser tab, so that you don't lose Chrome's "switch to tab" keyboard accelerators.
+  //     When not running in a tab it's better to send these keys to the host so they can be used in vim or emacs.
   //     If true, Meta-1..9 will be handled by the browser.
   //     If false, Meta-1..9 will be sent to the host.  If null, autodetect based on browser platform and window type.
   // pass_meta_number = null
