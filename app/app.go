@@ -317,7 +317,6 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		}
 		params := query.Query()["arg"]
 		if len(params) != 0 {
-			log.Printf("%s passed arguments are: %q", r.RemoteAddr, strings.Join(params, " "))
 			argv = append(argv, params...)
 		}
 	}
@@ -341,7 +340,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		log.Print("Failed to execute command")
 		return
 	}
-	log.Printf("Command is running for client %s with PID %d", r.RemoteAddr, cmd.Process.Pid)
+	log.Printf("Command is running for client %s with PID %d (args=%q)", r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "))
 
 	context := &clientContext{
 		app:        app,
