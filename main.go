@@ -35,6 +35,7 @@ func main() {
 		flag{"reconnect-time", "", "Time to reconnect"},
 		flag{"once", "", "Accept only one client and exit on disconnection"},
 		flag{"permit-arguments", "", "Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB)"},
+		flag{"close-signal", "", "Signal sent to the command process when gotty close it (default: SIGHUP)"},
 	}
 
 	mappingHint := map[string]string{

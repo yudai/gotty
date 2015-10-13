@@ -64,6 +64,7 @@ type Options struct {
 	ReconnectTime       int                    `hcl:"reconnect_time"`
 	Once                bool                   `hcl:"once"`
 	PermitArguments     bool                   `hcl:"permit_arguments"`
+	CloseSignal         int                    `hcl:"close_signal"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 }
@@ -88,6 +89,7 @@ var DefaultOptions = Options{
 	EnableReconnect:     false,
 	ReconnectTime:       10,
 	Once:                false,
+	CloseSignal:         1, // syscall.SIGHUP
 	Preferences:         HtermPrefernces{},
 }
 
