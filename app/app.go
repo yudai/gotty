@@ -69,7 +69,7 @@ type Options struct {
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 }
 
-var Version = "0.0.11"
+var Version = "0.0.12"
 
 var DefaultOptions = Options{
 	Address:             "",
