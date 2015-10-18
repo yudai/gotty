@@ -35,7 +35,7 @@
 		},
 		{
 			"ImportPath": "github.com/yudai/hcl",
-			"Rev": "7227a719113b77a78318a43dba44951556ff9e3d"
+			"Rev": "5fa2393b3552119bf33a69adb1402a1160cba23d"
 		},
 		{
 			"ImportPath": "github.com/yudai/umutex",
