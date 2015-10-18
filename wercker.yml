@@ -19,6 +19,9 @@ build:
         name: targz
         code: make targz OUTPUT_DIR=$WERCKER_OUTPUT_DIR
     - script:
+        name: shasums
+        code: make shasums OUTPUT_DIR=$WERCKER_OUTPUT_DIR
+    - script:
         name: store Makefile
         code: cp Makefile $WERCKER_OUTPUT_DIR/
 
