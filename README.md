@@ -110,6 +110,10 @@ openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~
 
 For additional security, you can use the SSL/TLS client certificate authentication by providing a CA certificate file to the `--tls-ca-crt` option (this option requires the `-t` or `--tls` to be set). This option requires all clients to send valid client certificates that are signed by the specified certification authority.
 
+#### SAML authentication
+
+As an alternative, you can use GoTTY with you SSO provider, having that they supports SAML authentication. Setup it via the `.gotty` configuration file. Start by setting `enable_saml` to `true` and filling the required certificates and endpoints.
+
 ## Sharing with Multiple Clients
 
 GoTTY starts a new process with the given command when a new client connects to the server. This means users cannot share a single terminal with others by default. However, you can use terminal multiplexers for sharing a single process with multiple clients.

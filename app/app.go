@@ -26,6 +26,7 @@ import (
 	"github.com/kr/pty"
 	"github.com/yudai/hcl"
 	"github.com/yudai/umutex"
+	"github.com/RobotsAndPencils/go-saml"
 )
 
 type InitMessage struct {
@@ -43,6 +44,7 @@ type App struct {
 	titleTemplate *template.Template
 
 	onceMutex *umutex.UnblockingMutex
+	samlUser string
 }
 
 type Options struct {
@@ -67,6 +69,12 @@ type Options struct {
 	CloseSignal         int                    `hcl:"close_signal"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
+	EnableSAML          bool                   `hcl:"enable_saml"`
+	SAMLSSOUrl          string                 `hcl:"saml_sso_url"`
+	SAMLIssuerUrl       string                 `hcl:"saml_issuer_url"`
+	SAMLCrtFile         string                 `hcl:"saml_crt_file"`
+	SAMLServiceHost     string                 `hcl:"saml_service_host"`
+	SAMLServiceUrl      string                 `hcl:"saml_service_url"`
 }
 
 var Version = "0.0.12"
@@ -91,6 +99,12 @@ var DefaultOptions = Options{
 	Once:                false,
 	CloseSignal:         1, // syscall.SIGHUP
 	Preferences:         HtermPrefernces{},
+	EnableSAML:         false,
+	SAMLSSOUrl:          "",
+	SAMLIssuerUrl:       "",
+	SAMLCrtFile:         "",
+	SAMLServiceHost:     "",
+	SAMLServiceUrl:      "",
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -112,6 +126,7 @@ func New(command []string, options *Options) (*App, error) {
 		titleTemplate: titleTemplate,
 
 		onceMutex: umutex.New(),
+		samlUser: "",
 	}, nil
 }
 
@@ -161,6 +176,7 @@ func (app *App) Run() error {
 	wsHandler := http.HandlerFunc(app.handleWS)
 	customIndexHandler := http.HandlerFunc(app.handleCustomIndex)
 	authTokenHandler := http.HandlerFunc(app.handleAuthToken)
+	samlAuthHandler := http.HandlerFunc(app.handleSamlAuth)
 	staticHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
@@ -179,9 +195,18 @@ func (app *App) Run() error {
 
 	siteHandler := http.Handler(siteMux)
 
+	if app.options.EnableSAML {
+		siteMux.Handle(path + app.options.SAMLServiceUrl, samlAuthHandler)
+	}
+
 	if app.options.EnableBasicAuth {
 		log.Printf("Using Basic Authentication")
 		siteHandler = wrapBasicAuth(siteHandler, app.options.Credential)
+	}
+
+	if app.options.EnableSAML {
+		log.Printf("Using SAML Authentication")
+		siteHandler = wrapSAMLAuth(siteHandler, app, path)
 	}
 
 	siteHandler = wrapHeaders(siteHandler)
@@ -362,6 +387,66 @@ func (app *App) handleCustomIndex(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("var gotty_auth_token = '" + app.options.Credential + "';"))
+}
+
+func wrapSAMLAuth(handler http.Handler, app *App, path string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == path + app.options.SAMLServiceUrl {
+			handler.ServeHTTP(w, r)
+			return
+		}
+		if app.samlUser == "" {
+			http.Redirect(w, r, app.options.SAMLSSOUrl, 303)
+			return
+		}
+		log.Printf("SAML Authentication Succeeded, access granted to: %s", app.samlUser)
+		handler.ServeHTTP(w, r)
+	})
+}
+
+func (app *App) handleSamlAuth(w http.ResponseWriter, r *http.Request) {
+	encodedXML := r.FormValue("SAMLResponse")
+
+	if encodedXML == "" {
+		log.Printf("SAMLResponse form value missing")
+		http.Error(w, "Bad Request", http.StatusUnauthorized)
+		return
+	}
+
+	response, err := saml.ParseEncodedResponse(encodedXML)
+	if err != nil {
+		log.Printf("SAMLResponse parse: " + err.Error())
+		http.Error(w, "Bad Request", http.StatusUnauthorized)
+		return
+	}
+
+	sp := saml.ServiceProviderSettings{
+		PublicCertPath:         app.options.TLSCrtFile,
+		PrivateKeyPath:         app.options.TLSKeyFile,
+		IDPSSOURL:              app.options.SAMLSSOUrl,
+		IDPSSODescriptorURL:    app.options.SAMLIssuerUrl,
+		IDPPublicCertPath:      app.options.SAMLCrtFile,
+		SPSignRequest:          true,
+		AssertionConsumerServiceURL: app.options.SAMLServiceHost + app.options.SAMLServiceUrl,
+	}
+	sp.Init()
+
+	err = response.Validate(&sp)
+	if err != nil {
+		log.Printf("SAMLResponse validation: " + err.Error())
+		http.Error(w, "Bad Request", http.StatusUnauthorized)
+		return
+	}
+
+	samlID := response.GetAttribute("uid")
+	if samlID == "" {
+		log.Printf("SAML attribute identifier uid missing")
+		http.Error(w, "Bad Request", http.StatusUnauthorized)
+		return
+	}
+
+	app.samlUser = samlID
+	http.Redirect(w, r, "/", 303)
 }
 
 func (app *App) Exit() (firstCall bool) {

@@ -21,6 +21,24 @@
 //       To enable random URL generation, set `true` to `enable_random_url`
 // random_url_length = 8
 
+// [bool] Enable SAML SSO
+// enable_saml = false
+
+// [string] Identity provider Single Sign-On URL
+// saml_sso_url = ""
+
+// [string] Identity provider issuer
+// saml_issuer_url = ""
+
+// [string] Path to the X.509 Certificate issued by the IDP
+// saml_crt_file = ""
+
+// [string] Service hostname i.e. https://example.com
+// saml_service_host = ""
+
+// [string] Service Single Sign-On URL path i.e. /login
+// saml_service_url = ""
+
 // [bool] Enable TLS/SSL
 // enable_tls = false
 
