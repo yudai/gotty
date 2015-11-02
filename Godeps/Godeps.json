@@ -3,6 +3,10 @@
 	"GoVersion": "go1.5.1",
 	"Deps": [
 		{
+			"ImportPath": "github.com/RobotsAndPencils/go-saml",
+			"Rev": "aa127de49a0111329d9dbd2e19ddf21da90eb931"
+		},
+		{
 			"ImportPath": "github.com/braintree/manners",
 			"Comment": "0.4.0-6-g9e2a271",
 			"Rev": "9e2a2714de21eb092ead2ef56d8c7a60d7928819"
@@ -29,9 +33,17 @@
 			"Rev": "56912fb08d85084aa318edcf2bba735b97cf35c5"
 		},
 		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "6e7f843663477789fac7c02def0d0909e969b4e5"
+		},
+		{
 			"ImportPath": "github.com/kr/pty",
 			"Comment": "release.r56-28-g5cf931e",
 			"Rev": "5cf931ef8f76dccd0910001d74a58a7fca84a83d"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 		},
 		{
 			"ImportPath": "github.com/yudai/hcl",
