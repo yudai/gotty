@@ -20,13 +20,13 @@ import (
 	"sync"
 	"text/template"
 
+	"github.com/RobotsAndPencils/go-saml"
 	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
 	"github.com/yudai/hcl"
 	"github.com/yudai/umutex"
-	"github.com/RobotsAndPencils/go-saml"
 )
 
 type InitMessage struct {
@@ -44,7 +44,7 @@ type App struct {
 	titleTemplate *template.Template
 
 	onceMutex *umutex.UnblockingMutex
-	samlUser string
+	samlUser  string
 }
 
 type Options struct {
@@ -99,7 +99,7 @@ var DefaultOptions = Options{
 	Once:                false,
 	CloseSignal:         1, // syscall.SIGHUP
 	Preferences:         HtermPrefernces{},
-	EnableSAML:         false,
+	EnableSAML:          false,
 	SAMLSSOUrl:          "",
 	SAMLIssuerUrl:       "",
 	SAMLCrtFile:         "",
@@ -126,7 +126,7 @@ func New(command []string, options *Options) (*App, error) {
 		titleTemplate: titleTemplate,
 
 		onceMutex: umutex.New(),
-		samlUser: "",
+		samlUser:  "",
 	}, nil
 }
 
@@ -196,7 +196,7 @@ func (app *App) Run() error {
 	siteHandler := http.Handler(siteMux)
 
 	if app.options.EnableSAML {
-		siteMux.Handle(path + app.options.SAMLServiceUrl, samlAuthHandler)
+		siteMux.Handle(path+app.options.SAMLServiceUrl, samlAuthHandler)
 	}
 
 	if app.options.EnableBasicAuth {
@@ -391,7 +391,7 @@ func (app *App) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 
 func wrapSAMLAuth(handler http.Handler, app *App, path string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == path + app.options.SAMLServiceUrl {
+		if r.URL.Path == path+app.options.SAMLServiceUrl {
 			handler.ServeHTTP(w, r)
 			return
 		}
@@ -421,12 +421,12 @@ func (app *App) handleSamlAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sp := saml.ServiceProviderSettings{
-		PublicCertPath:         app.options.TLSCrtFile,
-		PrivateKeyPath:         app.options.TLSKeyFile,
-		IDPSSOURL:              app.options.SAMLSSOUrl,
-		IDPSSODescriptorURL:    app.options.SAMLIssuerUrl,
-		IDPPublicCertPath:      app.options.SAMLCrtFile,
-		SPSignRequest:          true,
+		PublicCertPath:              app.options.TLSCrtFile,
+		PrivateKeyPath:              app.options.TLSKeyFile,
+		IDPSSOURL:                   app.options.SAMLSSOUrl,
+		IDPSSODescriptorURL:         app.options.SAMLIssuerUrl,
+		IDPPublicCertPath:           app.options.SAMLCrtFile,
+		SPSignRequest:               true,
 		AssertionConsumerServiceURL: app.options.SAMLServiceHost + app.options.SAMLServiceUrl,
 	}
 	sp.Init()
