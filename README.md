@@ -134,7 +134,7 @@ To share your current session with others by a shortcut key, you can add a line 
 
 ```
 # Start GoTTY in a new window with C-t
-bind-key C-t new-window "gotty tmux attach -t `tmux display -p '#S'`"
+bind-key C-t new-window "TMUX='' gotty tmux attach -t `tmux display -p '#S'`"
 ```
 
 ## Playing with Docker
