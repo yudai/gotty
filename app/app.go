@@ -161,9 +161,12 @@ func (app *App) Run() error {
 	wsHandler := http.HandlerFunc(app.handleWS)
 	customIndexHandler := http.HandlerFunc(app.handleCustomIndex)
 	authTokenHandler := http.HandlerFunc(app.handleAuthToken)
-	staticHandler := http.FileServer(
-		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
-	)
+	staticHandler := http.FileServer(&assetfs.AssetFS{
+		Asset:     Asset,
+		AssetDir:  AssetDir,
+		AssetInfo: AssetInfo,
+		Prefix:    "static",
+	})
 
 	var siteMux = http.NewServeMux()
 
