@@ -4,6 +4,7 @@
 [![Wercker](http://img.shields.io/wercker/ci/55d0eeff7331453f0801982c.svg?style=flat-square)][wercker]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 [![Join the chat at https://gitter.im/yudai/gotty](http://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square)][gitter]
+[![codebeat](https://codebeat.co/badges/ba18313a-89b9-48df-8799-70f30fc73e70)](https://codebeat.co/projects/github-com-yudai-gotty)
 
 [release]: https://github.com/yudai/gotty/releases
 [wercker]: https://app.wercker.com/project/bykey/03b91f441bebeda34f80e09a9f14126f
