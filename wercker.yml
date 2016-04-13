@@ -1,4 +1,4 @@
-box: golang:1.5.1
+box: golang:1.6.1
 
 build:
   steps:
@@ -6,9 +6,6 @@ build:
     - script:
         name: tools
         code: make tools
-    - script:
-        name: deps
-        code: make deps
     - script:
         name: test
         code: make test
