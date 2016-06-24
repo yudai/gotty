@@ -274,7 +274,7 @@ func (app *App) makeServer(addr string, handler *http.Handler) (*http.Server, er
 }
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
-	log.Printf("New client connected: %s", r.RemoteAddr)
+	log.Printf("New client connected: %s => '%s'", r.RemoteAddr, r.URL.RawQuery)
 
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
@@ -317,9 +317,15 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 			conn.Close()
 			return
 		}
-		params := query.Query()["arg"]
-		if len(params) != 0 {
-			argv = append(argv, params...)
+		initparams := query.Query()["arg"]
+		urlparams := r.URL.Query()["arg"]
+		if len(initparams) != 0 {
+			if !paramsMatch(initparams, urlparams) {
+				log.Print("URL query arguments differ from websocket init message")
+				conn.Close()
+				return
+			}
+			argv = append(argv, initparams...)
 		}
 	}
 
@@ -454,4 +460,16 @@ func ExpandHomeDir(path string) string {
 	} else {
 		return path
 	}
+}
+
+func paramsMatch(p1 []string, p2 []string) bool {
+	if len(p1) != len(p2) {
+		return false
+	}
+	for i := range p1 {
+		if p1[i] != p2[i] {
+			return false
+		}
+	}
+	return true
 }
