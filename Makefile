@@ -1,7 +1,7 @@
 OUTPUT_DIR = ./builds
 
 gotty: app/resource.go main.go app/*.go
-	go build
+	godep go build
 
 resource:  app/resource.go
 
@@ -35,12 +35,10 @@ tools:
 	go get github.com/tools/godep
 	go get github.com/mitchellh/gox
 	go get github.com/tcnksm/ghr
-
-deps:
-	godep restore
+	go get github.com/jteeuwen/go-bindata/...
 
 test:
-	if [ `go fmt ./... | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
+	if [ `go fmt $(go list ./... | grep -v /vendor/) | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
 
 cross_compile:
 	GOARM=5 gox -os="darwin linux freebsd netbsd openbsd" -arch="386 amd64 arm" -output "${OUTPUT_DIR}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"

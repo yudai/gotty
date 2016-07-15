@@ -65,11 +65,13 @@ type Options struct {
 	Once                bool                   `hcl:"once"`
 	PermitArguments     bool                   `hcl:"permit_arguments"`
 	CloseSignal         int                    `hcl:"close_signal"`
+	Aduit               string                 `hcl:"aduit"`
+	EnableAduit         bool                   `hcl:"enable_aduit"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 }
 
-var Version = "0.0.12"
+var Version = "0.0.13"
 
 var DefaultOptions = Options{
 	Address:             "",
@@ -89,6 +91,8 @@ var DefaultOptions = Options{
 	EnableReconnect:     false,
 	ReconnectTime:       10,
 	Once:                false,
+	Aduit:               "",
+	EnableAduit:         false,
 	CloseSignal:         1, // syscall.SIGHUP
 	Preferences:         HtermPrefernces{},
 }
@@ -149,6 +153,14 @@ func (app *App) Run() error {
 
 	if app.options.Once {
 		log.Printf("Once option is provided, accepting only one client")
+	}
+
+	if app.options.EnableAduit {
+		if app.options.Aduit[:1] == "-" || len(app.options.Aduit) < 4 {
+			return errors.New("Aduit is set,but value not set yet")
+		} else {
+			log.Printf("Aduit option is open, Record will write in %s",app.options.Aduit)
+		}
 	}
 
 	path := ""
@@ -293,6 +305,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		conn.Close()
 		return
 	}
+
 	var init InitMessage
 
 	err = json.Unmarshal(stream, &init)
@@ -352,7 +365,6 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		pty:        ptyIo,
 		writeMutex: &sync.Mutex{},
 	}
-
 	context.goHandleClient()
 }
 

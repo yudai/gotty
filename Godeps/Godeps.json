@@ -1,6 +1,10 @@
 {
 	"ImportPath": "github.com/yudai/gotty",
-	"GoVersion": "go1.5.1",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v62",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/braintree/manners",
@@ -35,6 +39,14 @@
 		},
 		{
 			"ImportPath": "github.com/yudai/hcl",
+			"Rev": "5fa2393b3552119bf33a69adb1402a1160cba23d"
+		},
+		{
+			"ImportPath": "github.com/yudai/hcl/hcl",
+			"Rev": "5fa2393b3552119bf33a69adb1402a1160cba23d"
+		},
+		{
+			"ImportPath": "github.com/yudai/hcl/json",
 			"Rev": "5fa2393b3552119bf33a69adb1402a1160cba23d"
 		},
 		{
