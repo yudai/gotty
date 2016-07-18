@@ -24,6 +24,7 @@ type clientContext struct {
 	command    *exec.Cmd
 	pty        *os.File
 	writeMutex *sync.Mutex
+	cmdstring  string
 }
 
 const (
@@ -50,6 +51,25 @@ type ContextVars struct {
 	Pid        int
 	Hostname   string
 	RemoteAddr string
+}
+
+func (context *clientContext) addLog(single string, info string) {
+	if context.app.options.EnableAduit == true {
+		loggers, err := os.OpenFile(context.app.options.Aduit, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+		if err != nil {
+			fmt.Println("Fail to find", *loggers, "cServer start Failed")
+			os.Exit(1)
+		}
+		log.SetOutput(loggers)
+		log.SetFlags(log.LstdFlags)
+		hostname, _ := os.Hostname()
+		if context.app.options.EnableBasicAuth == true {
+			user := strings.Split(context.app.options.Credential, ":")
+			log.Printf(user[0]+"@"+hostname+":"+single+"# %s", info)
+		} else {
+			log.Printf(hostname+":"+single+"# %s", info)
+		}
+	}
 }
 
 func (context *clientContext) goHandleClient() {
@@ -96,6 +116,9 @@ func (context *clientContext) processSend() {
 		if err != nil {
 			log.Printf("Command exited for: %s", context.request.RemoteAddr)
 			return
+		}
+		if size > 1 && buf[:size][0] != 35 {
+			context.addLog("Send", string(buf[:size]))
 		}
 		safeMessage := base64.StdEncoding.EncodeToString([]byte(buf[:size]))
 		if err = context.write(append([]byte{Output}, []byte(safeMessage)...)); err != nil {
@@ -164,6 +187,15 @@ func (context *clientContext) processReceive() {
 		if len(data) == 0 {
 			log.Print("An error has occured")
 			return
+		}
+
+		if len(data[1:]) > 0 {
+			if data[1:][0] != 13 {
+				context.cmdstring += string(data[1:])
+			} else {
+				context.addLog("Receive", context.cmdstring)
+				context.cmdstring = ""
+			}
 		}
 
 		switch data[0] {
