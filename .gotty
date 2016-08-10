@@ -54,6 +54,9 @@
 //       To enable reconnection, set `true` to `enable_reconnect`
 // reconnect_time = false
 
+// [int] Maximum connection to gotty, 0(default) means no limit.
+// max_connection = 0
+
 // [bool] Accept only one client and exit gotty once the client exits
 // once = false
 

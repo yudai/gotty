@@ -79,7 +79,9 @@ func (context *clientContext) goHandleClient() {
 
 		context.command.Wait()
 		context.connection.Close()
+		connection--
 		log.Printf("Connection closed: %s", context.request.RemoteAddr)
+		log.Printf("Connection: %d/%d\n", connection, context.app.options.MaxConnection)
 	}()
 }
 

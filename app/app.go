@@ -28,6 +28,10 @@ import (
 	"github.com/yudai/umutex"
 )
 
+var (
+	connection int = 0
+)
+
 type InitMessage struct {
 	Arguments string `json:"Arguments,omitempty"`
 	AuthToken string `json:"AuthToken,omitempty"`
@@ -62,6 +66,7 @@ type Options struct {
 	TitleFormat         string                 `hcl:"title_format"`
 	EnableReconnect     bool                   `hcl:"enable_reconnect"`
 	ReconnectTime       int                    `hcl:"reconnect_time"`
+	MaxConnection       int                    `hcl:"max_connection"`
 	Once                bool                   `hcl:"once"`
 	PermitArguments     bool                   `hcl:"permit_arguments"`
 	CloseSignal         int                    `hcl:"close_signal"`
@@ -88,6 +93,7 @@ var DefaultOptions = Options{
 	TitleFormat:         "GoTTY - {{ .Command }} ({{ .Hostname }})",
 	EnableReconnect:     false,
 	ReconnectTime:       10,
+	MaxConnection:       0,
 	Once:                false,
 	CloseSignal:         1, // syscall.SIGHUP
 	Preferences:         HtermPrefernces{},
@@ -274,6 +280,12 @@ func (app *App) makeServer(addr string, handler *http.Handler) (*http.Server, er
 }
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
+	if app.options.MaxConnection != 0 {
+		if connection >= app.options.MaxConnection {
+			log.Printf("reached max connection: %d", app.options.MaxConnection)
+			return
+		}
+	}
 	log.Printf("New client connected: %s", r.RemoteAddr)
 
 	if r.Method != "GET" {
@@ -343,6 +355,9 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("Command is running for client %s with PID %d (args=%q)", r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "))
+
+	connection++
+	log.Printf("Connection: %d/%d\n", connection, app.options.MaxConnection)
 
 	context := &clientContext{
 		app:        app,
