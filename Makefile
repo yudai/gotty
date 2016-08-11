@@ -48,7 +48,7 @@ targz:
 	cd ${OUTPUT_DIR}/pkg/; for osarch in *; do (cd $$osarch; tar zcvf ../../dist/gotty_$$osarch.tar.gz ./*); done;
 
 shasums:
-	cd ${OUTPUT_DIR}/dist; shasum * > ./SHASUMS
+	cd ${OUTPUT_DIR}/dist; sha256sum * > ./SHA256SUMS
 
 release:
 	ghr --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
