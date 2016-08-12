@@ -353,13 +353,13 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Command is running for client %s with PID %d (args=%q)", r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "))
-
 	app.connections++
 	if app.options.MaxConnection != 0 {
-		log.Printf("Connections: %d/%d", app.connections, app.options.MaxConnection)
+		log.Printf("Command is running for client %s with PID %d (args=%q), connections: %d/%d",
+			r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "), app.connections, app.options.MaxConnection)
 	} else {
-		log.Printf("Connections: %d", app.connections)
+		log.Printf("Command is running for client %s with PID %d (args=%q), connections: %d",
+			r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "), app.connections)
 	}
 
 	context := &clientContext{
