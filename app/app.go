@@ -70,6 +70,8 @@ type Options struct {
 	CloseSignal         int                    `hcl:"close_signal"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
+	Aduit               string                 `hcl:"aduit"`
+	EnableAduit         bool                   `hcl:"enable_aduit"`
 }
 
 var Version = "0.0.13"
@@ -95,6 +97,8 @@ var DefaultOptions = Options{
 	Once:                false,
 	CloseSignal:         1, // syscall.SIGHUP
 	Preferences:         HtermPrefernces{},
+	Aduit:               "",
+	EnableAduit:         false,
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -153,6 +157,14 @@ func (app *App) Run() error {
 
 	if app.options.Once {
 		log.Printf("Once option is provided, accepting only one client")
+	}
+
+	if app.options.EnableAduit {
+		if app.options.Aduit[:1] == "-" || len(app.options.Aduit) < 4 {
+			return errors.New("Aduit is set,but value not set yet")
+		} else {
+			log.Printf("Aduit option is open, Record will write in %s", app.options.Aduit)
+		}
 	}
 
 	path := ""
