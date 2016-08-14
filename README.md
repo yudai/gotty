@@ -153,6 +153,7 @@ You can build a binary using the following commands. Windows is not supported no
 # Install tools
 go get github.com/jteeuwen/go-bindata/...
 go get github.com/tools/godep
+go get github.com/zyfdegh/boomer
 
 # Checkout hterm
 git submodule sync && git submodule update --init --recursive
