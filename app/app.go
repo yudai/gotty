@@ -379,6 +379,7 @@ func (app *App) handleCustomIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) handleAuthToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/javascript")
 	w.Write([]byte("var gotty_auth_token = '" + app.options.Credential + "';"))
 }
 
