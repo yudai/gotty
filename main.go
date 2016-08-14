@@ -33,6 +33,7 @@ func main() {
 		flag{"title-format", "", "Title format of browser window"},
 		flag{"reconnect", "", "Enable reconnection"},
 		flag{"reconnect-time", "", "Time to reconnect"},
+		flag{"timeout", "", "Interval in seconds to auto disconnect, 0 means never"},
 		flag{"max-connection", "", "Maximum connection to gotty, 0(default) means no limit"},
 		flag{"once", "", "Accept only one client and exit on disconnection"},
 		flag{"permit-arguments", "", "Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB)"},

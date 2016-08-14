@@ -21,7 +21,7 @@ import (
 	"text/template"
 
 	"github.com/braintree/manners"
-	"github.com/elazarl/go-bindata-assetfs"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/kr/pty"
 	"github.com/yudai/hcl"
@@ -64,6 +64,7 @@ type Options struct {
 	TitleFormat         string                 `hcl:"title_format"`
 	EnableReconnect     bool                   `hcl:"enable_reconnect"`
 	ReconnectTime       int                    `hcl:"reconnect_time"`
+	Timeout             int                    `hcl:"timeout"`
 	MaxConnection       int                    `hcl:"max_connection"`
 	Once                bool                   `hcl:"once"`
 	PermitArguments     bool                   `hcl:"permit_arguments"`

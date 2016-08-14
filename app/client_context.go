@@ -15,6 +15,7 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/gorilla/websocket"
+	"github.com/zyfdegh/boomer"
 )
 
 type clientContext struct {
@@ -24,6 +25,7 @@ type clientContext struct {
 	command    *exec.Cmd
 	pty        *os.File
 	writeMutex *sync.Mutex
+	boomer     *boomer.Boomer
 }
 
 const (
@@ -54,6 +56,17 @@ type ContextVars struct {
 
 func (context *clientContext) goHandleClient() {
 	exit := make(chan bool, 2)
+
+	if context.app.options.Timeout > 0 {
+		timout := uint64(context.app.options.Timeout)
+		boomer, err := boomer.NewBoomer(timout, context.boom)
+		if err != nil {
+			log.Printf("new boomer error: %v", err)
+			return
+		}
+		context.boomer = boomer
+		context.boomer.Arm()
+	}
 
 	go func() {
 		defer func() { exit <- true }()
@@ -90,6 +103,11 @@ func (context *clientContext) goHandleClient() {
 	}()
 }
 
+func (context *clientContext) boom() {
+	context.command.Process.Signal(syscall.Signal(context.app.options.CloseSignal))
+	log.Printf("Disconnected: no operation for %d seconds", context.app.options.Timeout)
+}
+
 func (context *clientContext) processSend() {
 	if err := context.sendInitialize(); err != nil {
 		log.Printf(err.Error())
@@ -103,6 +121,15 @@ func (context *clientContext) processSend() {
 		if err != nil {
 			log.Printf("Command exited for: %s", context.request.RemoteAddr)
 			return
+		}
+		if size > 0 {
+			if context.boomer != nil {
+				err := context.boomer.Rewind()
+				if err != nil {
+					log.Printf("rewind boomer error: %v", err)
+					return
+				}
+			}
 		}
 		safeMessage := base64.StdEncoding.EncodeToString([]byte(buf[:size]))
 		if err = context.write(append([]byte{Output}, []byte(safeMessage)...)); err != nil {
@@ -179,6 +206,13 @@ func (context *clientContext) processReceive() {
 				break
 			}
 
+			if context.boomer != nil {
+				err = context.boomer.Rewind()
+				if err != nil {
+					log.Printf("rewind boomer error: %v", err)
+					return
+				}
+			}
 			_, err := context.pty.Write(data[1:])
 			if err != nil {
 				return
