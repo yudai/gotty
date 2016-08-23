@@ -71,13 +71,13 @@ func (context *clientContext) goHandleClient() {
 		defer context.app.server.FinishRoutine()
 
 		<-exit
-		context.pty.Close()
 
-		// Even if the PTY has been closed,
-		// Read(0 in processSend() keeps blocking and the process doen't exit
+		// if cmd not drop out pty.Read() will block and can not pty.Close() will wait
 		context.command.Process.Signal(syscall.Signal(context.app.options.CloseSignal))
-
 		context.command.Wait()
+		
+		context.pty.Close()
+		
 		context.connection.Close()
 		context.app.connections--
 		if context.app.options.MaxConnection != 0 {
