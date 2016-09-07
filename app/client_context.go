@@ -197,14 +197,24 @@ func (context *clientContext) processReceive() {
 				return
 			}
 
+			rows := uint16(context.app.options.Height)
+			if rows == 0 {
+				rows = uint16(args.Rows)
+			}
+
+			columns := uint16(context.app.options.Width)
+			if columns == 0 {
+				columns = uint16(args.Columns)
+			}
+
 			window := struct {
 				row uint16
 				col uint16
 				x   uint16
 				y   uint16
 			}{
-				uint16(args.Rows),
-				uint16(args.Columns),
+				rows,
+				columns,
 				0,
 				0,
 			}
