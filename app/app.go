@@ -23,6 +23,7 @@ import (
 	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
+	"github.com/kavu/go_reuseport"
 	"github.com/kr/pty"
 	"github.com/yudai/hcl"
 	"github.com/yudai/umutex"
@@ -68,6 +69,7 @@ type Options struct {
 	Once                bool                   `hcl:"once"`
 	PermitArguments     bool                   `hcl:"permit_arguments"`
 	CloseSignal         int                    `hcl:"close_signal"`
+	ReusePort           bool                   `hcl:"reuse_port"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 }
@@ -94,6 +96,7 @@ var DefaultOptions = Options{
 	MaxConnection:       0,
 	Once:                false,
 	CloseSignal:         1, // syscall.SIGHUP
+	ReusePort:           false,
 	Preferences:         HtermPrefernces{},
 }
 
@@ -232,14 +235,31 @@ func (app *App) Run() error {
 	)
 
 	if app.options.EnableTLS {
-		crtFile := ExpandHomeDir(app.options.TLSCrtFile)
-		keyFile := ExpandHomeDir(app.options.TLSKeyFile)
-		log.Printf("TLS crt file: " + crtFile)
-		log.Printf("TLS key file: " + keyFile)
+		if app.options.ReusePort {
+			l, err := reuseport.NewReusablePortListener("tcp", endpoint)
+			if err != nil {
+				return errors.New("Failed to reuse port " + endpoint + " : " + err.Error())
+			}
 
-		err = app.server.ListenAndServeTLS(crtFile, keyFile)
+			err = app.server.Serve(tls.NewListener(l, app.server.TLSConfig))
+		} else {
+			crtFile := ExpandHomeDir(app.options.TLSCrtFile)
+			keyFile := ExpandHomeDir(app.options.TLSKeyFile)
+			log.Printf("TLS crt file: " + crtFile)
+			log.Printf("TLS key file: " + keyFile)
+			err = app.server.ListenAndServeTLS(crtFile, keyFile)
+		}
 	} else {
-		err = app.server.ListenAndServe()
+		if app.options.ReusePort {
+			l, err := reuseport.NewReusablePortListener("tcp", endpoint)
+			if err != nil {
+				return errors.New("Failed to reuse port " + endpoint + " : " + err.Error())
+			}
+
+			err = app.server.Serve(l)
+		} else {
+			err = app.server.ListenAndServe()
+		}
 	}
 	if err != nil {
 		return err
@@ -256,6 +276,27 @@ func (app *App) makeServer(addr string, handler *http.Handler) (*http.Server, er
 		Handler: *handler,
 	}
 
+	if app.options.EnableTLS && app.options.ReusePort {
+		tlsConfig := &tls.Config{}
+		if server.TLSConfig != nil {
+			*tlsConfig = *server.TLSConfig
+		}
+		if tlsConfig.NextProtos == nil {
+			tlsConfig.NextProtos = []string{"http/1.1"}
+		}
+		crtFile := ExpandHomeDir(app.options.TLSCrtFile)
+		keyFile := ExpandHomeDir(app.options.TLSKeyFile)
+		log.Printf("TLS crt file: " + crtFile)
+		log.Printf("TLS key file: " + keyFile)
+		var err error
+		tlsConfig.Certificates = make([]tls.Certificate, 1)
+		tlsConfig.Certificates[0], err = tls.LoadX509KeyPair(crtFile, keyFile)
+		if err != nil {
+			return nil, err
+		}
+		server.TLSConfig = tlsConfig
+	}
+
 	if app.options.EnableTLSClientAuth {
 		caFile := ExpandHomeDir(app.options.TLSCACrtFile)
 		log.Printf("CA file: " + caFile)
@@ -267,10 +308,12 @@ func (app *App) makeServer(addr string, handler *http.Handler) (*http.Server, er
 		if !caCertPool.AppendCertsFromPEM(caCert) {
 			return nil, errors.New("Could not parse CA crt file data in " + caFile)
 		}
-		tlsConfig := &tls.Config{
-			ClientCAs:  caCertPool,
-			ClientAuth: tls.RequireAndVerifyClientCert,
+		tlsConfig := &tls.Config{}
+		if server.TLSConfig != nil {
+			*tlsConfig = *server.TLSConfig
 		}
+		tlsConfig.ClientCAs = caCertPool
+		tlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		server.TLSConfig = tlsConfig
 	}
 

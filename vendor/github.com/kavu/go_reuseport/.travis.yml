@@ -1,0 +1,24 @@
+sudo: false
+group: edge
+
+language: go
+
+go:
+  - 1.6
+  - 1.7
+  - tip
+
+os:
+  - linux
+  - osx
+
+before_install:
+  - uname -a
+
+script:
+  - go test -v ./...
+  - go test -v -benchmem -benchtime=5s -bench=.
+
+matrix:
+  allow_failures:
+    - go: tip
