@@ -160,7 +160,7 @@ func (app *App) Run() error {
 		path += "/" + generateRandomString(app.options.RandomUrlLength)
 	}
 
-	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
+	endpoint := net.JoinHostPort(app.options.Address, os.Getenv("PORT"))
 
 	wsHandler := http.HandlerFunc(app.handleWS)
 	customIndexHandler := http.HandlerFunc(app.handleCustomIndex)
