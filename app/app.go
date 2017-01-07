@@ -70,6 +70,8 @@ type Options struct {
 	CloseSignal         int                    `hcl:"close_signal"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
+	Width               int                    `hcl:"width"`
+	Height              int                    `hcl:"height"`
 }
 
 var Version = "0.0.13"
@@ -95,6 +97,8 @@ var DefaultOptions = Options{
 	Once:                false,
 	CloseSignal:         1, // syscall.SIGHUP
 	Preferences:         HtermPrefernces{},
+	Width:               0,
+	Height:              0,
 }
 
 func New(command []string, options *Options) (*App, error) {
