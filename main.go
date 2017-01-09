@@ -9,22 +9,28 @@ import (
 	"github.com/codegangsta/cli"
 
 	"github.com/yudai/gotty/app"
+	"github.com/yudai/gotty/backends/ptycommand"
 	"github.com/yudai/gotty/utils"
 )
 
 func main() {
 	cmd := cli.NewApp()
-	cmd.Version = app.Version
 	cmd.Name = "gotty"
+	cmd.Version = app.Version
 	cmd.Usage = "Share your terminal as a web application"
 	cmd.HideHelp = true
+	cli.AppHelpTemplate = helpTemplate
 
-	options := &app.Options{}
-	if err := utils.ApplyDefaultValues(options); err != nil {
+	appOptions := &app.Options{}
+	if err := utils.ApplyDefaultValues(appOptions); err != nil {
+		exit(err, 1)
+	}
+	backendOptions := &ptycommand.Options{}
+	if err := utils.ApplyDefaultValues(backendOptions); err != nil {
 		exit(err, 1)
 	}
 
-	cliFlags, flagMappings, err := utils.GenerateFlags(options)
+	cliFlags, flagMappings, err := utils.GenerateFlags(appOptions, backendOptions)
 	if err != nil {
 		exit(err, 3)
 	}
@@ -41,28 +47,33 @@ func main() {
 
 	cmd.Action = func(c *cli.Context) {
 		if len(c.Args()) == 0 {
+			msg := "Error: No command given."
 			cli.ShowAppHelp(c)
-			exit(fmt.Errorf("Error: No command given."), 1)
+			exit(fmt.Errorf(msg), 1)
 		}
 
 		configFile := c.String("config")
 		_, err := os.Stat(utils.ExpandHomeDir(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
-			if err := utils.ApplyConfigFile(configFile, options); err != nil {
+			if err := utils.ApplyConfigFile(configFile, appOptions, backendOptions); err != nil {
 				exit(err, 2)
 			}
 		}
 
-		utils.ApplyFlags(cliFlags, flagMappings, c, options)
+		utils.ApplyFlags(cliFlags, flagMappings, c, appOptions, backendOptions)
 
-		options.EnableBasicAuth = c.IsSet("credential")
-		options.EnableTLSClientAuth = c.IsSet("tls-ca-crt")
+		appOptions.EnableBasicAuth = c.IsSet("credential")
+		appOptions.EnableTLSClientAuth = c.IsSet("tls-ca-crt")
 
-		if err := app.CheckConfig(options); err != nil {
+		if err := app.CheckConfig(appOptions); err != nil {
 			exit(err, 6)
 		}
 
-		app, err := app.New(c.Args(), options)
+		manager, err := ptycommand.NewCommandClientContextManager(c.Args(), backendOptions)
+		if err != nil {
+			exit(err, 3)
+		}
+		app, err := app.New(manager, appOptions)
 		if err != nil {
 			exit(err, 3)
 		}
@@ -74,9 +85,6 @@ func main() {
 			exit(err, 4)
 		}
 	}
-
-	cli.AppHelpTemplate = helpTemplate
-
 	cmd.Run(os.Args)
 }
 
