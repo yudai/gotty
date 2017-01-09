@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"unsafe"
 
@@ -69,6 +70,21 @@ func (context *clientContext) goHandleClient() {
 
 	go func() {
 		defer context.app.server.FinishRoutine()
+		defer func() {
+			connections := atomic.AddInt64(context.app.connections, -1)
+
+			if context.app.options.MaxConnection != 0 {
+				log.Printf("Connection closed: %s, connections: %d/%d",
+					context.request.RemoteAddr, connections, context.app.options.MaxConnection)
+			} else {
+				log.Printf("Connection closed: %s, connections: %d",
+					context.request.RemoteAddr, connections)
+			}
+
+			if connections == 0 {
+				context.app.restartTimer()
+			}
+		}()
 
 		<-exit
 		context.pty.Close()
@@ -79,14 +95,6 @@ func (context *clientContext) goHandleClient() {
 
 		context.command.Wait()
 		context.connection.Close()
-		context.app.connections--
-		if context.app.options.MaxConnection != 0 {
-			log.Printf("Connection closed: %s, connections: %d/%d",
-				context.request.RemoteAddr, context.app.connections, context.app.options.MaxConnection)
-		} else {
-			log.Printf("Connection closed: %s, connections: %d",
-				context.request.RemoteAddr, context.app.connections)
-		}
 	}()
 }
 

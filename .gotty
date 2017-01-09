@@ -52,7 +52,10 @@
 
 // [int] Interval time to try reconnection (seconds)
 //       To enable reconnection, set `true` to `enable_reconnect`
-// reconnect_time = false
+// reconnect_time = 10
+
+// [int] Timeout seconds for waiting a client (0 to disable)
+// timeout = 60
 
 // [int] Maximum connection to gotty, 0(default) means no limit.
 // max_connection = 0
