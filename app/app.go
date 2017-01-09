@@ -13,20 +13,18 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
-	"text/template"
 	"time"
 
+	"github.com/yudai/gotty/backends"
 	"github.com/yudai/gotty/utils"
 
 	"github.com/braintree/manners"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
-	"github.com/kr/pty"
 	"github.com/yudai/umutex"
 )
 
@@ -36,13 +34,11 @@ type InitMessage struct {
 }
 
 type App struct {
-	command []string
+	manager backends.ClientContextManager
 	options *Options
 
 	upgrader *websocket.Upgrader
 	server   *manners.GracefulServer
-
-	titleTemplate *template.Template
 
 	onceMutex *umutex.UnblockingMutex
 	timer     *time.Timer
@@ -66,14 +62,12 @@ type Options struct {
 	TLSKeyFile          string                 `hcl:"tls_key_file" flagName:"tls-key" flagDescribe:"TLS/SSL key file path" default:"~/.gotty.key"`
 	EnableTLSClientAuth bool                   `hcl:"enable_tls_client_auth" default:"false"`
 	TLSCACrtFile        string                 `hcl:"tls_ca_crt_file" flagName:"tls-ca-crt" flagDescribe:"TLS/SSL CA certificate file for client certifications" default:"~/.gotty.ca.crt"`
-	TitleFormat         string                 `hcl:"title_format" flagName:"title-format" flagDescribe:"Title format of browser window" default:"GoTTY - {{ .Command }} ({{ .Hostname }})"`
 	EnableReconnect     bool                   `hcl:"enable_reconnect" flagName:"reconnect" flagDescribe:"Enable reconnection" default:"false"`
 	ReconnectTime       int                    `hcl:"reconnect_time" flagName:"reconnect-time" flagDescribe:"Time to reconnect" default:"10"`
 	MaxConnection       int                    `hcl:"max_connection" flagName:"max-connection" flagDescribe:"Maximum connection to gotty" default:"0"`
 	Once                bool                   `hcl:"once" flagName:"once" flagDescribe:"Accept only one client and exit on disconnection" default:"false"`
 	Timeout             int                    `hcl:"timeout" flagName:"timeout" flagDescribe:"Timeout seconds for waiting a client(0 to disable)" default:"0"`
 	PermitArguments     bool                   `hcl:"permit_arguments" flagName:"permit-arguments" flagDescribe:"Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB)" default:"true"`
-	CloseSignal         int                    `hcl:"close_signal" flagName:"close-signal" flagDescribe:"Signal sent to the command process when gotty close it (default: SIGHUP)" default:"1"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 	Width               int                    `hcl:"width" flagName:"width" flagDescribe:"Static width of the screen, 0(default) means dynamically resize" default:"0"`
@@ -82,16 +76,10 @@ type Options struct {
 
 var Version = "0.0.13"
 
-func New(command []string, options *Options) (*App, error) {
-	titleTemplate, err := template.New("title").Parse(options.TitleFormat)
-	if err != nil {
-		return nil, errors.New("Title format string syntax error")
-	}
-
+func New(manager backends.ClientContextManager, options *Options) (*App, error) {
 	connections := int64(0)
-
 	return &App{
-		command: command,
+		manager: manager,
 		options: options,
 
 		upgrader: &websocket.Upgrader{
@@ -99,9 +87,6 @@ func New(command []string, options *Options) (*App, error) {
 			WriteBufferSize: 1024,
 			Subprotocols:    []string{"gotty"},
 		},
-
-		titleTemplate: titleTemplate,
-
 		onceMutex:   umutex.New(),
 		connections: &connections,
 	}, nil
@@ -169,10 +154,6 @@ func (app *App) Run() error {
 	if app.options.EnableTLS {
 		scheme = "https"
 	}
-	log.Printf(
-		"Server is starting with command: %s",
-		strings.Join(app.command, " "),
-	)
 	if app.options.Address != "" {
 		log.Printf(
 			"URL: %s",
@@ -267,8 +248,23 @@ func (app *App) restartTimer() {
 
 func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	app.stopTimer()
-
 	connections := atomic.AddInt64(app.connections, 1)
+	defer func() {
+		connections := atomic.AddInt64(app.connections, -1)
+
+		if app.options.MaxConnection != 0 {
+			log.Printf("Connection closed: %s, connections: %d/%d",
+				r.RemoteAddr, connections, app.options.MaxConnection)
+		} else {
+			log.Printf("Connection closed: %s, connections: %d",
+				r.RemoteAddr, connections)
+		}
+
+		if connections == 0 {
+			app.restartTimer()
+		}
+	}()
+
 	if int64(app.options.MaxConnection) != 0 {
 		if connections >= int64(app.options.MaxConnection) {
 			log.Printf("Reached max connection: %d", app.options.MaxConnection)
@@ -287,11 +283,11 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		log.Print("Failed to upgrade connection: " + err.Error())
 		return
 	}
+	defer conn.Close()
 
 	_, stream, err := conn.ReadMessage()
 	if err != nil {
 		log.Print("Failed to authenticate websocket connection")
-		conn.Close()
 		return
 	}
 	var init InitMessage
@@ -299,32 +295,34 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(stream, &init)
 	if err != nil {
 		log.Printf("Failed to parse init message %v", err)
-		conn.Close()
 		return
 	}
 	if init.AuthToken != app.options.Credential {
 		log.Print("Failed to authenticate websocket connection")
-		conn.Close()
 		return
 	}
-	argv := app.command[1:]
-	if app.options.PermitArguments {
-		if init.Arguments == "" {
-			init.Arguments = "?"
-		}
-		query, err := url.Parse(init.Arguments)
-		if err != nil {
-			log.Print("Failed to parse arguments")
-			conn.Close()
-			return
-		}
-		params := query.Query()["arg"]
-		if len(params) != 0 {
-			argv = append(argv, params...)
-		}
+
+	var queryPath string
+	if app.options.PermitArguments && init.Arguments != "" {
+		queryPath = init.Arguments
+	} else {
+		queryPath = "?"
+	}
+
+	query, err := url.Parse(queryPath)
+	if err != nil {
+		log.Print("Failed to parse arguments")
+		return
+	}
+	params := query.Query()
+	ctx, err := app.manager.New(params)
+	if err != nil {
+		log.Printf("Failed to new client context %v", err)
+		return
 	}
 
 	app.server.StartRoutine()
+	defer app.server.FinishRoutine()
 
 	if app.options.Once {
 		if app.onceMutex.TryLock() { // no unlock required, it will die soon
@@ -337,30 +335,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	cmd := exec.Command(app.command[0], argv...)
-	ptyIo, err := pty.Start(cmd)
-	if err != nil {
-		log.Print("Failed to execute command")
-		return
-	}
-
-	if app.options.MaxConnection != 0 {
-		log.Printf("Command is running for client %s with PID %d (args=%q), connections: %d/%d",
-			r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "), connections, app.options.MaxConnection)
-	} else {
-		log.Printf("Command is running for client %s with PID %d (args=%q), connections: %d",
-			r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "), connections)
-	}
-
-	context := &clientContext{
-		app:        app,
-		request:    r,
-		connection: conn,
-		command:    cmd,
-		pty:        ptyIo,
-		writeMutex: &sync.Mutex{},
-	}
-
+	context := &clientContext{app: app, connection: conn, writeMutex: &sync.Mutex{}, ClientContext: ctx}
 	context.goHandleClient()
 }
 
