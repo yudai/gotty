@@ -165,7 +165,11 @@ func (context *clientContext) processReceive() {
 				columns = uint16(args.Columns)
 			}
 
-			context.ResizeTerminal(columns, rows)
+			err = context.ResizeTerminal(columns, rows)
+			if err != nil {
+				log.Printf("failed to resize terminal %v", err)
+				return
+			}
 		default:
 			log.Print("Unknown message type")
 			return
