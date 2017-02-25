@@ -1,10 +1,10 @@
-package utils
+package homedir
 
 import (
 	"os"
 )
 
-func ExpandHomeDir(path string) string {
+func Expand(path string) string {
 	if path[0:2] == "~/" {
 		return os.Getenv("HOME") + path[1:]
 	} else {

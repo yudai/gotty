@@ -2,7 +2,7 @@
     var httpsEnabled = window.location.protocol == "https:";
     var args = window.location.search;
     var url = (httpsEnabled ? 'wss://' : 'ws://') + window.location.host + window.location.pathname + 'ws';
-    var protocols = ["gotty"];
+    var protocols = ["webtty"];
     var autoReconnect = -1;
 
     var openWs = function() {
@@ -26,14 +26,14 @@
                 var io = term.io.push();
 
                 io.onVTKeystroke = function(str) {
-                    ws.send("0" + str);
+                    ws.send("1" + str);
                 };
 
                 io.sendString = io.onVTKeystroke;
 
                 io.onTerminalResize = function(columns, rows) {
                     ws.send(
-                        "2" + JSON.stringify(
+                        "3" + JSON.stringify(
                             {
                                 columns: columns,
                                 rows: rows,
@@ -51,23 +51,23 @@
         ws.onmessage = function(event) {
             data = event.data.slice(1);
             switch(event.data[0]) {
-            case '0':
+            case '1':
                 term.io.writeUTF8(window.atob(data));
                 break;
-            case '1':
+            case '2':
                 // pong
                 break;
-            case '2':
+            case '3':
                 term.setWindowTitle(data);
                 break;
-            case '3':
+            case '4':
                 preferences = JSON.parse(data);
                 Object.keys(preferences).forEach(function(key) {
                     console.log("Setting " + key + ": " +  preferences[key]);
                     term.getPrefs().set(key, preferences[key]);
                 });
                 break;
-            case '4':
+            case '5':
                 autoReconnect = JSON.parse(data);
                 console.log("Enabling reconnect: " + autoReconnect + " seconds")
                 break;
@@ -88,7 +88,7 @@
 
 
     var sendPing = function(ws) {
-        ws.send("1");
+        ws.send("2");
     }
 
     openWs();
