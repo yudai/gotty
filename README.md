@@ -65,6 +65,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --reconnect                                                  Enable reconnection [$GOTTY_RECONNECT]
 --reconnect-time "10"                                        Time to reconnect [$GOTTY_RECONNECT_TIME]
 --timeout "0"                                                Timeout seconds for waiting a client (0 to disable) [$GOTTY_TIMEOUT]
+--max-connection "0"                                         Set the maximum number of simultaneous connections (0 to disable)
 --once                                                       Accept only one client and exit on disconnection [$GOTTY_ONCE]
 --permit-arguments                                           Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB) [$GOTTY_PERMIT_ARGUMENTS]
 --close-signal "1"                                           Signal sent to the command process when gotty close it (default: SIGHUP) [$GOTTY_CLOSE_SIGNAL]
