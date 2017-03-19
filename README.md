@@ -25,8 +25,7 @@ Download the latest binary file from the [Releases](https://github.com/yudai/got
 You can install GoTTY with [Homebrew](http://brew.sh/) as well.
 
 ```sh
-$ brew tap yudai/gotty
-$ brew install gotty
+$ brew install yudai/gotty/gotty
 ```
 
 ## `go get` Installation
