@@ -85,7 +85,7 @@ enable_tls = true
 // hterm preferences
 // Smaller font and a little bit bluer background color
 preferences {
-    font_size = 5,
+    font_size = 5
     background_color = "rgb(16, 16, 32)"
 }
 ```
