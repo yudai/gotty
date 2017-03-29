@@ -178,6 +178,7 @@ GoTTY uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromi
 
 * [Secure Shell (Chrome App)](https://chrome.google.com/webstore/detail/secure-shell/pnhechapfaindjhompbnflcldabbghjo): If you are a chrome user and need a "real" SSH client on your web browser, perhaps the Secure Shell app is what you want
 * [Wetty](https://github.com/krishnasrinivas/wetty): Node based web terminal (SSH/login)
+* [ttyd](https://tsl0922.github.io/ttyd): C port of GoTTY with CJK and IME support
 
 ### Terminal Sharing
 
