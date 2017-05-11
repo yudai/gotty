@@ -36,6 +36,26 @@ If you have a Go language environment, you can install GoTTY with the `go get` c
 $ go get github.com/yudai/gotty
 ```
 
+## Docker Installation
+
+1. Clone repository: `git clone git@github.com:yudai/gotty.git`
+1. Jump into it: `cd gotty`
+1. Either use `docker-compose up` or manually with docker itself:
+
+```sh
+$ docker build -t gotty .
+$ docker run --rm --publish 8080:8080 gotty
+```
+
+The default command runs the bash shell in the container.
+You can also run one-off commands, e.g.:
+
+```sh
+$ docker run --rm --publish 8080:8080 gotty --once top -o %CPU
+```
+
+Finally, open your browser on http://localhost:8080
+
 # Usage
 
 ```
