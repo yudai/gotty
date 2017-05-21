@@ -16,7 +16,7 @@ GoTTY is a simple command line tool that turns your CLI tools into web applicati
 
 # Installation
 
-Download the latest binary file from the [Releases](https://github.com/yudai/gotty/releases) page.
+Download the latest stable binary file from the [Releases](https://github.com/yudai/gotty/releases) page. Note that the release marked `Pre-release` is built automatically when new code is pushed to the repository, which can include unstable or breaking changes. Download a release marked `Latest release` for a stabale build.
 
 (`darwin_amd64.tar.gz` is for Mac OS X users)
 
@@ -28,9 +28,9 @@ You can install GoTTY with [Homebrew](http://brew.sh/) as well.
 $ brew install yudai/gotty/gotty
 ```
 
-## `go get` Installation
+## `go get` Installation (Development)
 
-If you have a Go language environment, you can install GoTTY with the `go get` command.
+If you have a Go language environment, you can install GoTTY with the `go get` command. However, this command builds a binary file from the latest master branch, which can include unstable or breaking changes.
 
 ```sh
 $ go get github.com/yudai/gotty
