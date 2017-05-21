@@ -218,6 +218,11 @@ func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("var gotty_auth_token = '" + server.options.Credential + "';"))
 }
 
+func (server *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/javascript")
+	w.Write([]byte("var gotty_term = '" + server.options.Term + "';"))
+}
+
 // titleVariables merges maps in a specified order.
 // varUnits are name-keyed maps, whose names will be iterated using order.
 func (server *Server) titleVariables(order []string, varUnits map[string]map[string]interface{}) map[string]interface{} {

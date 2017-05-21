@@ -1,0 +1,10 @@
+{
+    "devDependencies": {
+        "ts-loader": "^2.0.3",
+        "typescript": "^2.3.2",
+        "webpack": "^2.5.1"
+    },
+    "dependencies": {
+        "xterm": "^2.7.0"
+    }
+}
