@@ -80,7 +80,7 @@ type Options struct {
 	Height              int                    `hcl:"height"`
 }
 
-var Version = "0.0.13"
+var Version = "1.0.0"
 
 var DefaultOptions = Options{
 	Address:             "",
