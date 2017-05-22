@@ -55,6 +55,7 @@ type App struct {
 type Options struct {
 	Address             string                 `hcl:"address"`
 	Port                string                 `hcl:"port"`
+	Path                string                 `hcl:"path"`
 	PermitWrite         bool                   `hcl:"permit_write"`
 	EnableBasicAuth     bool                   `hcl:"enable_basic_auth"`
 	Credential          string                 `hcl:"credential"`
@@ -85,6 +86,7 @@ var Version = "1.0.0"
 var DefaultOptions = Options{
 	Address:             "",
 	Port:                "8080",
+	Path:		     "",
 	PermitWrite:         false,
 	EnableBasicAuth:     false,
 	Credential:          "",
@@ -171,6 +173,8 @@ func (app *App) Run() error {
 	path := ""
 	if app.options.EnableRandomUrl {
 		path += "/" + generateRandomString(app.options.RandomUrlLength)
+	} else if app.options.Path != "" {
+		path += "/" + app.options.Path
 	}
 
 	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
