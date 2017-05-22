@@ -1,0 +1,8 @@
+---
+applications:
+- name: gotty
+  command: gotty -w bash
+  memory: 128m
+  env:
+    GOPACKAGENAME: main
+    TERM: "xterm-256color"

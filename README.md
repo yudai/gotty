@@ -36,6 +36,12 @@ If you have a Go language environment, you can install GoTTY with the `go get` c
 $ go get github.com/yudai/gotty
 ```
 
+## Cloud Foundry Deployment
+
+```sh
+$ cf push --random-route
+```
+
 # Usage
 
 ```
