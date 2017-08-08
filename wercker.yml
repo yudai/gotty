@@ -29,4 +29,4 @@ deploy:
         code: make shasums OUTPUT_DIR=.
     - script:
         name: release
-        code: make release OUTPUT_DIR=.
+        code: make release OUTPUT_DIR=. GIT_COMMIT=$WERCKER_GIT_COMMIT
