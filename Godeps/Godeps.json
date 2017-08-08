@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/yudai/gotty",
 	"GoVersion": "go1.7",
-	"GodepVersion": "v62",
+	"GodepVersion": "v79",
 	"Packages": [
 		"./..."
 	],
@@ -13,8 +13,8 @@
 		},
 		{
 			"ImportPath": "github.com/codegangsta/cli",
-			"Comment": "1.2.0-139-g142e6cd",
-			"Rev": "142e6cd241a4dfbf7f07a018f1f8225180018da4"
+			"Comment": "v1.19.1",
+			"Rev": "0bdeddeeb0f650497d603c4ad7b20cfe685682f6"
 		},
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
