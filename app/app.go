@@ -315,7 +315,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 
 	connections := atomic.AddInt64(app.connections, 1)
 	if int64(app.options.MaxConnection) != 0 {
-		if connections >= int64(app.options.MaxConnection) {
+		if connections > int64(app.options.MaxConnection) {
 			log.Printf("Reached max connection: %d", app.options.MaxConnection)
 			return
 		}
