@@ -1,4 +1,5 @@
 OUTPUT_DIR = ./builds
+GIT_COMMIT = `git rev-parse HEAD`
 
 gotty: app/resource.go main.go app/*.go
 	godep go build
@@ -51,4 +52,4 @@ shasums:
 	cd ${OUTPUT_DIR}/dist; sha256sum * > ./SHA256SUMS
 
 release:
-	ghr --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
+	ghr -c ${GIT_COMMIT} --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
