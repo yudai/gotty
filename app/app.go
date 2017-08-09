@@ -50,6 +50,8 @@ type App struct {
 	// clientContext writes concurrently
 	// Use atomic operations.
 	connections *int64
+
+	notifySink Notifier
 }
 
 type Options struct {
@@ -78,6 +80,7 @@ type Options struct {
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 	Width               int                    `hcl:"width"`
 	Height              int                    `hcl:"height"`
+	NotifyUrl           string                 `hcl:"notify_url"`
 }
 
 var Version = "1.0.0"
@@ -105,6 +108,7 @@ var DefaultOptions = Options{
 	Preferences:         HtermPrefernces{},
 	Width:               0,
 	Height:              0,
+	NotifyUrl:           "",
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -209,32 +213,42 @@ func (app *App) Run() error {
 	siteHandler = (http.Handler(wsMux))
 
 	siteHandler = wrapLogger(siteHandler)
+	app.setupNotifier()
 
 	scheme := "http"
 	if app.options.EnableTLS {
 		scheme = "https"
 	}
+
+	cmd := strings.Join(app.command, " ")
 	log.Printf(
 		"Server is starting with command: %s",
-		strings.Join(app.command, " "),
+		cmd,
 	)
+
+	var urls []string
+
 	if app.options.Address != "" {
-		log.Printf(
-			"URL: %s",
-			(&url.URL{Scheme: scheme, Host: endpoint, Path: path + "/"}).String(),
-		)
+		_url := (&url.URL{Scheme: scheme, Host: endpoint, Path: path + "/"}).String()
+		urls = append(urls, _url)
+		log.Printf("URL: %s", _url)
 	} else {
 		for _, address := range listAddresses() {
-			log.Printf(
-				"URL: %s",
-				(&url.URL{
-					Scheme: scheme,
-					Host:   net.JoinHostPort(address, app.options.Port),
-					Path:   path + "/",
-				}).String(),
-			)
+			_url := (&url.URL{
+				Scheme: scheme,
+				Host:   net.JoinHostPort(address, app.options.Port),
+				Path:   path + "/",
+			}).String()
+			urls = append(urls, _url)
+			log.Printf("URL: %s", _url)
 		}
 	}
+
+	app.notify(Event{
+		Type:    EventTypeServerStart,
+		Command: cmd,
+		Urls:    urls,
+	})
 
 	server, err := app.makeServer(endpoint, &siteHandler)
 	if err != nil {
@@ -369,6 +383,13 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	app.notify(Event{
+		Type:      EventTypeClientConnect,
+		ClientUrl: r.RemoteAddr,
+		UserAgent: r.UserAgent(),
+		Args:      argv,
+	})
+
 	app.server.StartRoutine()
 
 	if app.options.Once {
@@ -418,11 +439,32 @@ func (app *App) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("var gotty_auth_token = '" + app.options.Credential + "';"))
 }
 
+func (app *App) setupNotifier() {
+	if app.options.NotifyUrl != "" {
+		app.notifySink = NewHTTPSink(app.options.NotifyUrl, time.Second*1)
+	}
+}
+
+func (app *App) notify(event Event) {
+	if app.notifySink != nil {
+		err := app.notifySink.Write(event)
+		if err != nil {
+			log.Printf("notify failed: %s", err.Error())
+		}
+	}
+}
+
 func (app *App) Exit() (firstCall bool) {
 	if app.server != nil {
+		app.notify(Event{
+			Type:    EventTypeServerClose,
+			Command: strings.Join(app.command, " "),
+		})
+
 		firstCall = app.server.Close()
 		if firstCall {
 			log.Printf("Received Exit command, waiting for all clients to close sessions...")
+
 		}
 		return firstCall
 	}

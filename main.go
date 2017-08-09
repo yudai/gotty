@@ -40,6 +40,7 @@ func main() {
 		flag{"close-signal", "", "Signal sent to the command process when gotty close it (default: SIGHUP)"},
 		flag{"width", "", "Static width of the screen, 0(default) means dynamically resize"},
 		flag{"height", "", "Static height of the screen, 0(default) means dynamically resize"},
+		flag{"notify-url", "", "URL to which notifications are published (e.g. http://example.com/gottyhooks)"},
 	}
 
 	mappingHint := map[string]string{
