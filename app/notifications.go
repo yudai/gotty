@@ -12,6 +12,7 @@ import (
 const (
 	EventTypeServerStart   = "server_start"
 	EventTypeClientConnect = "client_connect"
+	EventTypeCommandStart  = "command_start"
 	EventTypeClientClose   = "client_close"
 	EventTypeServerClose   = "server_close"
 )
@@ -23,6 +24,7 @@ type Event struct {
 	ClientUrl string   `json:"client_url,omitempty"`
 	UserAgent string   `json:"user_agent,omitempty"`
 	Args      []string `json:"args,omitempty"`
+	PID       int      `json:"pid,omitempty"`
 }
 
 type httpSink struct {

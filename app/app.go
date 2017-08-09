@@ -418,6 +418,15 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 			r.RemoteAddr, cmd.Process.Pid, strings.Join(argv, " "), connections)
 	}
 
+	app.notify(Event{
+		Type:      EventTypeCommandStart,
+		Command:   app.command[0],
+		ClientUrl: r.RemoteAddr,
+		UserAgent: r.UserAgent(),
+		Args:      argv,
+		PID:       cmd.Process.Pid,
+	})
+
 	context := &clientContext{
 		app:        app,
 		request:    r,
