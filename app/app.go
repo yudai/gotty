@@ -173,6 +173,15 @@ func (app *App) Run() error {
 		path += "/" + generateRandomString(app.options.RandomUrlLength)
 	}
 
+	if app.options.Port == "0" {
+		port, err := allocatePort()
+		if err != nil {
+			return errors.New("Failed to allocate random port: " + err.Error())
+		}
+		app.options.Port = strconv.Itoa(port)
+		log.Printf("Allocated random port: %s", app.options.Port)
+	}
+
 	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
 
 	wsHandler := http.HandlerFunc(app.handleWS)
@@ -508,4 +517,13 @@ func ExpandHomeDir(path string) string {
 	} else {
 		return path
 	}
+}
+
+func allocatePort() (int, error) {
+	ln, err := net.Listen("tcp", ":0")
+	if err != nil {
+		return 0, err
+	}
+	defer ln.Close()
+	return ln.Addr().(*net.TCPAddr).Port, nil
 }

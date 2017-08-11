@@ -19,7 +19,7 @@ func main() {
 	cmd.HideHelp = true
 
 	flags := []flag{
-		flag{"address", "a", "IP address to listen"},
+		flag{"address", "a", "IP address to listen (use \"0\" for random port)"},
 		flag{"port", "p", "Port number to listen"},
 		flag{"permit-write", "w", "Permit clients to write to the TTY (BE CAREFUL)"},
 		flag{"credential", "c", "Credential for Basic Authentication (ex: user:pass, default disabled)"},
