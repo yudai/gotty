@@ -49,6 +49,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 ```
 --address, -a                                                IP address to listen [$GOTTY_ADDRESS]
 --port, -p "8080"                                            Port number to listen [$GOTTY_PORT]
+--path, -m ""                                                Base path
 --permit-write, -w                                           Permit clients to write to the TTY (BE CAREFUL) [$GOTTY_PERMIT_WRITE]
 --credential, -c                                             Credential for Basic Authentication (ex: user:pass, default disabled) [$GOTTY_CREDENTIAL]
 --random-url, -r                                             Add a random string to the URL [$GOTTY_RANDOM_URL]
