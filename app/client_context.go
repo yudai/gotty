@@ -81,6 +81,12 @@ func (context *clientContext) goHandleClient() {
 					context.request.RemoteAddr, connections)
 			}
 
+			context.app.notify(Event{
+				Type:      EventTypeClientClose,
+				ClientUrl: context.request.RemoteAddr,
+				UserAgent: context.request.UserAgent(),
+			})
+
 			if connections == 0 {
 				context.app.restartTimer()
 			}
