@@ -1,29 +1,21 @@
 package app
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"log"
-	"net/http"
-	"os"
-	"os/exec"
 	"strings"
 	"sync"
-	"sync/atomic"
-	"syscall"
-	"unsafe"
 
 	"github.com/fatih/structs"
 	"github.com/gorilla/websocket"
+	"github.com/yudai/gotty/backends"
 )
 
 type clientContext struct {
+	backends.ClientContext
 	app        *App
-	request    *http.Request
 	connection *websocket.Conn
-	command    *exec.Cmd
-	pty        *os.File
 	writeMutex *sync.Mutex
 }
 
@@ -46,56 +38,23 @@ type argResizeTerminal struct {
 	Rows    float64
 }
 
-type ContextVars struct {
-	Command    string
-	Pid        int
-	Hostname   string
-	RemoteAddr string
-}
-
 func (context *clientContext) goHandleClient() {
-	exit := make(chan bool, 2)
+	exit := make(chan bool, 3)
+
+	context.Start(exit)
 
 	go func() {
 		defer func() { exit <- true }()
-
 		context.processSend()
 	}()
 
 	go func() {
 		defer func() { exit <- true }()
-
 		context.processReceive()
 	}()
 
-	go func() {
-		defer context.app.server.FinishRoutine()
-		defer func() {
-			connections := atomic.AddInt64(context.app.connections, -1)
-
-			if context.app.options.MaxConnection != 0 {
-				log.Printf("Connection closed: %s, connections: %d/%d",
-					context.request.RemoteAddr, connections, context.app.options.MaxConnection)
-			} else {
-				log.Printf("Connection closed: %s, connections: %d",
-					context.request.RemoteAddr, connections)
-			}
-
-			if connections == 0 {
-				context.app.restartTimer()
-			}
-		}()
-
-		<-exit
-		context.pty.Close()
-
-		// Even if the PTY has been closed,
-		// Read(0 in processSend() keeps blocking and the process doen't exit
-		context.command.Process.Signal(syscall.Signal(context.app.options.CloseSignal))
-
-		context.command.Wait()
-		context.connection.Close()
-	}()
+	<-exit
+	context.TearDown()
 }
 
 func (context *clientContext) processSend() {
@@ -107,9 +66,9 @@ func (context *clientContext) processSend() {
 	buf := make([]byte, 1024)
 
 	for {
-		size, err := context.pty.Read(buf)
+		size, err := context.OutputReader().Read(buf)
 		if err != nil {
-			log.Printf("Command exited for: %s", context.request.RemoteAddr)
+			log.Printf("failed to read output from terminal backend: %v", err)
 			return
 		}
 		safeMessage := base64.StdEncoding.EncodeToString([]byte(buf[:size]))
@@ -127,19 +86,11 @@ func (context *clientContext) write(data []byte) error {
 }
 
 func (context *clientContext) sendInitialize() error {
-	hostname, _ := os.Hostname()
-	titleVars := ContextVars{
-		Command:    strings.Join(context.app.command, " "),
-		Pid:        context.command.Process.Pid,
-		Hostname:   hostname,
-		RemoteAddr: context.request.RemoteAddr,
-	}
-
-	titleBuffer := new(bytes.Buffer)
-	if err := context.app.titleTemplate.Execute(titleBuffer, titleVars); err != nil {
+	windowTitle, err := context.WindowTitle()
+	if err != nil {
 		return err
 	}
-	if err := context.write(append([]byte{SetWindowTitle}, titleBuffer.Bytes()...)); err != nil {
+	if err := context.write(append([]byte{SetWindowTitle}, []byte(windowTitle)...)); err != nil {
 		return err
 	}
 
@@ -187,7 +138,7 @@ func (context *clientContext) processReceive() {
 				break
 			}
 
-			_, err := context.pty.Write(data[1:])
+			_, err := context.InputWriter().Write(data[1:])
 			if err != nil {
 				return
 			}
@@ -204,7 +155,6 @@ func (context *clientContext) processReceive() {
 				log.Print("Malformed remote command")
 				return
 			}
-
 			rows := uint16(context.app.options.Height)
 			if rows == 0 {
 				rows = uint16(args.Rows)
@@ -215,24 +165,11 @@ func (context *clientContext) processReceive() {
 				columns = uint16(args.Columns)
 			}
 
-			window := struct {
-				row uint16
-				col uint16
-				x   uint16
-				y   uint16
-			}{
-				rows,
-				columns,
-				0,
-				0,
+			err = context.ResizeTerminal(columns, rows)
+			if err != nil {
+				log.Printf("failed to resize terminal %v", err)
+				return
 			}
-			syscall.Syscall(
-				syscall.SYS_IOCTL,
-				context.pty.Fd(),
-				syscall.TIOCSWINSZ,
-				uintptr(unsafe.Pointer(&window)),
-			)
-
 		default:
 			log.Print("Unknown message type")
 			return
