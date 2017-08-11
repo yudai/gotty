@@ -23,6 +23,7 @@ func main() {
 		flag{"port", "p", "Port number to listen"},
 		flag{"permit-write", "w", "Permit clients to write to the TTY (BE CAREFUL)"},
 		flag{"credential", "c", "Credential for Basic Authentication (ex: user:pass, default disabled)"},
+		flag{"custom-url", "u", "Add a customized string to the URL"},
 		flag{"random-url", "r", "Add a random string to the URL"},
 		flag{"random-url-length", "", "Random URL length"},
 		flag{"tls", "t", "Enable TLS/SSL"},
@@ -48,6 +49,7 @@ func main() {
 		"tls-crt":    "TLSCrtFile",
 		"tls-key":    "TLSKeyFile",
 		"tls-ca-crt": "TLSCACrtFile",
+		"custom-url": "CustomUrl",
 		"random-url": "EnableRandomUrl",
 		"reconnect":  "EnableReconnect",
 	}

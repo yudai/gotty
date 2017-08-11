@@ -58,6 +58,7 @@ type Options struct {
 	PermitWrite         bool                   `hcl:"permit_write"`
 	EnableBasicAuth     bool                   `hcl:"enable_basic_auth"`
 	Credential          string                 `hcl:"credential"`
+	CustomUrl           string                 `hcl:"custom_url"`
 	EnableRandomUrl     bool                   `hcl:"enable_random_url"`
 	RandomUrlLength     int                    `hcl:"random_url_length"`
 	IndexFile           string                 `hcl:"index_file"`
@@ -105,6 +106,7 @@ var DefaultOptions = Options{
 	Preferences:         HtermPrefernces{},
 	Width:               0,
 	Height:              0,
+	CustomUrl:           "",
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -168,9 +170,15 @@ func (app *App) Run() error {
 		log.Printf("Once option is provided, accepting only one client")
 	}
 
+	if app.options.EnableRandomUrl && (app.options.CustomUrl != "") {
+		return errors.New("Either random url or a custom url can be set")
+	}
+
 	path := ""
 	if app.options.EnableRandomUrl {
 		path += "/" + generateRandomString(app.options.RandomUrlLength)
+	} else if app.options.CustomUrl != "" {
+		path += "/" + app.options.CustomUrl
 	}
 
 	endpoint := net.JoinHostPort(app.options.Address, app.options.Port)
