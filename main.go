@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -8,56 +9,35 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/yudai/gotty/app"
+	"github.com/yudai/gotty/backend/localcommand"
+	"github.com/yudai/gotty/pkg/homedir"
+	"github.com/yudai/gotty/server"
+	"github.com/yudai/gotty/utils"
 )
 
 func main() {
-	cmd := cli.NewApp()
-	cmd.Version = app.Version
-	cmd.Name = "gotty"
-	cmd.Usage = "Share your terminal as a web application"
-	cmd.HideHelp = true
+	app := cli.NewApp()
+	app.Name = "gotty"
+	app.Version = Version
+	app.Usage = "Share your terminal as a web application"
+	app.HideHelp = true
+	cli.AppHelpTemplate = helpTemplate
 
-	flags := []flag{
-		flag{"address", "a", "IP address to listen"},
-		flag{"port", "p", "Port number to listen"},
-		flag{"permit-write", "w", "Permit clients to write to the TTY (BE CAREFUL)"},
-		flag{"credential", "c", "Credential for Basic Authentication (ex: user:pass, default disabled)"},
-		flag{"random-url", "r", "Add a random string to the URL"},
-		flag{"random-url-length", "", "Random URL length"},
-		flag{"tls", "t", "Enable TLS/SSL"},
-		flag{"tls-crt", "", "TLS/SSL certificate file path"},
-		flag{"tls-key", "", "TLS/SSL key file path"},
-		flag{"tls-ca-crt", "", "TLS/SSL CA certificate file for client certifications"},
-		flag{"index", "", "Custom index.html file"},
-		flag{"title-format", "", "Title format of browser window"},
-		flag{"reconnect", "", "Enable reconnection"},
-		flag{"reconnect-time", "", "Time to reconnect"},
-		flag{"timeout", "", "Timeout seconds for waiting a client (0 to disable)"},
-		flag{"max-connection", "", "Maximum connection to gotty, 0(default) means no limit"},
-		flag{"once", "", "Accept only one client and exit on disconnection"},
-		flag{"permit-arguments", "", "Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB)"},
-		flag{"close-signal", "", "Signal sent to the command process when gotty close it (default: SIGHUP)"},
-		flag{"width", "", "Static width of the screen, 0(default) means dynamically resize"},
-		flag{"height", "", "Static height of the screen, 0(default) means dynamically resize"},
+	appOptions := &server.Options{}
+	if err := utils.ApplyDefaultValues(appOptions); err != nil {
+		exit(err, 1)
+	}
+	backendOptions := &localcommand.Options{}
+	if err := utils.ApplyDefaultValues(backendOptions); err != nil {
+		exit(err, 1)
 	}
 
-	mappingHint := map[string]string{
-		"index":      "IndexFile",
-		"tls":        "EnableTLS",
-		"tls-crt":    "TLSCrtFile",
-		"tls-key":    "TLSKeyFile",
-		"tls-ca-crt": "TLSCACrtFile",
-		"random-url": "EnableRandomUrl",
-		"reconnect":  "EnableReconnect",
-	}
-
-	cliFlags, err := generateFlags(flags, mappingHint)
+	cliFlags, flagMappings, err := utils.GenerateFlags(appOptions, backendOptions)
 	if err != nil {
 		exit(err, 3)
 	}
 
-	cmd.Flags = append(
+	app.Flags = append(
 		cliFlags,
 		cli.StringFlag{
 			Name:   "config",
@@ -67,52 +47,65 @@ func main() {
 		},
 	)
 
-	cmd.Action = func(c *cli.Context) {
+	app.Action = func(c *cli.Context) {
 		if len(c.Args()) == 0 {
-			fmt.Println("Error: No command given.\n")
+			msg := "Error: No command given."
 			cli.ShowAppHelp(c)
-			exit(err, 1)
+			exit(fmt.Errorf(msg), 1)
 		}
 
-		options := app.DefaultOptions
-
 		configFile := c.String("config")
-		_, err := os.Stat(app.ExpandHomeDir(configFile))
+		_, err := os.Stat(homedir.Expand(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
-			if err := app.ApplyConfigFile(&options, configFile); err != nil {
+			if err := utils.ApplyConfigFile(configFile, appOptions, backendOptions); err != nil {
 				exit(err, 2)
 			}
 		}
 
-		applyFlags(&options, flags, mappingHint, c)
+		utils.ApplyFlags(cliFlags, flagMappings, c, appOptions, backendOptions)
 
-		if c.IsSet("credential") {
-			options.EnableBasicAuth = true
-		}
-		if c.IsSet("tls-ca-crt") {
-			options.EnableTLSClientAuth = true
-		}
+		appOptions.EnableBasicAuth = c.IsSet("credential")
+		appOptions.EnableTLSClientAuth = c.IsSet("tls-ca-crt")
 
-		if err := app.CheckConfig(&options); err != nil {
+		err = appOptions.Validate()
+		if err != nil {
 			exit(err, 6)
 		}
 
-		app, err := app.New(c.Args(), &options)
+		args := c.Args()
+		factory, err := localcommand.NewFactory(args[0], args[1:], backendOptions)
 		if err != nil {
 			exit(err, 3)
 		}
 
-		registerSignals(app)
-
-		err = app.Run()
-		if err != nil {
-			exit(err, 4)
+		hostname, _ := os.Hostname()
+		appOptions.TitleVariables = map[string]interface{}{
+			"command":  args[0],
+			"argv":     args[1:],
+			"hostname": hostname,
 		}
+
+		srv, err := server.New(factory, appOptions)
+		if err != nil {
+			exit(err, 3)
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		gCtx, gCancel := context.WithCancel(context.Background())
+
+		errs := make(chan error, 1)
+		go func() {
+			errs <- srv.Run(ctx, server.WithGracefullContext(gCtx))
+		}()
+		err = waitSignals(errs, cancel, gCancel)
+
+		if err != nil && err != context.Canceled {
+			fmt.Printf("Error: %s\n", err)
+			exit(err, 8)
+		}
+
 	}
-
-	cli.AppHelpTemplate = helpTemplate
-
-	cmd.Run(os.Args)
+	app.Run(os.Args)
 }
 
 func exit(err error, code int) {
@@ -122,7 +115,7 @@ func exit(err error, code int) {
 	os.Exit(code)
 }
 
-func registerSignals(app *app.App) {
+func waitSignals(errs chan error, cancel context.CancelFunc, gracefullCancel context.CancelFunc) error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(
 		sigChan,
@@ -130,17 +123,25 @@ func registerSignals(app *app.App) {
 		syscall.SIGTERM,
 	)
 
-	go func() {
-		for {
-			s := <-sigChan
-			switch s {
-			case syscall.SIGINT, syscall.SIGTERM:
-				if app.Exit() {
-					fmt.Println("Send ^C to force exit.")
-				} else {
-					os.Exit(5)
-				}
+	select {
+	case err := <-errs:
+		return err
+
+	case s := <-sigChan:
+		switch s {
+		case syscall.SIGINT:
+			gracefullCancel()
+			fmt.Println("C-C to force close")
+			select {
+			case err := <-errs:
+				return err
+			case <-sigChan:
+				cancel()
+				return <-errs
 			}
+		default:
+			cancel()
+			return <-errs
 		}
-	}()
+	}
 }
