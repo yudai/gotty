@@ -8,7 +8,9 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -16,45 +18,62 @@ import (
 	"github.com/yudai/gotty/webtty"
 )
 
-func (server *Server) generateHandleWS(ctx context.Context, cancel context.CancelFunc) http.HandlerFunc {
+func (server *Server) generateHandleWS(ctx context.Context, cancel context.CancelFunc, connections *int64, wg *sync.WaitGroup) http.HandlerFunc {
+	once := new(int64)
+
+	timer := time.NewTimer(time.Duration(server.options.Timeout) * time.Second)
+	if server.options.Timeout > 0 {
+		go func() {
+			select {
+			case <-timer.C:
+				cancel()
+			case <-ctx.Done():
+			}
+		}()
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		if server.options.Once {
-			if atomic.LoadInt64(server.once) > 0 {
+			success := atomic.CompareAndSwapInt64(once, 0, 1)
+			if !success {
 				http.Error(w, "Server is shutting down", http.StatusServiceUnavailable)
 				return
 			}
-			atomic.AddInt64(server.once, 1)
 		}
-		connections := atomic.AddInt64(server.connections, 1)
-		server.wsWG.Add(1)
-		server.stopTimer()
+
+		if server.options.Timeout > 0 {
+			timer.Stop()
+		}
+		wg.Add(1)
+		num := atomic.AddInt64(connections, 1)
 		closeReason := "unknown reason"
 
 		defer func() {
-			server.wsWG.Done()
-
-			connections := atomic.AddInt64(server.connections, -1)
-			if connections == 0 {
-				server.resetTimer()
+			num := atomic.AddInt64(connections, -1)
+			if num == 0 && server.options.Timeout > 0 {
+				timer.Reset(time.Duration(server.options.Timeout) * time.Second)
 			}
 
 			log.Printf(
 				"Connection closed by %s: %s, connections: %d/%d",
-				closeReason, r.RemoteAddr, connections, server.options.MaxConnection,
+				closeReason, r.RemoteAddr, num, server.options.MaxConnection,
 			)
 
 			if server.options.Once {
 				cancel()
 			}
+
+			wg.Done()
 		}()
 
-		log.Printf("New client connected: %s", r.RemoteAddr)
 		if int64(server.options.MaxConnection) != 0 {
-			if connections > int64(server.options.MaxConnection) {
+			if num > int64(server.options.MaxConnection) {
 				closeReason = "exceeding max number of connections"
 				return
 			}
 		}
+
+		log.Printf("New client connected: %s, connections: %d/%d", r.RemoteAddr, num, server.options.MaxConnection)
 
 		if r.Method != "GET" {
 			http.Error(w, "Method not allowed", 405)
