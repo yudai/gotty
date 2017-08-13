@@ -8,9 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -18,42 +16,32 @@ import (
 	"github.com/yudai/gotty/webtty"
 )
 
-func (server *Server) generateHandleWS(ctx context.Context, cancel context.CancelFunc, connections *int64, wg *sync.WaitGroup) http.HandlerFunc {
+func (server *Server) generateHandleWS(ctx context.Context, cancel context.CancelFunc, counter *counter) http.HandlerFunc {
 	once := new(int64)
 
-	timer := time.NewTimer(time.Duration(server.options.Timeout) * time.Second)
-	if server.options.Timeout > 0 {
-		go func() {
-			select {
-			case <-timer.C:
-				cancel()
-			case <-ctx.Done():
-			}
-		}()
-	}
+	go func() {
+		select {
+		case <-counter.timer().C:
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if server.options.Once {
 			success := atomic.CompareAndSwapInt64(once, 0, 1)
 			if !success {
+
 				http.Error(w, "Server is shutting down", http.StatusServiceUnavailable)
 				return
 			}
 		}
 
-		if server.options.Timeout > 0 {
-			timer.Stop()
-		}
-		wg.Add(1)
-		num := atomic.AddInt64(connections, 1)
+		num := counter.add(1)
 		closeReason := "unknown reason"
 
 		defer func() {
-			num := atomic.AddInt64(connections, -1)
-			if num == 0 && server.options.Timeout > 0 {
-				timer.Reset(time.Duration(server.options.Timeout) * time.Second)
-			}
-
+			num := counter.done()
 			log.Printf(
 				"Connection closed by %s: %s, connections: %d/%d",
 				closeReason, r.RemoteAddr, num, server.options.MaxConnection,
@@ -62,12 +50,10 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 			if server.options.Once {
 				cancel()
 			}
-
-			wg.Done()
 		}()
 
 		if int64(server.options.MaxConnection) != 0 {
-			if num > int64(server.options.MaxConnection) {
+			if num > server.options.MaxConnection {
 				closeReason = "exceeding max number of connections"
 				return
 			}
