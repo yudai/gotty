@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	noesctmpl "text/template"
 	"time"
 
@@ -56,6 +57,17 @@ func New(factory Factory, options *Options) (*Server, error) {
 		return nil, errors.Wrapf(err, "failed to parse window title format `%s`", options.TitleFormat)
 	}
 
+	var originChekcer func(r *http.Request) bool
+	if options.WSOrigin != "" {
+		matcher, err := regexp.Compile(options.WSOrigin)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to compile regular expression of Websocket Origin: %s", options.WSOrigin)
+		}
+		originChekcer = func(r *http.Request) bool {
+			return matcher.MatchString(r.Header.Get("Origin"))
+		}
+	}
+
 	return &Server{
 		factory: factory,
 		options: options,
@@ -64,6 +76,7 @@ func New(factory Factory, options *Options) (*Server, error) {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			Subprotocols:    webtty.Protocols,
+			CheckOrigin:     originChekcer,
 		},
 		indexTemplate: indexTemplate,
 		titleTemplate: titleTemplate,

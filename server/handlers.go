@@ -31,7 +31,6 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 		if server.options.Once {
 			success := atomic.CompareAndSwapInt64(once, 0, 1)
 			if !success {
-
 				http.Error(w, "Server is shutting down", http.StatusServiceUnavailable)
 				return
 			}
@@ -68,7 +67,7 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 
 		conn, err := server.upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			http.Error(w, "Failed to upgrade connection: "+err.Error(), 500)
+			closeReason = fmt.Sprintf("origin check error: %s", r.Header.Get("Origin"))
 			return
 		}
 		defer conn.Close()
