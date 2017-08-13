@@ -182,14 +182,14 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 		siteHandler = server.wrapBasicAuth(siteHandler, server.options.Credential)
 	}
 
-	siteHandler = server.wrapHeaders(siteHandler)
+	siteHandler = server.wrapLogger(server.wrapHeaders(siteHandler))
 
 	wsMux := http.NewServeMux()
 	wsMux.Handle("/", siteHandler)
 	wsMux.HandleFunc(url.Path+"ws", server.generateHandleWS(ctx, cancel, counter))
 	siteHandler = http.Handler(wsMux)
 
-	return server.wrapLogger(siteHandler)
+	return siteHandler
 }
 
 func (server *Server) setupHTTPServer(handler http.Handler, url *url.URL) (*http.Server, error) {
