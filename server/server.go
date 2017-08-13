@@ -81,18 +81,28 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	}
 
 	counter := newCounter(time.Duration(server.options.Timeout) * time.Second)
-	url := server.setupURL()
+
+	path := "/"
+	if server.options.EnableRandomUrl {
+		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
+	}
+	url := server.setupURL(server.options.Address, path)
+
 	handlers := server.setupHandlers(cctx, cancel, url, counter)
 	srv, err := server.setupHTTPServer(handlers, url)
 	if err != nil {
 		return errors.Wrapf(err, "failed to setup an HTTP server")
 	}
 
-	log.Printf("URL: %s", url.String())
+	log.Printf("GoTTY server is starting at: %s", url.String())
+	if server.options.Address == "0.0.0.0" {
+		for _, address := range listAddresses() {
+			log.Printf("Alternative URL: %s", server.setupURL(address, path).String())
+		}
+	}
 	if server.options.PermitWrite {
 		log.Printf("Permitting clients to write input to the PTY.")
 	}
-
 	if server.options.Once {
 		log.Printf("Once option is provided, accepting only one client")
 	}
@@ -143,18 +153,14 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	return err
 }
 
-func (server *Server) setupURL() *url.URL {
-	host := net.JoinHostPort(server.options.Address, server.options.Port)
+func (server *Server) setupURL(ip string, path string) *url.URL {
+	host := net.JoinHostPort(ip, server.options.Port)
+
 	scheme := "http"
-	path := "/"
-
-	if server.options.EnableRandomUrl {
-		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
-	}
-
 	if server.options.EnableTLS {
 		scheme = "https"
 	}
+
 	return &url.URL{Scheme: scheme, Host: host, Path: path}
 }
 
