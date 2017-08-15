@@ -5,7 +5,7 @@ Please answer these quesions for a bug report. Thanks!
 ### What version of GoTTY are you using (`gotty --version`)?
 
 
-### What operating system are you using?
+### What operating system and browser are you using?
 
 
 ### What did you do?
