@@ -1,8 +1,9 @@
 OUTPUT_DIR = ./builds
-GIT_COMMIT = `git rev-parse HEAD`
+GIT_COMMIT = `git rev-parse HEAD | cut -c1-10`
+BUILD_OPTIONS = -ldflags "-X main.CommitID=$(GIT_COMMIT)"
 
-gotty: server/asset.go main.go server/*.go webtty/*.go backend/*.go
-	godep go build
+gotty: server/asset.go main.go server/*.go webtty/*.go backend/*.go Makefile
+	godep go build ${BUILD_OPTIONS}
 
 asset:  server/asset.go
 
