@@ -67,7 +67,7 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 
 		conn, err := server.upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			closeReason = fmt.Sprintf("origin check error: %s", r.Header.Get("Origin"))
+			closeReason = err.Error()
 			return
 		}
 		defer conn.Close()
