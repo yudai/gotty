@@ -2,13 +2,16 @@
 <html>
   <head>
     <title>{{ .title }}</title>
-    <style>body, #terminal {position: absolute; height: 100%; width: 100%; margin: 0px;}</style>
     <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="./css/index.css" />
+    <link rel="stylesheet" href="./css/xterm.css" />
+    <link rel="stylesheet" href="./css/xterm_customize.css" />
+    <script src="/js/hterm.js"></script>
   </head>
   <body>
     <div id="terminal"></div>
-    <script src="./js/hterm.js"></script>
     <script src="./auth_token.js"></script>
-    <script src="./js/gotty.js"></script>
+    <script src="./config.js"></script>
+    <script src="./js/bundle.js"></script>
   </body>
 </html>

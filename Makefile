@@ -7,7 +7,7 @@ gotty: server/asset.go main.go server/*.go webtty/*.go backend/*.go Makefile
 
 asset:  server/asset.go
 
-server/asset.go: bindata/static/js/hterm.js bindata/static/js/gotty.js  bindata/static/index.html bindata/static/favicon.png
+server/asset.go: bindata/static/js/hterm.js bindata/static/js/bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
 
@@ -26,12 +26,30 @@ bindata/static/favicon.png: bindata/static resources/favicon.png
 bindata/static/js: bindata/static
 	mkdir -p bindata/static/js
 
-bindata/static/js/hterm.js: bindata/static/js libapps/hterm/js/*.js
-	cd libapps && \
-	LIBDOT_SEARCH_PATH=`pwd` ./libdot/bin/concat.sh -i ./hterm/concat/hterm_all.concat -o ../bindata/static/js/hterm.js
+bindata/static/js/hterm.js: bindata/static/js js/libapps/hterm/js/*.js
+	cd js/libapps && \
+	LIBDOT_SEARCH_PATH=`pwd` ./libdot/bin/concat.sh -i ./hterm/concat/hterm_all.concat -o ../../bindata/static/js/hterm.js
 
-bindata/static/js/gotty.js: bindata/static/js resources/gotty.js
-	cp resources/gotty.js bindata/static/js/gotty.js
+bindata/static/js/bundle.js: bindata/static/js js/dist/bundle.js
+	cp js/dist/bundle.js bindata/static/js/bundle.js
+
+bindata/static/css: bindata/static
+	mkdir -p bindata/static/css
+
+bindata/static/css/index.css: bindata/static/css resources/index.css
+	cp resources/index.css bindata/static/css/index.css
+
+bindata/static/css/xterm_customize.css: bindata/static/css resources/xterm_customize.css
+	cp resources/xterm_customize.css bindata/static/css/xterm_customize.css
+
+bindata/static/css/xterm.css: bindata/static/css js/node_modules/xterm/dist/xterm.css
+	cp js/node_modules/xterm/dist/xterm.css bindata/static/css/xterm.css
+
+js/dist/bundle.js:
+	cd js && \
+	webpack
+
+
 
 tools:
 	go get github.com/tools/godep
