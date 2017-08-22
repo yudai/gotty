@@ -3,8 +3,8 @@ import * as bare from "libapps";
 export class Hterm {
     elem: HTMLElement;
 
-    term: bare.Terminal;
-    io: bare.IO;
+    term: bare.hterm.Terminal;
+    io: bare.hterm.IO;
 
     columns: number;
     rows: number;
