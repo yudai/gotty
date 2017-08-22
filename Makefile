@@ -7,7 +7,7 @@ gotty: server/asset.go main.go server/*.go webtty/*.go backend/*.go Makefile
 
 asset:  server/asset.go
 
-server/asset.go: bindata/static/js/bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
+server/asset.go: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
 
@@ -27,8 +27,8 @@ bindata/static/js: bindata/static
 	mkdir -p bindata/static/js
 
 
-bindata/static/js/bundle.js: bindata/static/js js/dist/bundle.js
-	cp js/dist/bundle.js bindata/static/js/bundle.js
+bindata/static/js/gotty-bundle.js: bindata/static/js js/dist/gotty-bundle.js
+	cp js/dist/gotty-bundle.js bindata/static/js/gotty-bundle.js
 
 bindata/static/css: bindata/static
 	mkdir -p bindata/static/css
@@ -46,7 +46,7 @@ js/node_modules/xterm/dist/xterm.css:
 	cd js && \
 	npm install
 
-js/dist/bundle.js:
+js/dist/gotty-bundle.js:
 	cd js && \
 	webpack
 
