@@ -45,6 +45,10 @@ bindata/static/css/xterm_customize.css: bindata/static/css resources/xterm_custo
 bindata/static/css/xterm.css: bindata/static/css js/node_modules/xterm/dist/xterm.css
 	cp js/node_modules/xterm/dist/xterm.css bindata/static/css/xterm.css
 
+js/node_modules/xterm/dist/xterm.css:
+	cd js && \
+	npm install
+
 js/dist/bundle.js:
 	cd js && \
 	webpack
