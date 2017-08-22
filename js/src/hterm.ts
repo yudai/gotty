@@ -1,5 +1,4 @@
-import * as bare from "hterm";
-import * as bareLib from "htermLib";
+import * as bare from "libapps";
 
 export class TermHterm {
     elem: HTMLElement;
@@ -15,8 +14,8 @@ export class TermHterm {
 
     constructor(elem: HTMLElement) {
         this.elem = elem;
-        hterm.defaultStorage = new bareLib.Storage.Memory();
-        this.term = new bare.Terminal();
+        bare.hterm.defaultStorage = new bare.lib.Storage.Memory();
+        this.term = new bare.hterm.Terminal();
         this.term.getPrefs().set("send-encoding", "raw");
         this.term.decorate(this.elem);
 

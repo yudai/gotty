@@ -1,4 +1,4 @@
-import * as bare from "hterm";
+import * as bare from "libapps";
 export declare class TermHterm {
     elem: HTMLElement;
     term: bare.Terminal;

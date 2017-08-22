@@ -3,10 +3,6 @@ module.exports = {
     output: {
         filename: "./dist/bundle.js"
     },
-    externals: {
-        "hterm": "hterm",
-        "htermLib": "lib"
-    },
     devtool: "source-map",
     resolve: {
         extensions: [".ts", ".tsx", ".js"],
