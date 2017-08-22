@@ -107,7 +107,7 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		return errors.Wrapf(err, "failed to setup an HTTP server")
 	}
 
-	log.Printf("GoTTY server is starting at: %s", url.String())
+	log.Printf("HTTP server is listening at: %s", url.String())
 	if server.options.Address == "0.0.0.0" {
 		for _, address := range listAddresses() {
 			log.Printf("Alternative URL: %s", server.setupURL(address, path).String())
