@@ -1,6 +1,6 @@
 import * as bare from "libapps";
 
-export class TermHterm {
+export class Hterm {
     elem: HTMLElement;
 
     term: bare.Terminal;

@@ -1,5 +1,5 @@
-import { TermHterm } from "./hterm";
-import { TermXterm } from "./xterm";
+import { Hterm } from "./hterm";
+import { Xterm } from "./xterm";
 import { Terminal, WebTTY, protocols } from "./webtty";
 import { ConnectionFactory } from "./websocket";
 
@@ -12,9 +12,9 @@ const elem = document.getElementById("terminal")
 if (elem !== null) {
     var term: Terminal;
     if (gotty_term == "hterm") {
-        term = new TermHterm(elem);
+        term = new Hterm(elem);
     } else {
-        term = new TermXterm(elem);
+        term = new Xterm(elem);
     }
     const httpsEnabled = window.location.protocol == "https:";
     const url = (httpsEnabled ? 'wss://' : 'ws://') + window.location.host + window.location.pathname + 'ws';

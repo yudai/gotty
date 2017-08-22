@@ -1,5 +1,5 @@
 import * as bare from "libapps";
-export declare class TermHterm {
+export declare class Hterm {
     elem: HTMLElement;
     term: bare.Terminal;
     io: bare.IO;

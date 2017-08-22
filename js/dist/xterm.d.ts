@@ -1,5 +1,5 @@
 import * as bare from "xterm";
-export declare class TermXterm {
+export declare class Xterm {
     elem: HTMLElement;
     message: HTMLElement;
     messageTimeout: number;

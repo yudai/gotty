@@ -2479,8 +2479,8 @@ exports.getRawByteCoords = getRawByteCoords;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var bare = __webpack_require__(14);
-var TermHterm = (function () {
-    function TermHterm(elem) {
+var Hterm = (function () {
+    function Hterm(elem) {
         this.elem = elem;
         bare.hterm.defaultStorage = new bare.lib.Storage.Memory();
         this.term = new bare.hterm.Terminal();
@@ -2490,17 +2490,17 @@ var TermHterm = (function () {
         this.term.installKeyboard();
     }
     ;
-    TermHterm.prototype.info = function () {
+    Hterm.prototype.info = function () {
         return { columns: this.columns, rows: this.rows };
     };
     ;
-    TermHterm.prototype.output = function (data) {
+    Hterm.prototype.output = function (data) {
         if (this.term.io != null) {
             this.term.io.writeUTF16(data);
         }
     };
     ;
-    TermHterm.prototype.showMessage = function (message, timeout) {
+    Hterm.prototype.showMessage = function (message, timeout) {
         this.message = message;
         if (timeout > 0) {
             this.term.io.showOverlay(message, timeout);
@@ -2510,22 +2510,22 @@ var TermHterm = (function () {
         }
     };
     ;
-    TermHterm.prototype.removeMessage = function () {
+    Hterm.prototype.removeMessage = function () {
         // there is no hideOverlay(), so show the same message with 0 sec
         this.term.io.showOverlay(this.message, 0);
     };
-    TermHterm.prototype.setWindowTitle = function (title) {
+    Hterm.prototype.setWindowTitle = function (title) {
         this.term.setWindowTitle(title);
     };
     ;
-    TermHterm.prototype.setPreferences = function (value) {
+    Hterm.prototype.setPreferences = function (value) {
         var _this = this;
         Object.keys(value).forEach(function (key) {
             _this.term.getPrefs().set(key, value[key]);
         });
     };
     ;
-    TermHterm.prototype.onInput = function (callback) {
+    Hterm.prototype.onInput = function (callback) {
         this.io.onVTKeystroke = function (data) {
             callback(data);
         };
@@ -2534,7 +2534,7 @@ var TermHterm = (function () {
         };
     };
     ;
-    TermHterm.prototype.onResize = function (callback) {
+    Hterm.prototype.onResize = function (callback) {
         var _this = this;
         this.io.onTerminalResize = function (columns, rows) {
             _this.columns = columns;
@@ -2543,22 +2543,22 @@ var TermHterm = (function () {
         };
     };
     ;
-    TermHterm.prototype.deactivate = function () {
+    Hterm.prototype.deactivate = function () {
         this.io.onVTKeystroke = null;
         this.io.sendString = null;
         this.io.onTerminalResize = null;
         this.term.uninstallKeyboard();
     };
-    TermHterm.prototype.reset = function () {
+    Hterm.prototype.reset = function () {
         this.removeMessage();
         this.term.installKeyboard();
     };
-    TermHterm.prototype.close = function () {
+    Hterm.prototype.close = function () {
         this.term.uninstallKeyboard();
     };
-    return TermHterm;
+    return Hterm;
 }());
-exports.TermHterm = TermHterm;
+exports.Hterm = Hterm;
 
 
 /***/ }),
@@ -2741,8 +2741,8 @@ exports.WebTTY = WebTTY;
 Object.defineProperty(exports, "__esModule", { value: true });
 var bare = __webpack_require__(0);
 bare.loadAddon("fit");
-var TermXterm = (function () {
-    function TermXterm(elem) {
+var Xterm = (function () {
+    function Xterm(elem) {
         var _this = this;
         this.elem = elem;
         this.term = new bare();
@@ -2761,15 +2761,15 @@ var TermXterm = (function () {
         this.term.open(elem, true);
     }
     ;
-    TermXterm.prototype.info = function () {
+    Xterm.prototype.info = function () {
         return { columns: this.term.cols, rows: this.term.rows };
     };
     ;
-    TermXterm.prototype.output = function (data) {
+    Xterm.prototype.output = function (data) {
         this.term.write(data);
     };
     ;
-    TermXterm.prototype.showMessage = function (message, timeout) {
+    Xterm.prototype.showMessage = function (message, timeout) {
         var _this = this;
         this.message.textContent = message;
         this.elem.appendChild(this.message);
@@ -2783,46 +2783,46 @@ var TermXterm = (function () {
         }
     };
     ;
-    TermXterm.prototype.removeMessage = function () {
+    Xterm.prototype.removeMessage = function () {
         if (this.message.parentNode == this.elem) {
             this.elem.removeChild(this.message);
         }
     };
-    TermXterm.prototype.setWindowTitle = function (title) {
+    Xterm.prototype.setWindowTitle = function (title) {
         document.title = title;
     };
     ;
-    TermXterm.prototype.setPreferences = function (value) {
+    Xterm.prototype.setPreferences = function (value) {
     };
     ;
-    TermXterm.prototype.onInput = function (callback) {
+    Xterm.prototype.onInput = function (callback) {
         this.term.on("data", function (data) {
             callback(data);
         });
     };
     ;
-    TermXterm.prototype.onResize = function (callback) {
+    Xterm.prototype.onResize = function (callback) {
         this.term.on("resize", function (data) {
             callback(data.cols, data.rows);
         });
     };
     ;
-    TermXterm.prototype.deactivate = function () {
+    Xterm.prototype.deactivate = function () {
         this.term.off("data");
         this.term.off("resize");
         this.term.blur();
     };
-    TermXterm.prototype.reset = function () {
+    Xterm.prototype.reset = function () {
         this.removeMessage();
         this.term.clear();
     };
-    TermXterm.prototype.close = function () {
+    Xterm.prototype.close = function () {
         window.removeEventListener("resize", this.resizeListener);
         this.term.destroy();
     };
-    return TermXterm;
+    return Xterm;
 }());
-exports.TermXterm = TermXterm;
+exports.Xterm = Xterm;
 
 
 /***/ }),
@@ -20831,10 +20831,10 @@ var elem = document.getElementById("terminal");
 if (elem !== null) {
     var term;
     if (gotty_term == "hterm") {
-        term = new hterm_1.TermHterm(elem);
+        term = new hterm_1.Hterm(elem);
     }
     else {
-        term = new xterm_1.TermXterm(elem);
+        term = new xterm_1.Xterm(elem);
     }
     var httpsEnabled = window.location.protocol == "https:";
     var url = (httpsEnabled ? 'wss://' : 'ws://') + window.location.host + window.location.pathname + 'ws';

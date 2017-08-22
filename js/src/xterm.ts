@@ -2,7 +2,7 @@ import * as bare from "xterm";
 
 bare.loadAddon("fit");
 
-export class TermXterm {
+export class Xterm {
     elem: HTMLElement;
 
     message: HTMLElement;
