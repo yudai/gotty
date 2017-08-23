@@ -4,7 +4,7 @@ GoTTY is MIT licensed and accepts contributions via GitHub pull requests. We als
 
 ## Reporting a bug
 
-Reporting a bug is always welcome and one the best ways to contribute. A good bug report helps the developers to improve the product much easier. We therefore would like to ask you to fill out the quesions on the issue template as much as possible. That helps us to figure out what's happening and discover the root cause.
+Reporting a bug is always welcome and one of the best ways to contribute. A good bug report helps the developers to improve the product much easier. We therefore would like to ask you to fill out the quesions on the issue template as much as possible. That helps us to figure out what's happening and discover the root cause.
 
 
 ## Requesting a new feature
