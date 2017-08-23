@@ -1,3 +1,5 @@
+import { lib } from "libapps"
+
 export const protocols = ["webtty"];
 
 export const msgInputUnknown = '0';
@@ -62,6 +64,8 @@ export class WebTTY {
         let pingTimer: number;
         let reconnectTimeout: number;
 
+        const decoder = new lib.UTF8Decoder()
+
         const setup = () => {
             connection.onOpen(() => {
                 const termInfo = this.term.info();
@@ -104,11 +108,7 @@ export class WebTTY {
                 const payload = data.slice(1);
                 switch (data[0]) {
                     case msgOutput:
-                        this.term.output(
-                            decodeURIComponent(Array.prototype.map.call(atob(payload), function(c) {
-                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                            }).join(''))
-                        );
+                        this.term.output(decoder.decode(atob(payload)));
                         break;
                     case msgPong:
                         break;

@@ -44,4 +44,8 @@ export declare namespace lib {
     export var Storage: {
         Memory: Memory
     }
+
+    export class UTF8Decoder {
+        decode(str: string)
+    }
 }
