@@ -1,8 +1,9 @@
-export namespace hterm {
-    export interface Terminal {
+export declare namespace hterm {
+    export class Terminal {
         io: IO;
         onTerminalReady: () => void;
 
+        constructor();
         getPrefs(): Prefs;
         decorate(HTMLElement);
         installKeyboard(): void;
@@ -12,13 +13,7 @@ export namespace hterm {
         softReset(): void;
     }
 
-    export interface TerminalConstructor {
-        new (): Terminal;
-        (): Terminal;
-    }
-
-
-    export interface IO {
+    export class IO {
         writeUTF8: ((data: string) => void);
         writeUTF16: ((data: string) => void);
         onVTKeystroke: ((data: string) => void) | null;
@@ -30,15 +25,14 @@ export namespace hterm {
         showOverlay(message: string, timeout: number | null);
     }
 
-    export interface Prefs {
+    export class Prefs {
         set(key: string, value: string): void;
     }
 
-    export var Terminal: TerminalConstructor;
     export var defaultStorage: lib.Storage;
 }
 
-export namespace lib {
+export declare namespace lib {
     export interface Storage {
     }
 
