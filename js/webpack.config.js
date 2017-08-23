@@ -14,7 +14,12 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 loader: "ts-loader",
-                exclude: [/node_modules/],
+                exclude: /node_modules/
+            },
+            {
+                test: /\.js$/,
+                include: /node_modules/,
+                loader: 'license-loader'
             }
         ]
     },
