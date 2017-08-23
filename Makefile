@@ -1,6 +1,8 @@
 OUTPUT_DIR = ./builds
-GIT_COMMIT = `git rev-parse HEAD | cut -c1-10`
-BUILD_OPTIONS = -ldflags "-X main.CommitID=$(GIT_COMMIT)"
+GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
+VERSION = 2.0.0-alpha.1
+BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
+
 
 gotty: server/asset.go main.go server/*.go webtty/*.go backend/*.go Makefile
 	godep go build ${BUILD_OPTIONS}
@@ -66,7 +68,7 @@ cross_compile:
 
 targz:
 	mkdir -p ${OUTPUT_DIR}/dist
-	cd ${OUTPUT_DIR}/pkg/; for osarch in *; do (cd $$osarch; tar zcvf ../../dist/gotty_$$osarch.tar.gz ./*); done;
+	cd ${OUTPUT_DIR}/pkg/; for osarch in *; do (cd $$osarch; tar zcvf ../../dist/gotty_${VERSION}_$$osarch.tar.gz ./*); done;
 
 shasums:
 	cd ${OUTPUT_DIR}/dist; sha256sum * > ./SHA256SUMS
