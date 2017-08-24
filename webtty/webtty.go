@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// WebTTY bridges sets of a PTY slave and its PTY master.
+// WebTTY bridges a PTY slave and its PTY master.
 // To support text-based streams and side channel commands such as
 // terminal resizing, WebTTY uses an original protocol.
 type WebTTY struct {
@@ -20,9 +20,9 @@ type WebTTY struct {
 
 	windowTitle []byte
 	permitWrite bool
-	width       int
-	height      int
-	reconnect   int // in milliseconds
+	columns     int
+	rows        int
+	reconnect   int // in seconds
 	masterPrefs []byte
 
 	bufferSize int
@@ -39,8 +39,8 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 		slave:      slave,
 
 		permitWrite: false,
-		width:       0,
-		height:      0,
+		columns:     0,
+		rows:        0,
 
 		bufferSize: 1024,
 	}
@@ -52,11 +52,12 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 	return wt, nil
 }
 
-// Run starts the WebTTY.
+// Run starts the main process of the WebTTY.
 // This method blocks until the context is canceled.
 // Note that the master and slave are left intact even
 // after the context is canceled. Closing them is caller's
 // responsibility.
+// If the connection to one end gets closed, returns ErrSlaveClosed or ErrMasterClosed.
 func (wt *WebTTY) Run(ctx context.Context) error {
 	err := wt.sendInitializeMessage()
 	if err != nil {
@@ -84,16 +85,14 @@ func (wt *WebTTY) Run(ctx context.Context) error {
 
 	go func() {
 		errs <- func() error {
+			buffer := make([]byte, wt.bufferSize)
 			for {
-				typ, data, err := wt.masterConn.ReadMessage()
+				n, err := wt.masterConn.Read(buffer)
 				if err != nil {
 					return ErrMasterClosed
 				}
-				if typ != WSTextMessage {
-					continue
-				}
 
-				err = wt.handleMasterReadEvent(data)
+				err = wt.handleMasterReadEvent(buffer[:n])
 				if err != nil {
 					return err
 				}
@@ -148,7 +147,7 @@ func (wt *WebTTY) masterWrite(data []byte) error {
 	wt.writeMutex.Lock()
 	defer wt.writeMutex.Unlock()
 
-	err := wt.masterConn.WriteMessage(WSTextMessage, data)
+	_, err := wt.masterConn.Write(data)
 	if err != nil {
 		return errors.Wrapf(err, "failed to write to master")
 	}
@@ -183,7 +182,7 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 		}
 
 	case ResizeTerminal:
-		if wt.width != 0 && wt.height != 0 {
+		if wt.columns != 0 && wt.rows != 0 {
 			break
 		}
 
@@ -196,12 +195,12 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 		if err != nil {
 			return errors.Wrapf(err, "received malformed data for terminal resize")
 		}
-		rows := wt.height
+		rows := wt.rows
 		if rows == 0 {
 			rows = int(args.Rows)
 		}
 
-		columns := wt.width
+		columns := wt.columns
 		if columns == 0 {
 			columns = int(args.Columns)
 		}

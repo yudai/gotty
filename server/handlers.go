@@ -148,29 +148,17 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 	if server.options.EnableReconnect {
 		opts = append(opts, webtty.WithReconnect(server.options.ReconnectTime))
 	}
-	if server.options.Width > 0 || server.options.Height > 0 {
-		width, height, err := slave.GetTerminalSize()
-		if err != nil {
-			return errors.Wrapf(err, "failed to get default terminal size")
-		}
-		if server.options.Width > 0 {
-			width = server.options.Width
-		}
-		if server.options.Height > 0 {
-			height = server.options.Height
-		}
-		err = slave.ResizeTerminal(width, height)
-		if err != nil {
-			return errors.Wrapf(err, "failed to resize terminal")
-		}
-
-		opts = append(opts, webtty.WithFixedSize(server.options.Width, server.options.Height))
+	if server.options.Width > 0 {
+		opts = append(opts, webtty.WithFixedColumns(server.options.Width))
+	}
+	if server.options.Height > 0 {
+		opts = append(opts, webtty.WithFixedRows(server.options.Height))
 	}
 	if server.options.Preferences != nil {
 		opts = append(opts, webtty.WithMasterPreferences(server.options.Preferences))
 	}
 
-	tty, err := webtty.New(conn, slave, opts...)
+	tty, err := webtty.New(&wsWrapper{conn}, slave, opts...)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create webtty")
 	}

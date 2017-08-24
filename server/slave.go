@@ -8,7 +8,7 @@ import (
 type Slave interface {
 	webtty.Slave
 
-	GetTerminalSize() (width int, height int, err error)
+	Close() error
 }
 
 type Factory interface {

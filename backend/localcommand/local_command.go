@@ -123,10 +123,6 @@ func (lcmd *LocalCommand) ResizeTerminal(width int, height int) error {
 	}
 }
 
-func (lcmd *LocalCommand) GetTerminalSize() (int, int, error) {
-	return pty.Getsize(lcmd.pty)
-}
-
 func (lcmd *LocalCommand) closeTimeoutC() <-chan time.Time {
 	if lcmd.closeTimeout >= 0 {
 		return time.After(lcmd.closeTimeout)

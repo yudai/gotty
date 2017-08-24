@@ -17,11 +17,18 @@ func WithPermitWrite() Option {
 	}
 }
 
-// WithFixedSize sets a fixed size to TTY master.
-func WithFixedSize(width int, height int) Option {
+// WithFixedColumns sets a fixed width to TTY master.
+func WithFixedColumns(columns int) Option {
 	return func(wt *WebTTY) error {
-		wt.width = width
-		wt.height = height
+		wt.columns = columns
+		return nil
+	}
+}
+
+// WithFixedRows sets a fixed height to TTY master.
+func WithFixedRows(rows int) Option {
+	return func(wt *WebTTY) error {
+		wt.rows = rows
 		return nil
 	}
 }
