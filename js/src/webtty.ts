@@ -64,9 +64,9 @@ export class WebTTY {
         let pingTimer: number;
         let reconnectTimeout: number;
 
-        const decoder = new lib.UTF8Decoder()
-
         const setup = () => {
+            const decoder = new lib.UTF8Decoder()
+
             connection.onOpen(() => {
                 const termInfo = this.term.info();
 
