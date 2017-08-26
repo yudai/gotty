@@ -1,5 +1,3 @@
-import { lib } from "libapps"
-
 export const protocols = ["webtty"];
 
 export const msgInputUnknown = '0';
@@ -65,8 +63,6 @@ export class WebTTY {
         let reconnectTimeout: number;
 
         const setup = () => {
-            const decoder = new lib.UTF8Decoder()
-
             connection.onOpen(() => {
                 const termInfo = this.term.info();
 
@@ -108,7 +104,7 @@ export class WebTTY {
                 const payload = data.slice(1);
                 switch (data[0]) {
                     case msgOutput:
-                        this.term.output(decoder.decode(atob(payload)));
+                        this.term.output(atob(payload));
                         break;
                     case msgPong:
                         break;

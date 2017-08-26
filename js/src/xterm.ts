@@ -1,16 +1,19 @@
 import * as bare from "xterm";
+import { lib } from "libapps"
+
 
 bare.loadAddon("fit");
 
 export class Xterm {
     elem: HTMLElement;
+    term: bare;
+    resizeListener: () => void;
+    decoder: lib.UTF8Decoder;
 
     message: HTMLElement;
     messageTimeout: number;
     messageTimer: number;
 
-    term: bare;
-    resizeListener: () => void;
 
     constructor(elem: HTMLElement) {
         this.elem = elem;
@@ -19,7 +22,6 @@ export class Xterm {
         this.message = elem.ownerDocument.createElement("div");
         this.message.className = "xterm-overlay";
         this.messageTimeout = 2000;
-
 
         this.resizeListener = () => {
             this.term.fit();
@@ -33,6 +35,8 @@ export class Xterm {
         });
 
         this.term.open(elem, true);
+
+        this.decoder = new lib.UTF8Decoder()
     };
 
     info(): { columns: number, rows: number } {
@@ -40,7 +44,7 @@ export class Xterm {
     };
 
     output(data: string) {
-        this.term.write(data);
+        this.term.write(this.decoder.decode(data));
     };
 
     showMessage(message: string, timeout: number) {

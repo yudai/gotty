@@ -29,7 +29,7 @@ export class Hterm {
 
     output(data: string) {
         if (this.term.io != null) {
-            this.term.io.writeUTF16(data);
+            this.term.io.writeUTF8(data);
         }
     };
 
