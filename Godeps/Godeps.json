@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/yudai/gotty",
-	"GoVersion": "go1.7",
+	"GoVersion": "go1.9",
 	"GodepVersion": "v79",
 	"Deps": [
 		{

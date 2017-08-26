@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"regexp"
 	noesctmpl "text/template"
 	"time"
@@ -100,20 +99,13 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	if server.options.EnableRandomUrl {
 		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
 	}
-	url := server.setupURL(server.options.Address, path)
 
-	handlers := server.setupHandlers(cctx, cancel, url, counter)
-	srv, err := server.setupHTTPServer(handlers, url)
+	handlers := server.setupHandlers(cctx, cancel, path, counter)
+	srv, err := server.setupHTTPServer(handlers)
 	if err != nil {
 		return errors.Wrapf(err, "failed to setup an HTTP server")
 	}
 
-	log.Printf("HTTP server is listening at: %s", url.String())
-	if server.options.Address == "0.0.0.0" {
-		for _, address := range listAddresses() {
-			log.Printf("Alternative URL: %s", server.setupURL(address, path).String())
-		}
-	}
 	if server.options.PermitWrite {
 		log.Printf("Permitting clients to write input to the PTY.")
 	}
@@ -121,7 +113,28 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		log.Printf("Once option is provided, accepting only one client")
 	}
 
-	listenErr := make(chan error, 1)
+	if server.options.Port == "0" {
+		log.Printf("Port number configured to `0`, choosing a random port")
+	}
+	hostPort := net.JoinHostPort(server.options.Address, server.options.Port)
+	listener, err := net.Listen("tcp", hostPort)
+	if err != nil {
+		return errors.Wrapf(err, "failed to listen at `%s`", hostPort)
+	}
+
+	scheme := "http"
+	if server.options.EnableTLS {
+		scheme = "https"
+	}
+	host, port, _ := net.SplitHostPort(listener.Addr().String())
+	log.Printf("HTTP server is listening at: %s", scheme+"://"+host+":"+port+path)
+	if server.options.Address == "0.0.0.0" {
+		for _, address := range listAddresses() {
+			log.Printf("Alternative URL: %s", scheme+"://"+address+":"+port+path)
+		}
+	}
+
+	srvErr := make(chan error, 1)
 	go func() {
 		if server.options.EnableTLS {
 			crtFile := homedir.Expand(server.options.TLSCrtFile)
@@ -129,12 +142,12 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 			log.Printf("TLS crt file: " + crtFile)
 			log.Printf("TLS key file: " + keyFile)
 
-			err = srv.ListenAndServeTLS(crtFile, keyFile)
+			err = srv.ServeTLS(listener, crtFile, keyFile)
 		} else {
-			err = srv.ListenAndServe()
+			err = srv.Serve(listener)
 		}
 		if err != nil {
-			listenErr <- err
+			srvErr <- err
 		}
 	}()
 
@@ -147,7 +160,7 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	}()
 
 	select {
-	case err = <-listenErr:
+	case err = <-srvErr:
 		if err == http.ErrServerClosed { // by gracefull ctx
 			err = nil
 		} else {
@@ -167,29 +180,19 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	return err
 }
 
-func (server *Server) setupURL(ip string, path string) *url.URL {
-	host := net.JoinHostPort(ip, server.options.Port)
-
-	scheme := "http"
-	if server.options.EnableTLS {
-		scheme = "https"
-	}
-
-	return &url.URL{Scheme: scheme, Host: host, Path: path}
-}
-
-func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFunc, url *url.URL, counter *counter) http.Handler {
+func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFunc, pathPrefix string, counter *counter) http.Handler {
 	staticFileHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
 
 	var siteMux = http.NewServeMux()
-	siteMux.HandleFunc(url.Path, server.handleIndex)
-	siteMux.Handle(url.Path+"js/", http.StripPrefix(url.Path, staticFileHandler))
-	siteMux.Handle(url.Path+"favicon.png", http.StripPrefix(url.Path, staticFileHandler))
-	siteMux.Handle(url.Path+"css/", http.StripPrefix(url.Path, staticFileHandler))
-	siteMux.HandleFunc(url.Path+"auth_token.js", server.handleAuthToken)
-	siteMux.HandleFunc(url.Path+"config.js", server.handleConfig)
+	siteMux.HandleFunc(pathPrefix, server.handleIndex)
+	siteMux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
+	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
+	siteMux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
+
+	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
+	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
 
 	siteHandler := http.Handler(siteMux)
 
@@ -203,15 +206,14 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 
 	wsMux := http.NewServeMux()
 	wsMux.Handle("/", siteHandler)
-	wsMux.HandleFunc(url.Path+"ws", server.generateHandleWS(ctx, cancel, counter))
+	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS(ctx, cancel, counter))
 	siteHandler = http.Handler(wsMux)
 
 	return siteHandler
 }
 
-func (server *Server) setupHTTPServer(handler http.Handler, url *url.URL) (*http.Server, error) {
+func (server *Server) setupHTTPServer(handler http.Handler) (*http.Server, error) {
 	srv := &http.Server{
-		Addr:    url.Host,
 		Handler: handler,
 	}
 
