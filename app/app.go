@@ -57,6 +57,7 @@ type Options struct {
 	Port                string                 `hcl:"port"`
 	PermitWrite         bool                   `hcl:"permit_write"`
 	EnableBasicAuth     bool                   `hcl:"enable_basic_auth"`
+	EnableAuthArgs      bool                   `hcl:"enable_auth_args"`
 	Credential          string                 `hcl:"credential"`
 	EnableRandomUrl     bool                   `hcl:"enable_random_url"`
 	RandomUrlLength     int                    `hcl:"random_url_length"`
@@ -73,6 +74,7 @@ type Options struct {
 	Once                bool                   `hcl:"once"`
 	Timeout             int                    `hcl:"timeout"`
 	PermitArguments     bool                   `hcl:"permit_arguments"`
+	PermitEnvironment   bool                   `hcl:"permit_environment"`
 	CloseSignal         int                    `hcl:"close_signal"`
 	Preferences         HtermPrefernces        `hcl:"preferences"`
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
@@ -87,6 +89,8 @@ var DefaultOptions = Options{
 	Port:                "8080",
 	PermitWrite:         false,
 	EnableBasicAuth:     false,
+	EnableAuthArgs:      false,
+	PermitEnvironment:   false,
 	Credential:          "",
 	EnableRandomUrl:     false,
 	RandomUrlLength:     8,
@@ -368,6 +372,39 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 			argv = append(argv, params...)
 		}
 	}
+	env := os.Environ()
+	if app.options.PermitEnvironment {
+		if init.Arguments == "" {
+			init.Arguments = "?"
+		}
+		query, err := url.Parse(init.Arguments)
+		if err != nil {
+			log.Print("Failed to parse arguments for environment")
+			conn.Close()
+			return
+		}
+		envarg := query.Query()["env"]
+		if len(envarg) != 0 {
+			env = append(env, envarg...)
+		}
+	}
+	if app.options.EnableAuthArgs {
+		creds := strings.SplitN(init.AuthToken, ":", 2)
+		if len(creds) != 2 {
+			log.Print("Failed to parse authentication details")
+			conn.Close()
+			return
+		}
+		username, password := creds[0], creds[1]
+		for idx, arg := range argv {
+			if arg == "%u" {
+				argv[idx] = username
+			}
+			if arg == "%p" {
+				argv[idx] = password
+			}
+		}
+	}
 
 	app.server.StartRoutine()
 
@@ -383,6 +420,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := exec.Command(app.command[0], argv...)
+	cmd.Env = env
 	ptyIo, err := pty.Start(cmd)
 	if err != nil {
 		log.Print("Failed to execute command")

@@ -67,6 +67,8 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --max-connection "0"                                         Set the maximum number of simultaneous connections (0 to disable)
 --once                                                       Accept only one client and exit on disconnection [$GOTTY_ONCE]
 --permit-arguments                                           Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB) [$GOTTY_PERMIT_ARGUMENTS]
+--permit-environment                                         Permit clients to add (or replace) environment variables in URL (e.g. http://example.com:8080/?env=GOTTY=running&env=TMUXsession=name)
+--enable-auth-args                                           Reuse the http basic-auth user-name and password to replace all '%u' and '%p' in arguments
 --close-signal "1"                                           Signal sent to the command process when gotty close it (default: SIGHUP) [$GOTTY_CLOSE_SIGNAL]
 --config "~/.gotty"                                          Config file path [$GOTTY_CONFIG]
 --version, -v                                                print the version
