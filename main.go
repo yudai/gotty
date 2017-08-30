@@ -40,6 +40,8 @@ func main() {
 		flag{"close-signal", "", "Signal sent to the command process when gotty close it (default: SIGHUP)"},
 		flag{"width", "", "Static width of the screen, 0(default) means dynamically resize"},
 		flag{"height", "", "Static height of the screen, 0(default) means dynamically resize"},
+		flag{"permit-environment", "", "Permit clients to send environment variables in URL (e.g. http://example.com:8080/?env=ZZZ&env=YYY)"},
+		flag{"enable-auth-args", "", "Use in combination with %u and %p as arguments that will be replaced with the username and password used with HTTP auth"},
 	}
 
 	mappingHint := map[string]string{
