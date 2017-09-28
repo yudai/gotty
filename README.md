@@ -28,7 +28,7 @@ $ brew install yudai/gotty/gotty
 
 ## `go get` Installation (Development)
 
-If you have a Go language environment, you can install GoTTY with the `go get` command. However, this command builds a binary file from the latest master branch, which can include unstable or breaking changes.
+If you have a Go language environment, you can install GoTTY with the `go get` command. However, this command builds a binary file from the latest master branch, which can include unstable or breaking changes. GoTTY requires go1.9 or later.
 
 ```sh
 $ go get github.com/yudai/gotty
@@ -161,6 +161,8 @@ go get github.com/tools/godep
 # Build
 make
 ```
+
+To build the frontend part (JS files and other static files), you need `npm`.
 
 ## Architecture
 
