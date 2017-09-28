@@ -3,15 +3,14 @@ GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
 VERSION = 2.0.0-alpha.2
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
 
-
-gotty: server/asset.go main.go server/*.go webtty/*.go backend/*.go Makefile
+gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
 	godep go build ${BUILD_OPTIONS}
 
-asset:  server/asset.go
-
-server/asset.go: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
+asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
+
+all: asset gotty
 
 bindata:
 	mkdir bindata
