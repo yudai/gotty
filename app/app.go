@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -78,9 +79,12 @@ type Options struct {
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 	Width               int                    `hcl:"width"`
 	Height              int                    `hcl:"height"`
+	EnvPrefix           string                 `hcl:"evn_prefix"`
+	EnableEnvExportCookies  bool               `hcl:"enable_evn_export_cookies"`
+	EnableEnvExportHeaders  bool               `hcl:"enable_evn_export_headers"`
 }
 
-var Version = "1.0.1"
+var Version = "1.0.2"
 
 var DefaultOptions = Options{
 	Address:             "",
@@ -105,6 +109,9 @@ var DefaultOptions = Options{
 	Preferences:         HtermPrefernces{},
 	Width:               0,
 	Height:              0,
+	EnvPrefix:           "WEB_REQ_",
+	EnableEnvExportCookies:	false,
+	EnableEnvExportHeaders:	false,
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -383,6 +390,11 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := exec.Command(app.command[0], argv...)
+	env := exportEnv(app.options.EnableEnvExportCookies, app.options.EnableEnvExportHeaders, app.options.EnvPrefix, r)
+	if env != nil {
+		cmd.Env = append(cmd.Env, env...)
+	}
+
 	ptyIo, err := pty.Start(cmd)
 	if err != nil {
 		log.Print("Failed to execute command")
@@ -508,4 +520,56 @@ func ExpandHomeDir(path string) string {
 	} else {
 		return path
 	}
+}
+
+func exportEnv(enableExportCookies bool, enableExportHeaders bool, prefix string, r *http.Request) []string {
+	if !enableExportCookies && !enableExportHeaders {
+		return nil
+	}
+
+	var env []string
+	var cookies []*http.Cookie
+	var headers *http.Header
+	var envLen int = 0
+
+	if enableExportCookies {
+		cookies = r.Cookies()
+		envLen += len(cookies)
+	}
+
+	if enableExportHeaders {
+		headers = &r.Header
+	}
+
+	env = make([]string, 0, envLen + 1)
+	value := ""
+	envPrefixUpper := strings.ToUpper(prefix)
+	env = append(env, fmt.Sprintf("WEB_PREFIX=%s", envPrefixUpper))
+
+	if enableExportHeaders {
+		for name, values := range *headers {
+			if len(values) == 0 {
+				value = ""
+			} else {
+				value = fmt.Sprint(values[0])
+			}
+
+			env = append(env, fmt.Sprintf("%sHEADER_%s=%s", envPrefixUpper, normalizeEnvName(name), value))
+		}
+	}
+
+	if enableExportCookies {
+		for _, cookie := range cookies {
+			env = append(env, fmt.Sprintf("%sCOOKIE_%s=%s", envPrefixUpper, normalizeEnvName(cookie.Name), cookie.Value))
+		}
+	}
+
+	return env
+}
+
+func normalizeEnvName(name string) string {
+	name = strings.ToUpper(name)
+	name = strings.Replace(name, "-", "_", -1)
+
+	return name
 }

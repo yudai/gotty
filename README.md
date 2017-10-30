@@ -68,6 +68,9 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --once                                                       Accept only one client and exit on disconnection [$GOTTY_ONCE]
 --permit-arguments                                           Permit clients to send command line arguments in URL (e.g. http://example.com:8080/?arg=AAA&arg=BBB) [$GOTTY_PERMIT_ARGUMENTS]
 --close-signal "1"                                           Signal sent to the command process when gotty close it (default: SIGHUP) [$GOTTY_CLOSE_SIGNAL]
+--env-prefix value                                           Prefix to export cookies and headers from http request to env (default: "WEB_REQ_") [$GOTTY_ENV_PREFIX]
+--env-export-cookies                                         Enable cookies export to env [$GOTTY_ENV_EXPORT_COOKIES]
+--env-export-headers                                         Enable headers export to env [$GOTTY_ENV_EXPORT_HEADERS]
 --config "~/.gotty"                                          Config file path [$GOTTY_CONFIG]
 --version, -v                                                print the version
 ```
