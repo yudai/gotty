@@ -40,16 +40,22 @@ func main() {
 		flag{"close-signal", "", "Signal sent to the command process when gotty close it (default: SIGHUP)"},
 		flag{"width", "", "Static width of the screen, 0(default) means dynamically resize"},
 		flag{"height", "", "Static height of the screen, 0(default) means dynamically resize"},
+		flag{"env-prefix", "", "Prefix to export cookies and headers from http request to env"},
+		flag{"env-export-cookies", "", "Enable cookies export to env"},
+		flag{"env-export-headers", "", "Enable headers export to env"},
 	}
 
 	mappingHint := map[string]string{
-		"index":      "IndexFile",
-		"tls":        "EnableTLS",
-		"tls-crt":    "TLSCrtFile",
-		"tls-key":    "TLSKeyFile",
-		"tls-ca-crt": "TLSCACrtFile",
-		"random-url": "EnableRandomUrl",
-		"reconnect":  "EnableReconnect",
+		"index":              "IndexFile",
+		"tls":                "EnableTLS",
+		"tls-crt":            "TLSCrtFile",
+		"tls-key":            "TLSKeyFile",
+		"tls-ca-crt":         "TLSCACrtFile",
+		"random-url":         "EnableRandomUrl",
+		"reconnect":          "EnableReconnect",
+		"env-prefix":         "EnvPrefix",
+		"env-export-cookies": "EnableEnvExportCookies",
+		"env-export-headers": "EnableEnvExportHeaders",
 	}
 
 	cliFlags, err := generateFlags(flags, mappingHint)
