@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"io"
-	"log"
 	"sync"
 )
 
