@@ -4,6 +4,10 @@ import (
 	"github.com/yudai/gotty/webtty"
 )
 
+type WithHistory interface {
+	webtty.WithHistory
+}
+
 // Slave is webtty.Slave with some additional methods.
 type Slave interface {
 	webtty.Slave

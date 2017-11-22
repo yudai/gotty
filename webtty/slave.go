@@ -4,6 +4,10 @@ import (
 	"io"
 )
 
+type WithHistory interface {
+	HistoryReader() io.Reader
+}
+
 // Slave represents a PTY slave, typically it's a local command.
 type Slave interface {
 	io.ReadWriter
