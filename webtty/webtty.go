@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"sync"
-
 	"github.com/pkg/errors"
+	"io"
+	"sync"
 )
 
 // WebTTY bridges a PTY slave and its PTY master.
@@ -62,6 +62,11 @@ func (wt *WebTTY) Run(ctx context.Context) error {
 	err := wt.sendInitializeMessage()
 	if err != nil {
 		return errors.Wrapf(err, "failed to send initializing message")
+	}
+
+	err = wt.sendSlaveHistory()
+	if err != nil {
+		return errors.Wrapf(err, "failed to send terminal history message")
 	}
 
 	errs := make(chan error, 2)
@@ -131,6 +136,36 @@ func (wt *WebTTY) sendInitializeMessage() error {
 	}
 
 	return nil
+}
+
+func (wt *WebTTY) sendSlaveHistory() error {
+	slave, hasHistory := wt.slave.(WithHistory)
+	if !hasHistory {
+		return nil
+	}
+
+	history := slave.HistoryReader()
+	if history == nil {
+		return nil
+	}
+
+	buf := make([]byte, 32*1024)
+	for {
+		n, err := history.Read(buf)
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			return errors.Wrap(err, "failed to read history log")
+		}
+
+		safeMessage := base64.StdEncoding.EncodeToString(buf[:n])
+		err = wt.masterWrite(append([]byte{Output}, []byte(safeMessage)...))
+		if err != nil {
+			return errors.Wrap(err, "failed to send log to master")
+		}
+	}
 }
 
 func (wt *WebTTY) handleSlaveReadEvent(data []byte) error {
