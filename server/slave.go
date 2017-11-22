@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/yudai/gotty/webtty"
+	"github.com/badoo/gotty/webtty"
 )
 
 // WithHistory represents TTY that has readable history.
