@@ -50,12 +50,6 @@ func main() {
 	)
 
 	app.Action = func(c *cli.Context) {
-		if len(c.Args()) == 0 {
-			msg := "Error: No command given."
-			cli.ShowAppHelp(c)
-			exit(fmt.Errorf(msg), 1)
-		}
-
 		configFile := c.String("config")
 		_, err := os.Stat(homedir.Expand(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
@@ -74,16 +68,29 @@ func main() {
 			exit(err, 6)
 		}
 
-		args := c.Args()
-		factory, err := localcommand.NewFactory(args[0], args[1:], backendOptions)
+		cmd := appOptions.Command
+		args := strings.Fields(appOptions.Args)
+
+		if len(c.Args()) > 0 {
+			cmd = c.Args()[0]
+			args = c.Args()[1:]
+		}
+
+		if cmd == "" {
+			msg := "Error: No command given."
+			cli.ShowAppHelp(c)
+			exit(fmt.Errorf(msg), 1)
+		}
+
+		factory, err := localcommand.NewFactory(cmd, args, backendOptions)
 		if err != nil {
 			exit(err, 3)
 		}
 
 		hostname, _ := os.Hostname()
 		appOptions.TitleVariables = map[string]interface{}{
-			"command":  args[0],
-			"argv":     args[1:],
+			"command":  cmd,
+			"argv":     args,
 			"hostname": hostname,
 		}
 
@@ -95,7 +102,7 @@ func main() {
 		ctx, cancel := context.WithCancel(context.Background())
 		gCtx, gCancel := context.WithCancel(context.Background())
 
-		log.Printf("GoTTY is starting with command: %s", strings.Join(args, " "))
+		log.Printf("GoTTY is starting with command: %s %s", cmd, strings.Join(args, " "))
 
 		errs := make(chan error, 1)
 		go func() {
