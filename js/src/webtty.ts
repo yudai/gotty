@@ -34,7 +34,7 @@ export interface Connection {
     isOpen(): boolean;
     onOpen(callback: () => void): void;
     onReceive(callback: (data: string) => void): void;
-    onClose(callback: () => void): void;
+    onClose(callback: (code: number, reason: string, wasClean: boolean) => void): void;
 }
 
 export interface ConnectionFactory {
@@ -48,6 +48,9 @@ export class WebTTY {
     args: string;
     authToken: string;
     reconnect: number;
+
+    connOpened: () => void;
+    connClosed: (code: number, reason: string, wasClean: boolean) => void;
 
     constructor(term: Terminal, connectionFactory: ConnectionFactory, args: string, authToken: string) {
         this.term = term;
@@ -98,6 +101,7 @@ export class WebTTY {
                     connection.send(msgPing)
                 }, 30 * 1000);
 
+                this.connOpened();
             });
 
             connection.onReceive((data) => {
@@ -117,13 +121,13 @@ export class WebTTY {
                         break;
                     case msgSetReconnect:
                         const autoReconnect = JSON.parse(payload);
-                        console.log("Enabling reconnect: " + autoReconnect + " seconds")
+                        console.log("Enabling reconnect: " + autoReconnect + " seconds");
                         this.reconnect = autoReconnect;
                         break;
                 }
             });
 
-            connection.onClose(() => {
+            connection.onClose((code: number, reason: string, wasClean: boolean) => {
                 clearInterval(pingTimer);
                 this.term.deactivate();
                 this.term.showMessage("Connection Closed", 0);
@@ -134,10 +138,12 @@ export class WebTTY {
                         setup();
                     }, this.reconnect * 1000);
                 }
+
+                this.connClosed(code, reason, wasClean);
             });
 
             connection.open();
-        }
+        };
 
         setup();
         return () => {
@@ -145,4 +151,12 @@ export class WebTTY {
             connection.close();
         }
     };
-};
+
+    onConnectionOpen(callback: () => void) {
+        this.connOpened = callback;
+    };
+
+    onConnectionClose(callback: (code: number, reason: string, wasClean: boolean) => void) {
+        this.connClosed = callback;
+    };
+}
