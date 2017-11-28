@@ -127,7 +127,6 @@ export class WebTTY {
             connection.onClose((code: number, reason: string, wasClean: boolean) => {
                 clearInterval(pingTimer);
                 this.term.deactivate();
-                this.term.showMessage("Connection Closed", 0);
                 if (this.reconnect > 0) {
                     reconnectTimeout = setTimeout(() => {
                         connection = this.connectionFactory.create();
@@ -152,5 +151,6 @@ export class WebTTY {
     onConnectionOpen() {};
 
     onConnectionClose(code: number, reason: string, wasClean: boolean) {
+        this.term.showMessage("Connection Closed", 0);
     }
 }
