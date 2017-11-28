@@ -49,9 +49,6 @@ export class WebTTY {
     authToken: string;
     reconnect: number;
 
-    connOpened: () => void;
-    connClosed: (code: number, reason: string, wasClean: boolean) => void;
-
     constructor(term: Terminal, connectionFactory: ConnectionFactory, args: string, authToken: string) {
         this.term = term;
         this.connectionFactory = connectionFactory;
@@ -101,7 +98,7 @@ export class WebTTY {
                     connection.send(msgPing)
                 }, 30 * 1000);
 
-                this.connOpened();
+                this.onConnectionOpen();
             });
 
             connection.onReceive((data) => {
@@ -139,7 +136,7 @@ export class WebTTY {
                     }, this.reconnect * 1000);
                 }
 
-                this.connClosed(code, reason, wasClean);
+                this.onConnectionClose(code, reason, wasClean);
             });
 
             connection.open();
@@ -152,11 +149,8 @@ export class WebTTY {
         }
     };
 
-    onConnectionOpen(callback: () => void) {
-        this.connOpened = callback;
-    };
+    onConnectionOpen() {};
 
-    onConnectionClose(callback: (code: number, reason: string, wasClean: boolean) => void) {
-        this.connClosed = callback;
-    };
+    onConnectionClose(code: number, reason: string, wasClean: boolean) {
+    }
 }
