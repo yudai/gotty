@@ -1,6 +1,6 @@
 OUTPUT_DIR = ./builds
 GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
-VERSION = 2.0.0-alpha.2
+VERSION = 2.0.0-alpha.3
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
 
 gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
@@ -58,10 +58,10 @@ js/node_modules/webpack:
 	npm install
 
 tools:
-	go get github.com/tools/godep
-	go get github.com/mitchellh/gox
-	go get github.com/tcnksm/ghr
-	go get github.com/jteeuwen/go-bindata/...
+	go get -u github.com/tools/godep
+	go get -u github.com/mitchellh/gox
+	go get -u github.com/tcnksm/ghr
+	go get -u github.com/jteeuwen/go-bindata/...
 
 test:
 	if [ `go fmt $(go list ./... | grep -v /vendor/) | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
