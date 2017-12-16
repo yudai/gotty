@@ -96,8 +96,12 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	counter := newCounter(time.Duration(server.options.Timeout) * time.Second)
 
 	path := "/"
-	if server.options.EnableRandomUrl {
-		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
+	if l := len(server.options.RandomContent); server.options.EnableRandomUrl {
+		if l > 0 {
+			path = "/" + server.options.RandomContent + "/"
+		} else {
+			path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
+		}
 	}
 
 	handlers := server.setupHandlers(cctx, cancel, path, counter)
