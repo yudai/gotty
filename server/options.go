@@ -5,6 +5,8 @@ import (
 )
 
 type Options struct {
+	Command             string           `hcl:"command" flagName:"command" flagSName:"x" flagDescribe:"Command to run" default:""`
+	Args                string           `hcl:"args" flagName:"args" flagSName:"g" flagDescribe:"Command arguments" default:""`
 	Address             string           `hcl:"address" flagName:"address" flagSName:"a" flagDescribe:"IP address to listen" default:"0.0.0.0"`
 	Port                string           `hcl:"port" flagName:"port" flagSName:"p" flagDescribe:"Port number to liten" default:"8080"`
 	PermitWrite         bool             `hcl:"permit_write" flagName:"permit-write" flagSName:"w" flagDescribe:"Permit clients to write to the TTY (BE CAREFUL)" default:"false"`

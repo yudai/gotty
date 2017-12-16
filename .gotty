@@ -1,3 +1,9 @@
+// [string] Command to run
+// command = "top"
+
+// [string] Command args
+// args = "-o %CPU"
+
 // [string] Address to listen, all addresses will be used when empty
 // address = ""
 
