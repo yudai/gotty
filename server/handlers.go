@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"sync/atomic"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -87,21 +88,38 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 	}
 }
 
+func (server *Server) closeWSConn(conn *websocket.Conn, code int, reason string) {
+	go func() {
+		for {
+			// Just make websocket.Conn to treat control messages correctly until connection close.
+			_, _, err := conn.ReadMessage()
+			if err != nil {
+				return
+			}
+		}
+	}()
+
+	conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(code, reason), time.Now().Add(time.Second*2))
+}
+
 func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) error {
 	typ, initLine, err := conn.ReadMessage()
 	if err != nil {
 		return errors.Wrapf(err, "failed to authenticate websocket connection")
 	}
 	if typ != websocket.TextMessage {
+		server.closeWSConn(conn, websocket.CloseProtocolError, "invalid message type, text expected")
 		return errors.New("failed to authenticate websocket connection: invalid message type")
 	}
 
 	var init InitMessage
 	err = json.Unmarshal(initLine, &init)
 	if err != nil {
+		server.closeWSConn(conn, websocket.CloseUnsupportedData, "incorrect initialization message format or data")
 		return errors.Wrapf(err, "failed to authenticate websocket connection")
 	}
 	if init.AuthToken != server.options.Credential {
+		server.closeWSConn(conn, websocket.ClosePolicyViolation, "failed to authenticate websocket connection")
 		return errors.New("failed to authenticate websocket connection")
 	}
 
@@ -112,12 +130,14 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 
 	query, err := url.Parse(queryPath)
 	if err != nil {
+		server.closeWSConn(conn, websocket.CloseUnsupportedData, "failed to parse arguments")
 		return errors.Wrapf(err, "failed to parse arguments")
 	}
 	params := query.Query()
 	var slave Slave
 	slave, err = server.factory.New(params)
 	if err != nil {
+		server.closeWSConn(conn, websocket.CloseInternalServerErr, errors.WithMessage(err, "backend error").Error())
 		return errors.Wrapf(err, "failed to create backend")
 	}
 	defer slave.Close()
@@ -126,7 +146,7 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 		[]string{"server", "master", "slave"},
 		map[string]map[string]interface{}{
 			"server": server.options.TitleVariables,
-			"master": map[string]interface{}{
+			"master": {
 				"remote_addr": conn.RemoteAddr(),
 			},
 			"slave": slave.WindowTitleVariables(),
@@ -136,6 +156,7 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 	titleBuf := new(bytes.Buffer)
 	err = server.titleTemplate.Execute(titleBuf, titleVars)
 	if err != nil {
+		server.closeWSConn(conn, websocket.CloseInternalServerErr, errors.WithMessage(err, "failed to fill window title template").Error())
 		return errors.Wrapf(err, "failed to fill window title template")
 	}
 
@@ -160,10 +181,20 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 
 	tty, err := webtty.New(&wsWrapper{conn}, slave, opts...)
 	if err != nil {
+		server.closeWSConn(conn, websocket.CloseInternalServerErr, errors.WithMessage(err, "failed to start WebTTY session").Error())
 		return errors.Wrapf(err, "failed to create webtty")
 	}
 
 	err = tty.Run(ctx)
+
+	switch err {
+	case webtty.ErrMasterClosed:
+		// WebSocket connection is already terminated. Nothing to do here.
+	case webtty.ErrSlaveClosed:
+		server.closeWSConn(conn, websocket.CloseNormalClosure, "")
+	default:
+		server.closeWSConn(conn, websocket.CloseInternalServerErr, errors.WithMessage(err, "webtty session").Error())
+	}
 
 	return err
 }
@@ -173,7 +204,7 @@ func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		[]string{"server", "master"},
 		map[string]map[string]interface{}{
 			"server": server.options.TitleVariables,
-			"master": map[string]interface{}{
+			"master": {
 				"remote_addr": r.RemoteAddr,
 			},
 		},

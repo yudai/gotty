@@ -32,7 +32,7 @@ export interface Connection {
     isOpen(): boolean;
     onOpen(callback: () => void): void;
     onReceive(callback: (data: string) => void): void;
-    onClose(callback: () => void): void;
+    onClose(callback: (code: number, reason: string, wasClean: boolean) => void): void;
 }
 export interface ConnectionFactory {
     create(): Connection;
@@ -45,4 +45,6 @@ export declare class WebTTY {
     reconnect: number;
     constructor(term: Terminal, connectionFactory: ConnectionFactory, args: string, authToken: string);
     open(): () => void;
+    onConnectionOpen(): void;
+    onConnectionClose(code: number, reason: string, wasClean: boolean): void;
 }

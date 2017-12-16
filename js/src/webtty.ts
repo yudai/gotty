@@ -34,7 +34,7 @@ export interface Connection {
     isOpen(): boolean;
     onOpen(callback: () => void): void;
     onReceive(callback: (data: string) => void): void;
-    onClose(callback: () => void): void;
+    onClose(callback: (code: number, reason: string, wasClean: boolean) => void): void;
 }
 
 export interface ConnectionFactory {
@@ -98,6 +98,7 @@ export class WebTTY {
                     connection.send(msgPing)
                 }, 30 * 1000);
 
+                this.onConnectionOpen();
             });
 
             connection.onReceive((data) => {
@@ -117,16 +118,15 @@ export class WebTTY {
                         break;
                     case msgSetReconnect:
                         const autoReconnect = JSON.parse(payload);
-                        console.log("Enabling reconnect: " + autoReconnect + " seconds")
+                        console.log("Enabling reconnect: " + autoReconnect + " seconds");
                         this.reconnect = autoReconnect;
                         break;
                 }
             });
 
-            connection.onClose(() => {
+            connection.onClose((code: number, reason: string, wasClean: boolean) => {
                 clearInterval(pingTimer);
                 this.term.deactivate();
-                this.term.showMessage("Connection Closed", 0);
                 if (this.reconnect > 0) {
                     reconnectTimeout = setTimeout(() => {
                         connection = this.connectionFactory.create();
@@ -134,10 +134,12 @@ export class WebTTY {
                         setup();
                     }, this.reconnect * 1000);
                 }
+
+                this.onConnectionClose(code, reason, wasClean);
             });
 
             connection.open();
-        }
+        };
 
         setup();
         return () => {
@@ -145,4 +147,10 @@ export class WebTTY {
             connection.close();
         }
     };
-};
+
+    onConnectionOpen() {};
+
+    onConnectionClose(code: number, reason: string, wasClean: boolean) {
+        this.term.showMessage("Connection Closed", 0);
+    }
+}

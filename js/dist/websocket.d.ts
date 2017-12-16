@@ -13,5 +13,5 @@ export declare class Connection {
     isOpen(): boolean;
     onOpen(callback: () => void): void;
     onReceive(callback: (data: string) => void): void;
-    onClose(callback: () => void): void;
+    onClose(callback: (code: number, reason: string, wasClean: boolean) => void): void;
 }
