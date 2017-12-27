@@ -78,7 +78,6 @@ export class Hterm {
         this.io.onVTKeystroke    = function(){};
         this.io.sendString       = function(){};
         this.io.onTerminalResize = function(){};
-        this.term.uninstallKeyboard();
     }
 
     reset(): void {
