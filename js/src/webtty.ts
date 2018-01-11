@@ -133,6 +133,8 @@ export class WebTTY {
                         this.term.reset();
                         setup();
                     }, this.reconnect * 1000);
+                } else {
+                    window.open('','_self').close(); //close tab
                 }
             });
 
