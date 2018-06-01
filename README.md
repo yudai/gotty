@@ -117,7 +117,9 @@ For additional security, you can use the SSL/TLS client certificate authenticati
 ## Sharing with Multiple Clients
 
 GoTTY starts a new process with the given command when a new client connects to the server. This means users cannot share a single terminal with others by default. However, you can use terminal multiplexers for sharing a single process with multiple clients.
-
+### Screen
+After installing GNU screen, start a new session with `screen -S name-for-session` and connect to it with gotty in another terminal window/tab through `screen -x name-for-session`. All commands and activities being done in the first terminal tab/window will now be broadcasted by gotty.
+### Tmux
 For example, you can start a new tmux session named `gotty` with `top` command by the command below.
 
 ```sh
