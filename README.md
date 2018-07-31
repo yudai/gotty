@@ -183,7 +183,6 @@ GoTTY uses [xterm.js](https://xtermjs.org/) and [hterm](https://groups.google.co
 ### Terminal Sharing
 
 * [tmate](http://tmate.io/): Forked-Tmux based Terminal-Terminal sharing
-* [termshare](https://termsha.re): Terminal-Terminal sharing through a HTTP server
 * [tmux](https://tmux.github.io/): Tmux itself also supports TTY sharing through SSH)
 
 # License
