@@ -100,6 +100,10 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
 	}
 
+    if server.options.EnableSubUrl {
+        path = "/" + server.options.CustomSubUrl + "/"
+    }
+
 	handlers := server.setupHandlers(cctx, cancel, path, counter)
 	srv, err := server.setupHTTPServer(handlers)
 	if err != nil {
