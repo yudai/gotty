@@ -12,8 +12,8 @@ type Options struct {
 	Credential          string           `hcl:"credential" flagName:"credential" flagSName:"c" flagDescribe:"Credential for Basic Authentication (ex: user:pass, default disabled)" default:""`
 	EnableRandomUrl     bool             `hcl:"enable_random_url" flagName:"random-url" flagSName:"r" flagDescribe:"Add a random string to the URL" default:"false"`
 	RandomUrlLength     int              `hcl:"random_url_length" flagName:"random-url-length" flagDescribe:"Random URL length" default:"8"`
-    EnableSubUrl        bool             `hcl:"enable_sub_url" flagName:"enable-sub-url" flagSName:"e" flagDescribe:"Enable custom sub URL"`
-    CustomSubUrl        string           `hcl:"sub_url" flagName:"sub-url" flagSName:"s" flagDescribe:"Custom sub URL to serve at"`
+	EnableSubUrl        bool             `hcl:"enable_sub_url" flagName:"enable-sub-url" flagSName:"e" flagDescribe:"Enable custom sub URL"`
+	CustomSubUrl        string           `hcl:"sub_url" flagName:"sub-url" flagSName:"s" flagDescribe:"Custom sub URL to serve at"`
 	EnableTLS           bool             `hcl:"enable_tls" flagName:"tls" flagSName:"t" flagDescribe:"Enable TLS/SSL" default:"false"`
 	TLSCrtFile          string           `hcl:"tls_crt_file" flagName:"tls-crt" flagDescribe:"TLS/SSL certificate file path" default:"~/.gotty.crt"`
 	TLSKeyFile          string           `hcl:"tls_key_file" flagName:"tls-key" flagDescribe:"TLS/SSL key file path" default:"~/.gotty.key"`
