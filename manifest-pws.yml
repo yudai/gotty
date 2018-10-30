@@ -1,0 +1,10 @@
+---
+applications:
+- name: gotty
+  buildpack: binary_buildpack
+  command: ./gotty --port $PORT /bin/bash
+  path: builds/pkg/linux_amd64
+  env:
+    GOTTY_WS_ORIGIN: '[^\.]*\.cfapps\.io'
+    GOTTY_WS_PORT: 4443
+    GOTTY_PERMIT_WRITE: true

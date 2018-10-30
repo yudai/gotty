@@ -69,6 +69,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --height value                Static height of the screen, 0(default) means dynamically resize (default: 0) [$GOTTY_HEIGHT]
 --ws-origin value             A regular expression that matches origin URLs to be accepted by WebSocket. No cross origin requests are acceptable by default [$GOTTY_WS_ORIGIN]
 --term value                  Terminal name to use on the browser, one of xterm or hterm. (default: "xterm") [$GOTTY_TERM]
+--ws-port value               Specify a non-default WebSocket port for use from the browser back to GoTTY. [$GOTTY_WS_PORT]
 --close-signal value          Signal sent to the command process when gotty close it (default: SIGHUP) (default: 1) [$GOTTY_CLOSE_SIGNAL]
 --close-timeout value         Time in seconds to force kill process after client is disconnected (default: -1) (default: -1) [$GOTTY_CLOSE_TIMEOUT]
 --config value                Config file path (default: "~/.gotty") [$GOTTY_CONFIG]
@@ -163,6 +164,32 @@ make
 ```
 
 To build the frontend part (JS files and other static files), you need `npm`.
+
+## Deploying to Cloud Foundry
+
+You can deploy GoTTY to Cloud Foundry.  Either grab the linux-amd64 release from the GitHub repo and use that for deployment, or follow the build instructions above, and instead call `make cross_compile` to get the linux-amd64 binary.
+
+Copy the binary to a new directory by itself that you will "push" into Cloud Foundry.
+
+See below for how to push GoTTY using one of the example manifest files in this project.
+
+### Pivotal Web Services
+
+You could push to Pivotal Web Services using the following command:
+
+```sh
+cf push -f manifest-pws.yml -p <directory-containing-linux-amd64-gotty-executable>
+```
+
+Note: The manifest in this example sets the appropriate port for Secure WebSockets in PWS (4443), and GoTTY is only usable via HTTPS on Pivotal Web Services. 
+
+### Other Cloud Foundry Instances
+
+For other Cloud Foundry Instances, you may need to set additional parameters, but you can use the following command to get started:
+
+```sh
+cf push -f manifest-cf.yml -p <directory-containing-linux-amd64-gotty-executable>
+```
 
 ## Architecture
 
