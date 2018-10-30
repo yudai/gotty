@@ -209,7 +209,7 @@ func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 func (server *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
 	w.Write([]byte("var gotty_term = '" + server.options.Term + "';"))
-	w.Write([]byte("var gotty_wsport = ' + server.options.WSPort + "';"))
+	w.Write([]byte("var gotty_wsport = '" + server.options.WSPort + "';"))
 }
 
 // titleVariables merges maps in a specified order.
