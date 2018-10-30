@@ -1,0 +1,8 @@
+---
+applications:
+- name: gotty
+  buildpack: binary_buildpack
+  command: ./gotty --port $PORT /bin/bash
+  path: builds/pkg/linux_amd64
+  env:
+    GOTTY_PERMIT_WRITE: true
