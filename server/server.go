@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -193,6 +194,10 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 
 	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
 	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
+
+	siteMux.HandleFunc("/path", func(w http.ResponseWriter, req *http.Request) {
+		fmt.Fprintln(w, pathPrefix)
+	})
 
 	siteHandler := http.Handler(siteMux)
 
