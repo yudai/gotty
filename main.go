@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 
@@ -65,6 +66,17 @@ func main() {
 		}
 
 		utils.ApplyFlags(cliFlags, flagMappings, c, appOptions, backendOptions)
+
+		// In Kubernetes, if you set up a service called gotty this will set a GOTTY_PORT env var with the
+		// address of the service as a URI. If we have inadvertently picked up the env var definition from
+		// Kubernetes this is going to fail as Gotty expects just a port number, so we extract the port number.
+		re := regexp.MustCompile(`tcp://([0-9\.]*):([0-9]*)`)
+		ev := os.Getenv("GOTTY_PORT")
+		if re.MatchString(ev) && (appOptions.Port == ev) {
+			match := re.FindStringSubmatch(ev)
+			appOptions.Port = match[2]
+			log.Printf("GOTTY_PORT was set to %v; extracting port %s", ev, match[2])
+		}
 
 		appOptions.EnableBasicAuth = c.IsSet("credential")
 		appOptions.EnableTLSClientAuth = c.IsSet("tls-ca-crt")
