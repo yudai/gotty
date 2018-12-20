@@ -2,6 +2,14 @@ package localcommand
 
 func LinuxAuthenticatorTemplate() string {
 	return `#!/bin/bash
+################ IMPORTANT NOTE: ###############
+#                                              #
+#  This script requires root access (or sudo)  #
+#                                              #
+#  Usage example:                              #
+#    sudo gotty --authenticator ./auth.sh top  #
+#                                              #
+################################################
 
 # #### REQUEST INFO ####
 # echo REQUEST INFO:
