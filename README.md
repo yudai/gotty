@@ -51,7 +51,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --port value, -p value        Port number to liten (default: "8080") [$GOTTY_PORT]
 --permit-write, -w            Permit clients to write to the TTY (BE CAREFUL) [$GOTTY_PERMIT_WRITE]
 --credential value, -c value  Credential for Basic Authentication (ex: user:pass, default disabled) [$GOTTY_CREDENTIAL]
---autheticator value          Script for Basic Authentication. The request information, in JSON format, can be obtained from reading the STDIN. (ex: ./auth.sh) [$GOTTY_AUTHETICATOR]
+--authenticator value          Script for Basic Authentication. The request information, in JSON format, can be obtained from reading the STDIN. (ex: ./auth.sh) [$GOTTY_AUTHETICATOR]
 --random-url, -r              Add a random string to the URL [$GOTTY_RANDOM_URL]
 --random-url-length value     Random URL length (default: 8) [$GOTTY_RANDOM_URL_LENGTH]
 --tls, -t                     Enable TLS/SSL [$GOTTY_TLS]
