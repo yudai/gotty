@@ -10,6 +10,7 @@ type Options struct {
 	PermitWrite         bool             `hcl:"permit_write" flagName:"permit-write" flagSName:"w" flagDescribe:"Permit clients to write to the TTY (BE CAREFUL)" default:"false"`
 	EnableBasicAuth     bool             `hcl:"enable_basic_auth" default:"false"`
 	Credential          string           `hcl:"credential" flagName:"credential" flagSName:"c" flagDescribe:"Credential for Basic Authentication (ex: user:pass, default disabled)" default:""`
+	Autheticator        string           `hcl:"autheticator" flagName:"autheticator" flagDescribe:"Script for Basic Authentication. The request information, in JSON format, can be obtained from reading the STDIN. (ex: ./auth.sh)" default:""`
 	EnableRandomUrl     bool             `hcl:"enable_random_url" flagName:"random-url" flagSName:"r" flagDescribe:"Add a random string to the URL" default:"false"`
 	RandomUrlLength     int              `hcl:"random_url_length" flagName:"random-url-length" flagDescribe:"Random URL length" default:"8"`
 	EnableTLS           bool             `hcl:"enable_tls" flagName:"tls" flagSName:"t" flagDescribe:"Enable TLS/SSL" default:"false"`
