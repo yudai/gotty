@@ -50,6 +50,10 @@ func main() {
 	)
 
 	app.Action = func(c *cli.Context) {
+		if c.Bool("sys-auth-tpl") {
+			os.Stdout.Write([]byte(localcommand.LinuxAuthenticatorTemplate()))
+			os.Exit(0)
+		}
 		if len(c.Args()) == 0 {
 			msg := "Error: No command given."
 			cli.ShowAppHelp(c)
@@ -66,7 +70,9 @@ func main() {
 
 		utils.ApplyFlags(cliFlags, flagMappings, c, appOptions, backendOptions)
 
-		appOptions.EnableBasicAuth = c.IsSet("credential")
+		if !appOptions.EnableBasicAuth && (c.IsSet("credential") || c.IsSet("authenticator")) {
+			appOptions.EnableBasicAuth = true
+		}
 		appOptions.EnableTLSClientAuth = c.IsSet("tls-ca-crt")
 
 		err = appOptions.Validate()

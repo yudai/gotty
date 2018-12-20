@@ -197,8 +197,13 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 	siteHandler := http.Handler(siteMux)
 
 	if server.options.EnableBasicAuth {
-		log.Printf("Using Basic Authentication")
-		siteHandler = server.wrapBasicAuth(siteHandler, server.options.Credential)
+		if server.options.Authenticator == "" {
+			log.Printf("Using Basic Authentication")
+			siteHandler = server.wrapBasicAuth(siteHandler, server.options.Credential)
+		} else {
+			log.Printf("Using Basic Authentication with %q authenticator script", server.options.Authenticator)
+			siteHandler = server.wrapBasicAuthenticator(siteHandler, server.options.Authenticator)
+		}
 	}
 
 	withGz := gziphandler.GzipHandler(server.wrapHeaders(siteHandler))

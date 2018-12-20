@@ -51,6 +51,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --port value, -p value        Port number to liten (default: "8080") [$GOTTY_PORT]
 --permit-write, -w            Permit clients to write to the TTY (BE CAREFUL) [$GOTTY_PERMIT_WRITE]
 --credential value, -c value  Credential for Basic Authentication (ex: user:pass, default disabled) [$GOTTY_CREDENTIAL]
+--authenticator value          Script for Basic Authentication. The request information, in JSON format, can be obtained from reading the STDIN. (ex: ./auth.sh) [$GOTTY_AUTHETICATOR]
 --random-url, -r              Add a random string to the URL [$GOTTY_RANDOM_URL]
 --random-url-length value     Random URL length (default: 8) [$GOTTY_RANDOM_URL_LENGTH]
 --tls, -t                     Enable TLS/SSL [$GOTTY_TLS]
@@ -71,6 +72,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --term value                  Terminal name to use on the browser, one of xterm or hterm. (default: "xterm") [$GOTTY_TERM]
 --close-signal value          Signal sent to the command process when gotty close it (default: SIGHUP) (default: 1) [$GOTTY_CLOSE_SIGNAL]
 --close-timeout value         Time in seconds to force kill process after client is disconnected (default: -1) (default: -1) [$GOTTY_CLOSE_TIMEOUT]
+--sys-auth-tpl                Print Linux system authenticator script example [$GOTTY_SYS_AUTH_TPL]
 --config value                Config file path (default: "~/.gotty") [$GOTTY_CONFIG]
 --version, -v                 print the version
 ```
