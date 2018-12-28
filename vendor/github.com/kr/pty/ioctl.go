@@ -1,3 +1,5 @@
+// +build !windows,!solaris
+
 package pty
 
 import "syscall"
