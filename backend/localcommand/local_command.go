@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"syscall"
 	"time"
-	"unsafe"
 
 	"github.com/kr/pty"
 	"github.com/pkg/errors"
@@ -99,25 +98,15 @@ func (lcmd *LocalCommand) WindowTitleVariables() map[string]interface{} {
 }
 
 func (lcmd *LocalCommand) ResizeTerminal(width int, height int) error {
-	window := struct {
-		row uint16
-		col uint16
-		x   uint16
-		y   uint16
-	}{
-		uint16(height),
-		uint16(width),
-		0,
-		0,
+	window := pty.Winsize{
+		Rows: uint16(height),
+		Cols: uint16(width),
+		X: 0,
+		Y: 0,
 	}
-	_, _, errno := syscall.Syscall(
-		syscall.SYS_IOCTL,
-		lcmd.pty.Fd(),
-		syscall.TIOCSWINSZ,
-		uintptr(unsafe.Pointer(&window)),
-	)
-	if errno != 0 {
-		return errno
+	err := pty.Setsize(lcmd.pty, &window)
+	if err != nil {
+		return err
 	} else {
 		return nil
 	}
