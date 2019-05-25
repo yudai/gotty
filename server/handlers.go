@@ -107,15 +107,6 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 	opts := []webtty.Option{
 		webtty.WithWindowTitle(titleBuf.Bytes()),
 	}
-	if server.options.EnableReconnect {
-		opts = append(opts, webtty.WithReconnect(server.options.ReconnectTime))
-	}
-	if server.options.Width > 0 {
-		opts = append(opts, webtty.WithFixedColumns(server.options.Width))
-	}
-	if server.options.Height > 0 {
-		opts = append(opts, webtty.WithFixedRows(server.options.Height))
-	}
 
 	tty, err := webtty.New(&wsWrapper{conn}, slave, opts...)
 	if err != nil {
