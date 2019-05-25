@@ -71,7 +71,7 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 	}
 
 	queryPath := "?"
-	if server.options.PermitArguments && init.Arguments != "" {
+	if init.Arguments != "" {
 		queryPath = init.Arguments
 	}
 

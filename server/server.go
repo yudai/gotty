@@ -55,7 +55,7 @@ func New(factory Factory, options *Options) (*Server, error) {
 func (server *Server) Run() error {
 	path := "/"
 	if server.options.EnableRandomUrl {
-		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
+		path = "/" + randomstring.Generate(8) + "/"
 	}
 
 	srv := &http.Server{Handler: server.setupHandlers(path)}
