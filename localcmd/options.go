@@ -1,4 +1,4 @@
-package localcommand
+package localcmd
 
 import (
 	"syscall"

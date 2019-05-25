@@ -8,7 +8,7 @@ import (
 
 	"github.com/codegangsta/cli"
 
-	"github.com/yudai/gotty/backend/localcommand"
+	"github.com/yudai/gotty/localcmd"
 	"github.com/yudai/gotty/pkg/homedir"
 	"github.com/yudai/gotty/server"
 	"github.com/yudai/gotty/utils"
@@ -20,16 +20,16 @@ func main() {
 	app.Usage = "Share your terminal as a web application"
 	app.HideHelp = true
 
-	appOptions := &server.Options{}
-	if err := utils.ApplyDefaultValues(appOptions); err != nil {
+	serverOptions := &server.Options{}
+	if err := utils.ApplyDefaultValues(serverOptions); err != nil {
 		exit(err, 1)
 	}
-	backendOptions := &localcommand.Options{}
-	if err := utils.ApplyDefaultValues(backendOptions); err != nil {
+	localcmdOptions := &localcmd.Options{}
+	if err := utils.ApplyDefaultValues(localcmdOptions); err != nil {
 		exit(err, 1)
 	}
 
-	cliFlags, flagMappings, err := utils.GenerateFlags(appOptions, backendOptions)
+	cliFlags, flagMappings, err := utils.GenerateFlags(serverOptions, localcmdOptions)
 	if err != nil {
 		exit(err, 3)
 	}
@@ -54,20 +54,20 @@ func main() {
 		configFile := c.String("config")
 		_, err := os.Stat(homedir.Expand(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
-			if err := utils.ApplyConfigFile(configFile, appOptions, backendOptions); err != nil {
+			if err := utils.ApplyConfigFile(configFile, serverOptions, localcmdOptions); err != nil {
 				exit(err, 2)
 			}
 		}
 
-		utils.ApplyFlags(cliFlags, flagMappings, c, appOptions, backendOptions)
+		utils.ApplyFlags(cliFlags, flagMappings, c, serverOptions, localcmdOptions)
 
 		args := c.Args()
-		factory, err := localcommand.NewFactory(args[0], args[1:], backendOptions)
+		factory, err := localcmd.NewFactory(args[0], args[1:], localcmdOptions)
 		if err != nil {
 			exit(err, 3)
 		}
 
-		srv, err := server.New(factory, appOptions)
+		srv, err := server.New(factory, serverOptions)
 		if err != nil {
 			exit(err, 3)
 		}
