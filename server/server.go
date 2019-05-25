@@ -13,13 +13,13 @@ import (
 	noesctmpl "text/template"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
 	"github.com/yudai/gotty/pkg/homedir"
 	"github.com/yudai/gotty/pkg/randomstring"
+	"github.com/yudai/gotty/server/middleware"
 	"github.com/yudai/gotty/webtty"
 )
 
@@ -198,11 +198,11 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 
 	if server.options.EnableBasicAuth {
 		log.Printf("Using Basic Authentication")
-		siteHandler = server.wrapBasicAuth(siteHandler, server.options.Credential)
+		siteHandler = middleware.WrapBasicAuth(siteHandler, server.options.Credential)
 	}
 
-	withGz := gziphandler.GzipHandler(server.wrapHeaders(siteHandler))
-	siteHandler = server.wrapLogger(withGz)
+	withGz := middleware.WrapGzip(middleware.WrapHeaders(siteHandler))
+	siteHandler = middleware.WrapLogger(withGz)
 
 	wsMux := http.NewServeMux()
 	wsMux.Handle("/", siteHandler)

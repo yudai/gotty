@@ -1,13 +1,19 @@
-package server
+package middleware
 
 import (
 	"encoding/base64"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/NYTimes/gziphandler"
 )
 
-func (server *Server) wrapLogger(handler http.Handler) http.Handler {
+func WrapGzip(handler http.Handler) http.Handler {
+	return gziphandler.GzipHandler(handler)
+}
+
+func WrapLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rw := &logResponseWriter{w, 200}
 		handler.ServeHTTP(rw, r)
@@ -15,7 +21,7 @@ func (server *Server) wrapLogger(handler http.Handler) http.Handler {
 	})
 }
 
-func (server *Server) wrapHeaders(handler http.Handler) http.Handler {
+func WrapHeaders(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// todo add version
 		w.Header().Set("Server", "GoTTY")
@@ -23,7 +29,7 @@ func (server *Server) wrapHeaders(handler http.Handler) http.Handler {
 	})
 }
 
-func (server *Server) wrapBasicAuth(handler http.Handler, credential string) http.Handler {
+func WrapBasicAuth(handler http.Handler, credential string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 
