@@ -20,10 +20,8 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "gotty"
-	app.Version = Version + "+" + CommitID
 	app.Usage = "Share your terminal as a web application"
 	app.HideHelp = true
-	cli.AppHelpTemplate = helpTemplate
 
 	appOptions := &server.Options{}
 	if err := utils.ApplyDefaultValues(appOptions); err != nil {
