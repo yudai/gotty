@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	noesctmpl "text/template"
-	"time"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
@@ -62,14 +61,12 @@ func New(factory Factory, options *Options) (*Server, error) {
 // The cancelation of ctx will shutdown the server immediately with aborting
 // existing connections. Use WithGracefullContext() to support gracefull shutdown.
 func (server *Server) Run() error {
-	counter := newCounter(time.Duration(server.options.Timeout) * time.Second)
-
 	path := "/"
 	if server.options.EnableRandomUrl {
 		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
 	}
 
-	srv := &http.Server{Handler: server.setupHandlers(path, counter)}
+	srv := &http.Server{Handler: server.setupHandlers(path)}
 
 	hostPort := "127.0.0.1:8080"
 	listener, err := net.Listen("tcp", hostPort)
@@ -96,16 +93,10 @@ func (server *Server) Run() error {
 		}
 	}
 
-	conn := counter.count()
-	if conn > 0 {
-		log.Printf("Waiting for %d connections to be closed", conn)
-	}
-	counter.wait()
-
 	return err
 }
 
-func (server *Server) setupHandlers(pathPrefix string, counter *counter) http.Handler {
+func (server *Server) setupHandlers(pathPrefix string) http.Handler {
 	staticFileHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
@@ -120,7 +111,7 @@ func (server *Server) setupHandlers(pathPrefix string, counter *counter) http.Ha
 
 	wsMux := http.NewServeMux()
 	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(middleware.WrapHeaders(http.Handler(siteMux)))))
-	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS(counter))
+	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
 
 	return http.Handler(wsMux)
 }

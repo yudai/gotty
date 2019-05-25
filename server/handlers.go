@@ -14,27 +14,18 @@ import (
 	"github.com/yudai/gotty/webtty"
 )
 
-func (server *Server) generateHandleWS(counter *counter) http.HandlerFunc {
+func (server *Server) generateHandleWS() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		num := counter.add(1)
 		closeReason := "unknown reason"
 
 		defer func() {
-			num := counter.done()
 			log.Printf(
 				"Connection closed by %s: %s, connections: %d/%d",
-				closeReason, r.RemoteAddr, num, server.options.MaxConnection,
+				closeReason, r.RemoteAddr, 0, 0,
 			)
 		}()
 
-		if int64(server.options.MaxConnection) != 0 {
-			if num > server.options.MaxConnection {
-				closeReason = "exceeding max number of connections"
-				return
-			}
-		}
-
-		log.Printf("New client connected: %s, connections: %d/%d", r.RemoteAddr, num, server.options.MaxConnection)
+		log.Printf("New client connected: %s, connections: %d/%d", r.RemoteAddr, 0, 0)
 
 		if r.Method != "GET" {
 			http.Error(w, "Method not allowed", 405)
