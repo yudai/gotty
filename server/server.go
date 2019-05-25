@@ -110,7 +110,7 @@ func (server *Server) setupHandlers(pathPrefix string) http.Handler {
 	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
 
 	wsMux := http.NewServeMux()
-	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(middleware.WrapHeaders(http.Handler(siteMux)))))
+	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(http.Handler(siteMux))))
 	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
 
 	return http.Handler(wsMux)

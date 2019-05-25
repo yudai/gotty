@@ -17,11 +17,3 @@ func WrapLogger(handler http.Handler) http.Handler {
 		log.Printf("%s %d %s %s", r.RemoteAddr, 200, r.Method, r.URL.Path)
 	})
 }
-
-func WrapHeaders(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// todo add version
-		w.Header().Set("Server", "GoTTY")
-		handler.ServeHTTP(w, r)
-	})
-}
