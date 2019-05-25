@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"html/template"
 	"log"
 	"net"
@@ -62,13 +61,7 @@ func New(factory Factory, options *Options) (*Server, error) {
 // Run starts the main process of the Server.
 // The cancelation of ctx will shutdown the server immediately with aborting
 // existing connections. Use WithGracefullContext() to support gracefull shutdown.
-func (server *Server) Run(ctx context.Context, options ...RunOption) error {
-	cctx, cancel := context.WithCancel(ctx)
-	opts := &RunOptions{gracefullCtx: context.Background()}
-	for _, opt := range options {
-		opt(opts)
-	}
-
+func (server *Server) Run() error {
 	counter := newCounter(time.Duration(server.options.Timeout) * time.Second)
 
 	path := "/"
@@ -76,7 +69,7 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
 	}
 
-	srv := &http.Server{Handler: server.setupHandlers(cctx, cancel, path, counter)}
+	srv := &http.Server{Handler: server.setupHandlers(path, counter)}
 
 	hostPort := "127.0.0.1:8080"
 	listener, err := net.Listen("tcp", hostPort)
@@ -96,24 +89,11 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		}
 	}()
 
-	go func() {
-		select {
-		case <-opts.gracefullCtx.Done():
-			srv.Shutdown(context.Background())
-		case <-cctx.Done():
-		}
-	}()
-
 	select {
 	case err = <-srvErr:
 		if err == http.ErrServerClosed { // by gracefull ctx
 			err = nil
-		} else {
-			cancel()
 		}
-	case <-cctx.Done():
-		srv.Close()
-		err = cctx.Err()
 	}
 
 	conn := counter.count()
@@ -125,7 +105,7 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	return err
 }
 
-func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFunc, pathPrefix string, counter *counter) http.Handler {
+func (server *Server) setupHandlers(pathPrefix string, counter *counter) http.Handler {
 	staticFileHandler := http.FileServer(
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
@@ -140,7 +120,7 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 
 	wsMux := http.NewServeMux()
 	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(middleware.WrapHeaders(http.Handler(siteMux)))))
-	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS(ctx, cancel, counter))
+	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS(counter))
 
 	return http.Handler(wsMux)
 }

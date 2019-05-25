@@ -1,7 +1,6 @@
 package webtty
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"sync"
@@ -58,7 +57,7 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 // after the context is canceled. Closing them is caller's
 // responsibility.
 // If the connection to one end gets closed, returns ErrSlaveClosed or ErrMasterClosed.
-func (wt *WebTTY) Run(ctx context.Context) error {
+func (wt *WebTTY) Run() error {
 	err := wt.sendInitializeMessage()
 	if err != nil {
 		return errors.Wrapf(err, "failed to send initializing message")
@@ -101,8 +100,6 @@ func (wt *WebTTY) Run(ctx context.Context) error {
 	}()
 
 	select {
-	case <-ctx.Done():
-		err = ctx.Err()
 	case err = <-errs:
 	}
 
