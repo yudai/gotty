@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -14,7 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
-	"github.com/yudai/gotty/pkg/homedir"
 	"github.com/yudai/gotty/pkg/randomstring"
 	"github.com/yudai/gotty/server/middleware"
 	"github.com/yudai/gotty/webtty"
@@ -36,13 +34,6 @@ func New(factory Factory, options *Options) (*Server, error) {
 	indexData, err := Asset("static/index.html")
 	if err != nil {
 		panic("index not found") // must be in bindata
-	}
-	if options.IndexFile != "" {
-		path := homedir.Expand(options.IndexFile)
-		indexData, err = ioutil.ReadFile(path)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to read custom index file at `%s`", path)
-		}
 	}
 	indexTemplate, err := template.New("index").Parse(string(indexData))
 	if err != nil {
@@ -85,16 +76,9 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
 	}
 
-	handlers := server.setupHandlers(cctx, cancel, path, counter)
-	srv, err := server.setupHTTPServer(handlers)
-	if err != nil {
-		return errors.Wrapf(err, "failed to setup an HTTP server")
-	}
+	srv := &http.Server{Handler: server.setupHandlers(cctx, cancel, path, counter)}
 
-	if server.options.Port == "0" {
-		log.Printf("Port number configured to `0`, choosing a random port")
-	}
-	hostPort := net.JoinHostPort(server.options.Address, server.options.Port)
+	hostPort := "127.0.0.1:8080"
 	listener, err := net.Listen("tcp", hostPort)
 	if err != nil {
 		return errors.Wrapf(err, "failed to listen at `%s`", hostPort)
@@ -103,11 +87,6 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	scheme := "http"
 	host, port, _ := net.SplitHostPort(listener.Addr().String())
 	log.Printf("HTTP server is listening at: %s", scheme+"://"+host+":"+port+path)
-	if server.options.Address == "0.0.0.0" {
-		for _, address := range listAddresses() {
-			log.Printf("Alternative URL: %s", scheme+"://"+address+":"+port+path)
-		}
-	}
 
 	srvErr := make(chan error, 1)
 	go func() {
@@ -151,32 +130,17 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
 	)
 
-	var siteMux = http.NewServeMux()
+	siteMux := http.NewServeMux()
 	siteMux.HandleFunc(pathPrefix, server.handleIndex)
 	siteMux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
 	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
 	siteMux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
-
 	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
 	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
 
-	siteHandler := http.Handler(siteMux)
-
-	withGz := middleware.WrapGzip(middleware.WrapHeaders(siteHandler))
-	siteHandler = middleware.WrapLogger(withGz)
-
 	wsMux := http.NewServeMux()
-	wsMux.Handle("/", siteHandler)
+	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(middleware.WrapHeaders(http.Handler(siteMux)))))
 	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS(ctx, cancel, counter))
-	siteHandler = http.Handler(wsMux)
 
-	return siteHandler
-}
-
-func (server *Server) setupHTTPServer(handler http.Handler) (*http.Server, error) {
-	srv := &http.Server{
-		Handler: handler,
-	}
-
-	return srv, nil
+	return http.Handler(wsMux)
 }
