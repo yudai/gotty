@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
+	"os"
 
 	"github.com/NYTimes/gziphandler"
+	"github.com/gorilla/handlers"
 )
 
 func WrapGzip(handler http.Handler) http.Handler {
@@ -12,8 +13,5 @@ func WrapGzip(handler http.Handler) http.Handler {
 }
 
 func WrapLogger(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r)
-		log.Printf("%s %d %s %s", r.RemoteAddr, 200, r.Method, r.URL.Path)
-	})
+	return handlers.LoggingHandler(os.Stderr, handler)
 }
