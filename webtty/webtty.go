@@ -38,7 +38,7 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 		masterConn: masterConn,
 		slave:      slave,
 
-		permitWrite: false,
+		permitWrite: true,
 		columns:     0,
 		rows:        0,
 

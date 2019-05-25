@@ -91,13 +91,6 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		return errors.Wrapf(err, "failed to setup an HTTP server")
 	}
 
-	if server.options.PermitWrite {
-		log.Printf("Permitting clients to write input to the PTY.")
-	}
-	if server.options.Once {
-		log.Printf("Once option is provided, accepting only one client")
-	}
-
 	if server.options.Port == "0" {
 		log.Printf("Port number configured to `0`, choosing a random port")
 	}
