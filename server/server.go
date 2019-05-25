@@ -2,18 +2,15 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"regexp"
 	noesctmpl "text/template"
 	"time"
 
-	"github.com/elazarl/go-bindata-assetfs"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
@@ -57,17 +54,6 @@ func New(factory Factory, options *Options) (*Server, error) {
 		return nil, errors.Wrapf(err, "failed to parse window title format `%s`", options.TitleFormat)
 	}
 
-	var originChekcer func(r *http.Request) bool
-	if options.WSOrigin != "" {
-		matcher, err := regexp.Compile(options.WSOrigin)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to compile regular expression of Websocket Origin: %s", options.WSOrigin)
-		}
-		originChekcer = func(r *http.Request) bool {
-			return matcher.MatchString(r.Header.Get("Origin"))
-		}
-	}
-
 	return &Server{
 		factory: factory,
 		options: options,
@@ -76,7 +62,6 @@ func New(factory Factory, options *Options) (*Server, error) {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			Subprotocols:    webtty.Protocols,
-			CheckOrigin:     originChekcer,
 		},
 		indexTemplate: indexTemplate,
 		titleTemplate: titleTemplate,
@@ -123,9 +108,6 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	}
 
 	scheme := "http"
-	if server.options.EnableTLS {
-		scheme = "https"
-	}
 	host, port, _ := net.SplitHostPort(listener.Addr().String())
 	log.Printf("HTTP server is listening at: %s", scheme+"://"+host+":"+port+path)
 	if server.options.Address == "0.0.0.0" {
@@ -136,16 +118,7 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 
 	srvErr := make(chan error, 1)
 	go func() {
-		if server.options.EnableTLS {
-			crtFile := homedir.Expand(server.options.TLSCrtFile)
-			keyFile := homedir.Expand(server.options.TLSKeyFile)
-			log.Printf("TLS crt file: " + crtFile)
-			log.Printf("TLS key file: " + keyFile)
-
-			err = srv.ServeTLS(listener, crtFile, keyFile)
-		} else {
-			err = srv.Serve(listener)
-		}
+		err = srv.Serve(listener)
 		if err != nil {
 			srvErr <- err
 		}
@@ -196,11 +169,6 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 
 	siteHandler := http.Handler(siteMux)
 
-	if server.options.EnableBasicAuth {
-		log.Printf("Using Basic Authentication")
-		siteHandler = middleware.WrapBasicAuth(siteHandler, server.options.Credential)
-	}
-
 	withGz := middleware.WrapGzip(middleware.WrapHeaders(siteHandler))
 	siteHandler = middleware.WrapLogger(withGz)
 
@@ -217,30 +185,5 @@ func (server *Server) setupHTTPServer(handler http.Handler) (*http.Server, error
 		Handler: handler,
 	}
 
-	if server.options.EnableTLSClientAuth {
-		tlsConfig, err := server.tlsConfig()
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to setup TLS configuration")
-		}
-		srv.TLSConfig = tlsConfig
-	}
-
 	return srv, nil
-}
-
-func (server *Server) tlsConfig() (*tls.Config, error) {
-	caFile := homedir.Expand(server.options.TLSCACrtFile)
-	caCert, err := ioutil.ReadFile(caFile)
-	if err != nil {
-		return nil, errors.New("could not open CA crt file " + caFile)
-	}
-	caCertPool := x509.NewCertPool()
-	if !caCertPool.AppendCertsFromPEM(caCert) {
-		return nil, errors.New("could not parse CA crt file data in " + caFile)
-	}
-	tlsConfig := &tls.Config{
-		ClientCAs:  caCertPool,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-	}
-	return tlsConfig, nil
 }

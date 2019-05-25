@@ -2,9 +2,10 @@ package utils
 
 import (
 	"fmt"
-	"github.com/fatih/structs"
 	"reflect"
 	"strconv"
+
+	"github.com/fatih/structs"
 )
 
 func ApplyDefaultValues(struct_ interface{}) (err error) {

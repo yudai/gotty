@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sync/atomic"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
@@ -17,8 +16,6 @@ import (
 )
 
 func (server *Server) generateHandleWS(ctx context.Context, cancel context.CancelFunc, counter *counter) http.HandlerFunc {
-	once := new(int64)
-
 	go func() {
 		select {
 		case <-counter.timer().C:
@@ -28,14 +25,6 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 	}()
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		if server.options.Once {
-			success := atomic.CompareAndSwapInt64(once, 0, 1)
-			if !success {
-				http.Error(w, "Server is shutting down", http.StatusServiceUnavailable)
-				return
-			}
-		}
-
 		num := counter.add(1)
 		closeReason := "unknown reason"
 
@@ -45,10 +34,6 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 				"Connection closed by %s: %s, connections: %d/%d",
 				closeReason, r.RemoteAddr, num, server.options.MaxConnection,
 			)
-
-			if server.options.Once {
-				cancel()
-			}
 		}()
 
 		if int64(server.options.MaxConnection) != 0 {
@@ -101,7 +86,7 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 	if err != nil {
 		return errors.Wrapf(err, "failed to authenticate websocket connection")
 	}
-	if init.AuthToken != server.options.Credential {
+	if init.AuthToken != "" {
 		return errors.New("failed to authenticate websocket connection")
 	}
 
@@ -203,7 +188,7 @@ func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
 	// @TODO hashing?
-	w.Write([]byte("var gotty_auth_token = '" + server.options.Credential + "';"))
+	w.Write([]byte("var gotty_auth_token = '';"))
 }
 
 func (server *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
