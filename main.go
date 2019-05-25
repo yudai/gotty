@@ -67,13 +67,6 @@ func main() {
 			exit(err, 3)
 		}
 
-		hostname, _ := os.Hostname()
-		appOptions.TitleVariables = map[string]interface{}{
-			"command":  args[0],
-			"argv":     args[1:],
-			"hostname": hostname,
-		}
-
 		srv, err := server.New(factory, appOptions)
 		if err != nil {
 			exit(err, 3)

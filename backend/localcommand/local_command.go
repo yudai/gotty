@@ -90,14 +90,6 @@ func (lcmd *LocalCommand) Close() error {
 	}
 }
 
-func (lcmd *LocalCommand) WindowTitleVariables() map[string]interface{} {
-	return map[string]interface{}{
-		"command": lcmd.command,
-		"argv":    lcmd.argv,
-		"pid":     lcmd.cmd.Process.Pid,
-	}
-}
-
 func (lcmd *LocalCommand) ResizeTerminal(width int, height int) error {
 	window := struct {
 		row uint16
