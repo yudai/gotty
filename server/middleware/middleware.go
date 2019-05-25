@@ -13,9 +13,8 @@ func WrapGzip(handler http.Handler) http.Handler {
 
 func WrapLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rw := &logResponseWriter{w, 200}
-		handler.ServeHTTP(rw, r)
-		log.Printf("%s %d %s %s", r.RemoteAddr, rw.status, r.Method, r.URL.Path)
+		handler.ServeHTTP(w, r)
+		log.Printf("%s %d %s %s", r.RemoteAddr, 200, r.Method, r.URL.Path)
 	})
 }
 
