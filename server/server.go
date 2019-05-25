@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	noesctmpl "text/template"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
@@ -23,7 +22,6 @@ type Server struct {
 
 	upgrader      *websocket.Upgrader
 	indexTemplate *template.Template
-	titleTemplate *noesctmpl.Template
 }
 
 // New creates a new instance of Server.
@@ -38,11 +36,6 @@ func New(factory Factory, options *Options) (*Server, error) {
 		panic("index template parse failed") // must be valid
 	}
 
-	titleTemplate, err := noesctmpl.New("title").Parse(options.TitleFormat)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse window title format `%s`", options.TitleFormat)
-	}
-
 	return &Server{
 		factory: factory,
 		options: options,
@@ -53,7 +46,6 @@ func New(factory Factory, options *Options) (*Server, error) {
 			Subprotocols:    webtty.Protocols,
 		},
 		indexTemplate: indexTemplate,
-		titleTemplate: titleTemplate,
 	}, nil
 }
 

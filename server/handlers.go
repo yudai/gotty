@@ -87,28 +87,7 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 	}
 	defer slave.Close()
 
-	titleVars := server.titleVariables(
-		[]string{"server", "master", "slave"},
-		map[string]map[string]interface{}{
-			"server": server.options.TitleVariables,
-			"master": map[string]interface{}{
-				"remote_addr": conn.RemoteAddr(),
-			},
-			"slave": slave.WindowTitleVariables(),
-		},
-	)
-
-	titleBuf := new(bytes.Buffer)
-	err = server.titleTemplate.Execute(titleBuf, titleVars)
-	if err != nil {
-		return errors.Wrapf(err, "failed to fill window title template")
-	}
-
-	opts := []webtty.Option{
-		webtty.WithWindowTitle(titleBuf.Bytes()),
-	}
-
-	tty, err := webtty.New(&wsWrapper{conn}, slave, opts...)
+	tty, err := webtty.New(&wsWrapper{conn}, slave)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create webtty")
 	}
@@ -119,29 +98,8 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 }
 
 func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	titleVars := server.titleVariables(
-		[]string{"server", "master"},
-		map[string]map[string]interface{}{
-			"server": server.options.TitleVariables,
-			"master": map[string]interface{}{
-				"remote_addr": r.RemoteAddr,
-			},
-		},
-	)
-
-	titleBuf := new(bytes.Buffer)
-	err := server.titleTemplate.Execute(titleBuf, titleVars)
-	if err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	indexVars := map[string]interface{}{
-		"title": titleBuf.String(),
-	}
-
 	indexBuf := new(bytes.Buffer)
-	err = server.indexTemplate.Execute(indexBuf, indexVars)
+	err := server.indexTemplate.Execute(indexBuf, nil)
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
@@ -159,27 +117,4 @@ func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 func (server *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
 	w.Write([]byte("var gotty_term = 'xterm';"))
-}
-
-// titleVariables merges maps in a specified order.
-// varUnits are name-keyed maps, whose names will be iterated using order.
-func (server *Server) titleVariables(order []string, varUnits map[string]map[string]interface{}) map[string]interface{} {
-	titleVars := map[string]interface{}{}
-
-	for _, name := range order {
-		vars, ok := varUnits[name]
-		if !ok {
-			panic("title variable name error")
-		}
-		for key, val := range vars {
-			titleVars[key] = val
-		}
-	}
-
-	// safe net for conflicted keys
-	for _, name := range order {
-		titleVars[name] = varUnits[name]
-	}
-
-	return titleVars
 }
