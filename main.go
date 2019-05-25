@@ -73,11 +73,7 @@ func main() {
 
 		log.Printf("GoTTY is starting with command: %s", strings.Join(args, " "))
 
-		errs := make(chan error, 1)
-		go func() {
-			errs <- srv.Run()
-		}()
-		select {}
+		srv.Run()
 	}
 	app.Run(os.Args)
 }

@@ -5,11 +5,13 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	"modernc.org/httpfs"
 
+	"github.com/yudai/gotty/server/assets"
 	"github.com/yudai/gotty/server/middleware"
 	"github.com/yudai/gotty/utils"
 	"github.com/yudai/gotty/webtty"
@@ -27,11 +29,11 @@ type Server struct {
 // New creates a new instance of Server.
 // Server will use the New() of the factory provided to handle each request.
 func New(factory Factory, options *Options) (*Server, error) {
-	indexData, err := Asset("static/index.html")
-	if err != nil {
-		panic("index not found") // must be in bindata
+	indexData, ok := assets.Assets["/index.html"]
+	if !ok {
+		panic("index not found") // must be in assets.Assets
 	}
-	indexTemplate, err := template.New("index").Parse(string(indexData))
+	indexTemplate, err := template.New("index").Parse(indexData)
 	if err != nil {
 		panic("index template parse failed") // must be valid
 	}
@@ -89,15 +91,13 @@ func (server *Server) Run() error {
 }
 
 func (server *Server) setupHandlers(pathPrefix string) http.Handler {
-	staticFileHandler := http.FileServer(
-		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
-	)
+	staticFileHandler := http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))
 
 	siteMux := http.NewServeMux()
-	siteMux.HandleFunc(pathPrefix, server.handleIndex)
 	siteMux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
-	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
 	siteMux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
+	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
+	siteMux.HandleFunc(pathPrefix, server.handleIndex)
 	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
 	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
 
