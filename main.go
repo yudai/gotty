@@ -9,7 +9,6 @@ import (
 	"github.com/codegangsta/cli"
 
 	"github.com/yudai/gotty/localcmd"
-	"github.com/yudai/gotty/pkg/homedir"
 	"github.com/yudai/gotty/server"
 	"github.com/yudai/gotty/utils"
 )
@@ -52,7 +51,7 @@ func main() {
 		}
 
 		configFile := c.String("config")
-		_, err := os.Stat(homedir.Expand(configFile))
+		_, err := os.Stat(utils.Expand(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
 			if err := utils.ApplyConfigFile(configFile, serverOptions, localcmdOptions); err != nil {
 				exit(err, 2)

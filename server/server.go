@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
-	"github.com/yudai/gotty/pkg/randomstring"
 	"github.com/yudai/gotty/server/middleware"
+	"github.com/yudai/gotty/utils"
 	"github.com/yudai/gotty/webtty"
 )
 
@@ -55,7 +55,7 @@ func New(factory Factory, options *Options) (*Server, error) {
 func (server *Server) Run() error {
 	path := "/"
 	if server.options.EnableRandomUrl {
-		path = "/" + randomstring.Generate(8) + "/"
+		path = "/" + utils.Generate(8) + "/"
 	}
 
 	srv := &http.Server{Handler: server.setupHandlers(path)}

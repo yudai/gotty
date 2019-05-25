@@ -10,8 +10,6 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/fatih/structs"
 	"github.com/yudai/hcl"
-
-	"github.com/yudai/gotty/pkg/homedir"
 )
 
 func GenerateFlags(options ...interface{}) (flags []cli.Flag, mappings map[string]string, err error) {
@@ -102,7 +100,7 @@ func ApplyFlags(
 }
 
 func ApplyConfigFile(filePath string, options ...interface{}) error {
-	filePath = homedir.Expand(filePath)
+	filePath = Expand(filePath)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return err
 	}

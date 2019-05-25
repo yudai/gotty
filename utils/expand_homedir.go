@@ -1,4 +1,4 @@
-package homedir
+package utils
 
 import (
 	"os"
