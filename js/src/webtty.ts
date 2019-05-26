@@ -66,14 +66,6 @@ export class WebTTY {
             connection.onOpen(() => {
                 const termInfo = this.term.info();
 
-                connection.send(JSON.stringify(
-                    {
-                        Arguments: this.args,
-                        AuthToken: this.authToken,
-                    }
-                ));
-
-
                 const resizeHandler = (colmuns: number, rows: number) => {
                     connection.send(
                         msgResizeTerminal + JSON.stringify(

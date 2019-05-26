@@ -15,5 +15,6 @@ func main() {
 	}
 
 	log.Printf("GoTTY is starting with command: %s", strings.Join(args, " "))
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	log.Fatalln(server.New(args).Run())
 }
