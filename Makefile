@@ -7,11 +7,11 @@ gotty: main.go server/*.go webtty/*.go localcmd/*.go Makefile
 asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
 	# go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	# gofmt -w server/asset.go
-	assets -d ./bindata/static -package assets -o ./server/assets/assets.go -map Assets
-	goimports -w ./server/assets/assets.go 
+	assets -d ./bindata/static -package assets -o ./assets/assets.go -map Assets
 
 .PHONY: all
 all: asset gotty
+	goimports -w
 
 bindata:
 	mkdir bindata

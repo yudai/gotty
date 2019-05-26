@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -15,7 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"modernc.org/httpfs"
 
-	"github.com/yudai/gotty/server/assets"
+	"github.com/yudai/gotty/assets"
 	"github.com/yudai/gotty/wetty"
 )
 
@@ -125,9 +126,18 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 
 // Dynamic: index.html
 func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	indexBuf := new(bytes.Buffer)
-	err := server.indexTemplate.Execute(indexBuf, nil)
+	indexData, ok := assets.Assets["/index.html"]
+	if !ok {
+		log.Fatalln("index not found") // must be in assets.Assets
+	}
+
+	indexTemplate, err := template.New("index").Parse(indexData)
 	if err != nil {
+		log.Fatalln("index template parse failed") // must be valid
+	}
+
+	indexBuf := new(bytes.Buffer)
+	if err := indexTemplate.Execute(indexBuf, nil); err != nil {
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}

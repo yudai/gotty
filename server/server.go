@@ -1,7 +1,6 @@
 package server
 
 import (
-	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -9,15 +8,13 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/yudai/gotty/localcmd"
-	"github.com/yudai/gotty/server/assets"
 	"github.com/yudai/gotty/wetty"
 )
 
 // Server provides a wetty HTTP endpoint.
 type Server struct {
-	factory       *localcmd.Factory
-	upgrader      *websocket.Upgrader
-	indexTemplate *template.Template
+	factory  *localcmd.Factory
+	upgrader *websocket.Upgrader
 }
 
 // New creates a new instance of Server.
@@ -25,16 +22,7 @@ type Server struct {
 func New(args []string) (*Server, error) {
 	factory, err := localcmd.NewFactory(args[0], args[1:])
 	if err != nil {
-		panic(err)
-	}
-
-	indexData, ok := assets.Assets["/index.html"]
-	if !ok {
-		panic("index not found") // must be in assets.Assets
-	}
-	indexTemplate, err := template.New("index").Parse(indexData)
-	if err != nil {
-		panic("index template parse failed") // must be valid
+		log.Fatalln(err)
 	}
 
 	return &Server{
@@ -44,7 +32,6 @@ func New(args []string) (*Server, error) {
 			WriteBufferSize: 1024,
 			Subprotocols:    wetty.Protocols,
 		},
-		indexTemplate: indexTemplate,
 	}, nil
 }
 
