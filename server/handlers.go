@@ -70,7 +70,7 @@ func (server *Server) generateHandleWS() http.HandlerFunc {
 
 		switch err {
 		case wetty.ErrSlaveClosed:
-			closeReason = server.factory.Name()
+			closeReason = "local command"
 		case wetty.ErrMasterClosed:
 			closeReason = "client"
 		default:

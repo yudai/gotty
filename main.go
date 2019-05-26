@@ -14,11 +14,6 @@ func main() {
 		log.Fatalln("usage: gotty [command] [args]...")
 	}
 
-	srv, err := server.New(args)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	log.Printf("GoTTY is starting with command: %s", strings.Join(args, " "))
-	log.Fatalln(srv.Run())
+	log.Fatalln(server.New(args).Run())
 }

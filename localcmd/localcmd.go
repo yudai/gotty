@@ -13,41 +13,27 @@ import (
 
 // Factory implements the server.Factory interface
 type Factory struct {
-	command string
-	argv    []string
-}
-
-func NewFactory(command string, argv []string) (*Factory, error) {
-	return &Factory{
-		command: command,
-		argv:    argv,
-	}, nil
-}
-
-func (factory *Factory) Name() string {
-	return "local command"
+	Args []string
 }
 
 func (factory *Factory) New(params map[string][]string) (*Lc, error) {
-	argv := make([]string, len(factory.argv))
-	copy(argv, factory.argv)
+	args := make([]string, len(factory.Args))
+	copy(args, factory.Args)
 	if params["arg"] != nil && len(params["arg"]) > 0 {
-		argv = append(argv, params["arg"]...)
+		args = append(args, params["arg"]...)
 	}
-	return NewLc(factory.command, argv)
+	return NewLc(args)
 }
 
-// Lc implements the server.Slave interface
+// Lc implements the server.Slave interface {io.ReadWriteCloser,ResizeTerminal()}
 type Lc struct {
-	command   string
-	argv      []string
 	cmd       *exec.Cmd
 	pty       *os.File
 	ptyClosed chan struct{}
 }
 
-func NewLc(command string, argv []string) (*Lc, error) {
-	cmd := exec.Command(command, argv...)
+func NewLc(args []string) (*Lc, error) {
+	cmd := exec.Command(args[0], args[1:]...)
 
 	pty, err := pty.Start(cmd)
 	if err != nil {
@@ -57,8 +43,6 @@ func NewLc(command string, argv []string) (*Lc, error) {
 	ptyClosed := make(chan struct{})
 
 	lcmd := &Lc{
-		command:   command,
-		argv:      argv,
 		cmd:       cmd,
 		pty:       pty,
 		ptyClosed: ptyClosed,

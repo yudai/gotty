@@ -19,20 +19,17 @@ type Server struct {
 
 // New creates a new instance of Server.
 // Server will use the New() of the factory provided to handle each request.
-func New(args []string) (*Server, error) {
-	factory, err := localcmd.NewFactory(args[0], args[1:])
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+func New(args []string) *Server {
 	return &Server{
-		factory: factory,
+		factory: &localcmd.Factory{
+			args,
+		},
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			Subprotocols:    wetty.Protocols,
 		},
-	}, nil
+	}
 }
 
 // Run starts the main process of the Server.
