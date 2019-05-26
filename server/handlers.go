@@ -7,13 +7,15 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/websocket"
 	"modernc.org/httpfs"
 
 	"github.com/yudai/gotty/server/assets"
-	"github.com/yudai/gotty/server/middleware"
 	"github.com/yudai/gotty/wetty"
 )
 
@@ -28,7 +30,7 @@ func (server *Server) setupHandlers(pathPrefix string) http.Handler {
 	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
 
 	wsMux := http.NewServeMux()
-	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(http.Handler(siteMux))))
+	wsMux.Handle("/", handlers.LoggingHandler(os.Stderr, gziphandler.GzipHandler(http.Handler(siteMux))))
 	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
 
 	return http.Handler(wsMux)
