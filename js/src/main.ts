@@ -3,9 +3,8 @@ import { Xterm } from "./xterm";
 import { Terminal, WebTTY, protocols } from "./webtty";
 import { ConnectionFactory } from "./websocket";
 
-// @TODO remove these
-declare var gotty_auth_token: string;
-declare var gotty_term: string;
+var gotty_auth_token : string = "";
+var gotty_term : string = "xterm";
 
 const elem = document.getElementById("terminal")
 

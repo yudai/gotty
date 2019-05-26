@@ -23,8 +23,6 @@ func (server *Server) setupHandlers(pathPrefix string) http.Handler {
 
 	// register dynamic endpoint handlers
 	mux.HandleFunc(pathPrefix, server.handleIndex)
-	mux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
-	mux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
 
 	// register static endpoint handlers
 	staticFileHandler := http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))
@@ -113,17 +111,4 @@ func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(indexBuf.Bytes())
-}
-
-// Dynamic: auth_token.js
-func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/javascript")
-	// @TODO hashing?
-	w.Write([]byte("var gotty_auth_token = '';"))
-}
-
-// Dynamic: config.js
-func (server *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/javascript")
-	w.Write([]byte("var gotty_term = 'xterm';"))
 }
