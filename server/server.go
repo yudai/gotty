@@ -5,13 +5,10 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
-	"modernc.org/httpfs"
 
 	"github.com/yudai/gotty/server/assets"
-	"github.com/yudai/gotty/server/middleware"
 	"github.com/yudai/gotty/wetty"
 )
 
@@ -62,22 +59,4 @@ func (server *Server) Run() error {
 
 	log.Printf("HTTP server is listening at: %s", url)
 	return srv.Serve(listener)
-}
-
-func (server *Server) setupHandlers(pathPrefix string) http.Handler {
-	staticFileHandler := http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))
-
-	siteMux := http.NewServeMux()
-	siteMux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
-	siteMux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
-	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
-	siteMux.HandleFunc(pathPrefix, server.handleIndex)
-	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
-	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
-
-	wsMux := http.NewServeMux()
-	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(http.Handler(siteMux))))
-	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
-
-	return http.Handler(wsMux)
 }

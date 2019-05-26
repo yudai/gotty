@@ -7,11 +7,32 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/gorilla/websocket"
+	"modernc.org/httpfs"
 
+	"github.com/yudai/gotty/server/assets"
+	"github.com/yudai/gotty/server/middleware"
 	"github.com/yudai/gotty/wetty"
 )
+
+func (server *Server) setupHandlers(pathPrefix string) http.Handler {
+	siteMux := http.NewServeMux()
+	siteMux.HandleFunc(pathPrefix, server.handleIndex)
+	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
+	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
+	staticFileHandler := http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))
+	siteMux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
+	siteMux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
+	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
+
+	wsMux := http.NewServeMux()
+	wsMux.Handle("/", middleware.WrapLogger(middleware.WrapGzip(http.Handler(siteMux))))
+	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
+
+	return http.Handler(wsMux)
+}
 
 func (server *Server) generateHandleWS() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +117,7 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 	return err
 }
 
+// Dynamic: index.html
 func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	indexBuf := new(bytes.Buffer)
 	err := server.indexTemplate.Execute(indexBuf, nil)
@@ -107,12 +129,14 @@ func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	w.Write(indexBuf.Bytes())
 }
 
+// Dynamic: auth_token.js
 func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
 	// @TODO hashing?
 	w.Write([]byte("var gotty_auth_token = '';"))
 }
 
+// Dynamic: config.js
 func (server *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
 	w.Write([]byte("var gotty_term = 'xterm';"))
