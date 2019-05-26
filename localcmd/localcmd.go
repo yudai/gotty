@@ -16,12 +16,9 @@ type Factory struct {
 	Args []string
 }
 
-func (factory *Factory) New(params map[string][]string) (*Lc, error) {
+func (factory *Factory) New() (*Lc, error) {
 	args := make([]string, len(factory.Args))
 	copy(args, factory.Args)
-	if params["arg"] != nil && len(params["arg"]) > 0 {
-		args = append(args, params["arg"]...)
-	}
 	return NewLc(args)
 }
 

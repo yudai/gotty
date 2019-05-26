@@ -2,13 +2,10 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"time"
 
@@ -80,46 +77,10 @@ func (server *Server) generateHandleWS() http.HandlerFunc {
 	}
 }
 
-func (server *Server) parseInitMessage(conn *websocket.Conn) (map[string][]string, error) {
-	typ, initLine, err := conn.ReadMessage()
-	if err != nil {
-		return nil, err //ors.Wrapf(err, "failed to authenticate websocket connection")
-	}
-	if typ != websocket.TextMessage {
-		return nil, errors.New("failed to authenticate websocket connection: invalid message type")
-	}
-
-	type InitMessage struct {
-		Arguments string `json:"Arguments,omitempty"`
-	}
-
-	var init InitMessage
-	err = json.Unmarshal(initLine, &init)
-	if err != nil {
-		return nil, err //ors.Wrapf(err, "failed to authenticate websocket connection")
-	}
-
-	queryPath := "?"
-	if init.Arguments != "" {
-		queryPath = init.Arguments
-	}
-
-	query, err := url.Parse(queryPath)
-	if err != nil {
-		return nil, err //ors.Wrapf(err, "failed to parse arguments")
-	}
-	return query.Query(), nil
-}
-
 func (server *Server) processWSConn(conn *websocket.Conn) error {
-	params, err := server.parseInitMessage(conn)
-	if err != nil {
-		return err
-	}
-
 	var master wetty.Master = &wsWrapper{conn}
 	var slave wetty.Slave
-	slave, err = server.factory.New(params)
+	slave, err := server.factory.New()
 	if err != nil {
 		return err //ors.Wrapf(err, "failed to create backend")
 	}
