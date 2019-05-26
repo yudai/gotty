@@ -14,10 +14,10 @@ import (
 	"github.com/yudai/gotty/server/assets"
 	"github.com/yudai/gotty/server/middleware"
 	"github.com/yudai/gotty/utils"
-	"github.com/yudai/gotty/webtty"
+	"github.com/yudai/gotty/wetty"
 )
 
-// Server provides a webtty HTTP endpoint.
+// Server provides a wetty HTTP endpoint.
 type Server struct {
 	factory       Factory
 	upgrader      *websocket.Upgrader
@@ -41,7 +41,7 @@ func New(factory Factory) (*Server, error) {
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
-			Subprotocols:    webtty.Protocols,
+			Subprotocols:    wetty.Protocols,
 		},
 		indexTemplate: indexTemplate,
 	}, nil

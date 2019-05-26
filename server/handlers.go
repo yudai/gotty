@@ -9,9 +9,8 @@ import (
 	"net/url"
 
 	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 
-	"github.com/yudai/gotty/webtty"
+	"github.com/yudai/gotty/wetty"
 )
 
 func (server *Server) generateHandleWS() http.HandlerFunc {
@@ -42,9 +41,9 @@ func (server *Server) generateHandleWS() http.HandlerFunc {
 		err = server.processWSConn(conn)
 
 		switch err {
-		case webtty.ErrSlaveClosed:
+		case wetty.ErrSlaveClosed:
 			closeReason = server.factory.Name()
-		case webtty.ErrMasterClosed:
+		case wetty.ErrMasterClosed:
 			closeReason = "client"
 		default:
 			closeReason = fmt.Sprintf("an error: %s", err)
@@ -55,19 +54,19 @@ func (server *Server) generateHandleWS() http.HandlerFunc {
 func (server *Server) processWSConn(conn *websocket.Conn) error {
 	typ, initLine, err := conn.ReadMessage()
 	if err != nil {
-		return errors.Wrapf(err, "failed to authenticate websocket connection")
+		return err //ors.Wrapf(err, "failed to authenticate websocket connection")
 	}
 	if typ != websocket.TextMessage {
-		return errors.New("failed to authenticate websocket connection: invalid message type")
+		return err //ors.New("failed to authenticate websocket connection: invalid message type")
 	}
 
 	var init InitMessage
 	err = json.Unmarshal(initLine, &init)
 	if err != nil {
-		return errors.Wrapf(err, "failed to authenticate websocket connection")
+		return err //ors.Wrapf(err, "failed to authenticate websocket connection")
 	}
 	if init.AuthToken != "" {
-		return errors.New("failed to authenticate websocket connection")
+		return err //ors.New("failed to authenticate websocket connection")
 	}
 
 	queryPath := "?"
@@ -77,19 +76,19 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 
 	query, err := url.Parse(queryPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse arguments")
+		return err //ors.Wrapf(err, "failed to parse arguments")
 	}
 	params := query.Query()
 	var slave Slave
 	slave, err = server.factory.New(params)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create backend")
+		return err //ors.Wrapf(err, "failed to create backend")
 	}
 	defer slave.Close()
 
-	tty, err := webtty.New(&wsWrapper{conn}, slave)
+	tty, err := wetty.New(&wsWrapper{conn}, slave)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create webtty")
+		return err //ors.Wrapf(err, "failed to create wetty")
 	}
 
 	err = tty.Run()

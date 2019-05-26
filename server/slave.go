@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/yudai/gotty/webtty"
+	"github.com/yudai/gotty/wetty"
 )
 
-// Slave is webtty.Slave with some additional methods.
+// Slave is wetty.Slave with some additional methods.
 type Slave interface {
-	webtty.Slave
+	wetty.Slave
 
 	Close() error
 }
