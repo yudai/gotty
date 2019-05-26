@@ -8,20 +8,26 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"github.com/yudai/gotty/localcmd"
 	"github.com/yudai/gotty/server/assets"
 	"github.com/yudai/gotty/wetty"
 )
 
 // Server provides a wetty HTTP endpoint.
 type Server struct {
-	factory       Factory
+	factory       *localcmd.Factory
 	upgrader      *websocket.Upgrader
 	indexTemplate *template.Template
 }
 
 // New creates a new instance of Server.
 // Server will use the New() of the factory provided to handle each request.
-func New(factory Factory) (*Server, error) {
+func New(args []string) (*Server, error) {
+	factory, err := localcmd.NewFactory(args[0], args[1:])
+	if err != nil {
+		panic(err)
+	}
+
 	indexData, ok := assets.Assets["/index.html"]
 	if !ok {
 		panic("index not found") // must be in assets.Assets

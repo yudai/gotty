@@ -9,7 +9,6 @@ import (
 	"unsafe"
 
 	"github.com/kr/pty"
-	"github.com/yudai/gotty/server"
 )
 
 // Factory implements the server.Factory interface
@@ -29,7 +28,7 @@ func (factory *Factory) Name() string {
 	return "local command"
 }
 
-func (factory *Factory) New(params map[string][]string) (server.Slave, error) {
+func (factory *Factory) New(params map[string][]string) (*Lc, error) {
 	argv := make([]string, len(factory.argv))
 	copy(argv, factory.argv)
 	if params["arg"] != nil && len(params["arg"]) > 0 {

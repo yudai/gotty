@@ -5,22 +5,16 @@ import (
 	"os"
 	"strings"
 
-	"github.com/yudai/gotty/localcmd"
 	"github.com/yudai/gotty/server"
 )
 
 func main() {
 	args := os.Args[1:]
 	if len(args) == 0 {
-		log.Fatalln("Error: No command given.")
+		log.Fatalln("usage: gotty [command] [args]...")
 	}
 
-	factory, err := localcmd.NewFactory(args[0], args[1:])
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	srv, err := server.New(factory)
+	srv, err := server.New(args)
 	if err != nil {
 		log.Fatalln(err)
 	}

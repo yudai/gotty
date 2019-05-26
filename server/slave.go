@@ -10,8 +10,3 @@ type Slave interface {
 
 	Close() error
 }
-
-type Factory interface {
-	Name() string
-	New(params map[string][]string) (Slave, error)
-}

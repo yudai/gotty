@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// wsWrapper makes a io.ReadWriter from websocket.Conn
 type wsWrapper struct {
 	*websocket.Conn
 }
