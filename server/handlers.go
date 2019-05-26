@@ -33,13 +33,13 @@ func (server *Server) setupHandlers(pathPrefix string) http.Handler {
 	mux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
 
 	// register ws handler
-	mux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
+	mux.HandleFunc(pathPrefix+"ws", server.wsHandler())
 
 	// wrap logging and compression middleware
 	return handlers.LoggingHandler(os.Stderr, gziphandler.GzipHandler(mux))
 }
 
-func (server *Server) generateHandleWS() http.HandlerFunc {
+func (server *Server) wsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		closeReason := "unknown reason"
 
@@ -64,7 +64,7 @@ func (server *Server) generateHandleWS() http.HandlerFunc {
 		}
 		defer conn.Close()
 
-		err = server.processWSConn(conn)
+		err = server.pipeWSConn(conn)
 
 		switch err {
 		case wetty.ErrSlaveClosed:
@@ -77,7 +77,7 @@ func (server *Server) generateHandleWS() http.HandlerFunc {
 	}
 }
 
-func (server *Server) processWSConn(conn *websocket.Conn) error {
+func (server *Server) pipeWSConn(conn *websocket.Conn) error {
 	var master wetty.Master = &wsWrapper{conn}
 	var slave wetty.Slave
 	slave, err := server.factory.New()
@@ -91,7 +91,7 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 		return err //ors.Wrapf(err, "failed to create wetty")
 	}
 
-	return tty.Run()
+	return tty.Pipe()
 }
 
 // Dynamic: index.html

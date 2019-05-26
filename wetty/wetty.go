@@ -27,23 +27,11 @@ type (
 	// To support text-based streams and side channel commands such as
 	// terminal resizing, WeTTY uses an original protocol.
 	WeTTY struct {
-		// PTY Master, which probably a connection to browser
-		masterConn Master
-
-		// PTY Slave
-		slave Slave
-
-		permitWrite bool
-		columns     int
-		rows        int
+		mu     sync.Mutex // guards writes to master
+		master Master     // PTY Master, which probably a connection to browser
+		slave  Slave      // PTY Slave
 
 		bufferSize int
-		writeMutex sync.Mutex
-	}
-
-	argResizeTerminal struct {
-		Columns float64
-		Rows    float64
 	}
 )
 
@@ -53,14 +41,10 @@ type (
 // masterConn is a connection to the PTY master,
 // typically it's a websocket connection to a client.
 // slave is a PTY slave such as a local command with a PTY.
-func New(masterConn Master, slave Slave) (*WeTTY, error) {
+func New(master Master, slave Slave) (*WeTTY, error) {
 	wt := &WeTTY{
-		masterConn: masterConn,
-		slave:      slave,
-
-		permitWrite: true,
-		columns:     0,
-		rows:        0,
+		master: master,
+		slave:  slave,
 
 		bufferSize: 1024,
 	}
@@ -74,9 +58,10 @@ func New(masterConn Master, slave Slave) (*WeTTY, error) {
 // after the context is canceled. Closing them is caller's
 // responsibility.
 // If the connection to one end gets closed, returns ErrSlaveClosed or ErrMasterClosed.
-func (wt *WeTTY) Run() error {
+func (wt *WeTTY) Pipe() error {
 	errs := make(chan error, 2)
 
+	// slave => buffer => master
 	go func() {
 		errs <- func() error {
 			buffer := make([]byte, wt.bufferSize)
@@ -94,11 +79,12 @@ func (wt *WeTTY) Run() error {
 		}()
 	}()
 
+	// slave <= buffer <= master
 	go func() {
 		errs <- func() error {
 			buffer := make([]byte, wt.bufferSize)
 			for {
-				n, err := wt.masterConn.Read(buffer)
+				n, err := wt.master.Read(buffer)
 				if err != nil {
 					return ErrMasterClosed
 				}
@@ -116,24 +102,14 @@ func (wt *WeTTY) Run() error {
 
 func (wt *WeTTY) handleSlaveReadEvent(data []byte) error {
 	safeMessage := base64.StdEncoding.EncodeToString(data)
-	err := wt.masterWrite(append([]byte{Output}, []byte(safeMessage)...))
-	if err != nil {
-		return err // ors.Wrapf(err, "failed to send message to master")
-	}
-
-	return nil
+	return wt.masterWrite(append([]byte{Output}, []byte(safeMessage)...))
 }
 
 func (wt *WeTTY) masterWrite(data []byte) error {
-	wt.writeMutex.Lock()
-	defer wt.writeMutex.Unlock()
-
-	_, err := wt.masterConn.Write(data)
-	if err != nil {
-		return err //ors.Wrapf(err, "failed to write to master")
-	}
-
-	return nil
+	wt.mu.Lock()
+	defer wt.mu.Unlock()
+	_, err := wt.master.Write(data)
+	return err
 }
 
 func (wt *WeTTY) handleMasterReadEvent(data []byte) error {
@@ -143,10 +119,6 @@ func (wt *WeTTY) handleMasterReadEvent(data []byte) error {
 
 	switch data[0] {
 	case Input:
-		if !wt.permitWrite {
-			return nil
-		}
-
 		if len(data) <= 1 {
 			return nil
 		}
@@ -163,30 +135,18 @@ func (wt *WeTTY) handleMasterReadEvent(data []byte) error {
 		}
 
 	case ResizeTerminal:
-		if wt.columns != 0 && wt.rows != 0 {
-			break
+		type termSize struct {
+			Columns float64
+			Rows    float64
 		}
-
+		var args termSize
 		if len(data) <= 1 {
 			return errors.New("received malformed remote command for terminal resize: empty payload")
 		}
-
-		var args argResizeTerminal
-		err := json.Unmarshal(data[1:], &args)
-		if err != nil {
+		if err := json.Unmarshal(data[1:], &args); err != nil {
 			return err //ors.Wrapf(err, "received malformed data for terminal resize")
 		}
-		rows := wt.rows
-		if rows == 0 {
-			rows = int(args.Rows)
-		}
-
-		columns := wt.columns
-		if columns == 0 {
-			columns = int(args.Columns)
-		}
-
-		wt.slave.ResizeTerminal(columns, rows)
+		wt.slave.ResizeTerminal(int(args.Rows), int(args.Columns))
 	default:
 		return errors.New(fmt.Sprintf("unknown message type `%c`", data[0]))
 	}
@@ -194,36 +154,32 @@ func (wt *WeTTY) handleMasterReadEvent(data []byte) error {
 	return nil
 }
 
-///message_types.go
+///protocol.go
 
 // Protocols defines the name of this protocol,
 // which is supposed to be used to the subprotocol of Websockt streams.
 var Protocols = []string{"webtty"}
 
+// those message types are used when reading from master
 const (
 	// Unknown message type, maybe sent by a bug
 	UnknownInput = '0'
 	// User input typically from a keyboard
 	Input = '1'
-	// Ping to the server
+	// Ping to the server from master(browser)
 	Ping = '2'
-	// Notify that the browser size has been changed
+	// Notify the server that the browser size has been changed, the server then tries to resize the slave tty
 	ResizeTerminal = '3'
 )
 
+// those message types are used when writing to master
 const (
 	// Unknown message type, maybe set by a bug
 	UnknownOutput = '0'
-	// Normal output to the terminal
+	// Normal output from the slave tty
 	Output = '1'
-	// Pong to the browser
+	// Pong to the master(browser)
 	Pong = '2'
-	// Set window title of the terminal
-	SetWindowTitle = '3'
-	// Set terminal preference
-	SetPreferences = '4'
-	// Make terminal to reconnect
-	SetReconnect = '5'
 )
 
 ///errors.go
