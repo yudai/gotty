@@ -9,7 +9,6 @@ import (
 	"unsafe"
 
 	"github.com/kr/pty"
-	"github.com/pkg/errors"
 	"github.com/yudai/gotty/server"
 )
 
@@ -54,7 +53,7 @@ func NewLc(command string, argv []string) (*Lc, error) {
 	pty, err := pty.Start(cmd)
 	if err != nil {
 		// todo close cmd?
-		return nil, errors.Wrapf(err, "failed to start command `%s`", command)
+		return nil, err // ors.Wrapf(err, "failed to start command `%s`", command)
 	}
 	ptyClosed := make(chan struct{})
 
