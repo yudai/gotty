@@ -1,9 +1,7 @@
 package server
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -21,14 +19,8 @@ import (
 func (server *Server) setupHandlers(pathPrefix string) http.Handler {
 	mux := http.NewServeMux()
 
-	// register dynamic endpoint handlers
-	mux.HandleFunc(pathPrefix, server.handleIndex)
-
 	// register static endpoint handlers
-	staticFileHandler := http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))
-	mux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
-	mux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
-	mux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
+	mux.Handle(pathPrefix, http.StripPrefix(pathPrefix, http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))))
 
 	// register ws handler
 	mux.HandleFunc(pathPrefix+"ws", server.wsHandler())
@@ -90,25 +82,4 @@ func (server *Server) pipeWSConn(conn *websocket.Conn) error {
 	}
 
 	return tty.Pipe()
-}
-
-// Dynamic: index.html
-func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	indexData, ok := assets.Assets["/index.html"]
-	if !ok {
-		log.Fatalln("index not found") // must be in assets.Assets
-	}
-
-	indexTemplate, err := template.New("index").Parse(indexData)
-	if err != nil {
-		log.Fatalln("index template parse failed") // must be valid
-	}
-
-	indexBuf := new(bytes.Buffer)
-	if err := indexTemplate.Execute(indexBuf, nil); err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	w.Write(indexBuf.Bytes())
 }
