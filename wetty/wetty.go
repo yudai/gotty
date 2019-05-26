@@ -33,12 +33,9 @@ type (
 		// PTY Slave
 		slave Slave
 
-		windowTitle []byte
 		permitWrite bool
 		columns     int
 		rows        int
-		reconnect   int // in seconds
-		masterPrefs []byte
 
 		bufferSize int
 		writeMutex sync.Mutex
@@ -78,11 +75,6 @@ func New(masterConn Master, slave Slave) (*WeTTY, error) {
 // responsibility.
 // If the connection to one end gets closed, returns ErrSlaveClosed or ErrMasterClosed.
 func (wt *WeTTY) Run() error {
-	err := wt.sendInitializeMessage()
-	if err != nil {
-		return err //errors.Wrapf(err, "failed to send initializing message")
-	}
-
 	errs := make(chan error, 2)
 
 	go func() {
@@ -119,35 +111,7 @@ func (wt *WeTTY) Run() error {
 		}()
 	}()
 
-	select {
-	case err = <-errs:
-	}
-
-	return err
-}
-
-func (wt *WeTTY) sendInitializeMessage() error {
-	err := wt.masterWrite(append([]byte{SetWindowTitle}, wt.windowTitle...))
-	if err != nil {
-		return err // ors.Wrapf(err, "failed to send window title")
-	}
-
-	if wt.reconnect > 0 {
-		reconnect, _ := json.Marshal(wt.reconnect)
-		err := wt.masterWrite(append([]byte{SetReconnect}, reconnect...))
-		if err != nil {
-			return err //ors.Wrapf(err, "failed to set reconnect")
-		}
-	}
-
-	if wt.masterPrefs != nil {
-		err := wt.masterWrite(append([]byte{SetPreferences}, wt.masterPrefs...))
-		if err != nil {
-			return err //ors.Wrapf(err, "failed to set preferences")
-		}
-	}
-
-	return nil
+	return <-errs
 }
 
 func (wt *WeTTY) handleSlaveReadEvent(data []byte) error {

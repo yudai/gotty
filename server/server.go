@@ -22,7 +22,7 @@ type Server struct {
 func New(args []string) *Server {
 	return &Server{
 		factory: &localcmd.Factory{
-			args,
+			Args: args,
 		},
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,

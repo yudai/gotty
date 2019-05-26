@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -79,27 +80,23 @@ func (server *Server) generateHandleWS() http.HandlerFunc {
 	}
 }
 
-func (server *Server) processWSConn(conn *websocket.Conn) error {
+func (server *Server) parseInitMessage(conn *websocket.Conn) (map[string][]string, error) {
 	typ, initLine, err := conn.ReadMessage()
 	if err != nil {
-		return err //ors.Wrapf(err, "failed to authenticate websocket connection")
+		return nil, err //ors.Wrapf(err, "failed to authenticate websocket connection")
 	}
 	if typ != websocket.TextMessage {
-		return err //ors.New("failed to authenticate websocket connection: invalid message type")
+		return nil, errors.New("failed to authenticate websocket connection: invalid message type")
 	}
 
 	type InitMessage struct {
 		Arguments string `json:"Arguments,omitempty"`
-		AuthToken string `json:"AuthToken,omitempty"`
 	}
 
 	var init InitMessage
 	err = json.Unmarshal(initLine, &init)
 	if err != nil {
-		return err //ors.Wrapf(err, "failed to authenticate websocket connection")
-	}
-	if init.AuthToken != "" {
-		return err //ors.New("failed to authenticate websocket connection")
+		return nil, err //ors.Wrapf(err, "failed to authenticate websocket connection")
 	}
 
 	queryPath := "?"
@@ -109,9 +106,18 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 
 	query, err := url.Parse(queryPath)
 	if err != nil {
-		return err //ors.Wrapf(err, "failed to parse arguments")
+		return nil, err //ors.Wrapf(err, "failed to parse arguments")
 	}
-	params := query.Query()
+	return query.Query(), nil
+}
+
+func (server *Server) processWSConn(conn *websocket.Conn) error {
+	params, err := server.parseInitMessage(conn)
+	if err != nil {
+		return err
+	}
+
+	var master wetty.Master = &wsWrapper{conn}
 	var slave wetty.Slave
 	slave, err = server.factory.New(params)
 	if err != nil {
@@ -119,14 +125,12 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 	}
 	defer slave.Close()
 
-	tty, err := wetty.New(&wsWrapper{conn}, slave)
+	tty, err := wetty.New(master, slave)
 	if err != nil {
 		return err //ors.Wrapf(err, "failed to create wetty")
 	}
 
-	err = tty.Run()
-
-	return err
+	return tty.Run()
 }
 
 // Dynamic: index.html
