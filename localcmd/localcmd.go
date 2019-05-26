@@ -13,6 +13,7 @@ import (
 	"github.com/yudai/gotty/server"
 )
 
+// Factory implements the server.Factory interface
 type Factory struct {
 	command string
 	argv    []string

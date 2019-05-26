@@ -8,12 +8,10 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"modernc.org/httpfs"
 
 	"github.com/yudai/gotty/server/assets"
 	"github.com/yudai/gotty/server/middleware"
-	"github.com/yudai/gotty/utils"
 	"github.com/yudai/gotty/wetty"
 )
 
@@ -51,39 +49,19 @@ func New(factory Factory) (*Server, error) {
 // The cancelation of ctx will shutdown the server immediately with aborting
 // existing connections. Use WithGracefullContext() to support gracefull shutdown.
 func (server *Server) Run() error {
-	path := "/"
-	if false {
-		path = "/" + utils.Generate(8) + "/"
-	}
+	scheme, host, port, path := "http", "127.0.0.1", "8080", "/"
+	hostPort := host + ":" + port
+	url := scheme + "://" + hostPort + path
 
 	srv := &http.Server{Handler: server.setupHandlers(path)}
 
-	hostPort := "127.0.0.1:8080"
 	listener, err := net.Listen("tcp", hostPort)
 	if err != nil {
-		return errors.Wrapf(err, "failed to listen at `%s`", hostPort)
+		return err // ors.Wrapf(err, "failed to listen at `%s`", hostPort)
 	}
 
-	scheme := "http"
-	host, port, _ := net.SplitHostPort(listener.Addr().String())
-	log.Printf("HTTP server is listening at: %s", scheme+"://"+host+":"+port+path)
-
-	srvErr := make(chan error, 1)
-	go func() {
-		err = srv.Serve(listener)
-		if err != nil {
-			srvErr <- err
-		}
-	}()
-
-	select {
-	case err = <-srvErr:
-		if err == http.ErrServerClosed { // by gracefull ctx
-			err = nil
-		}
-	}
-
-	return err
+	log.Printf("HTTP server is listening at: %s", url)
+	return srv.Serve(listener)
 }
 
 func (server *Server) setupHandlers(pathPrefix string) http.Handler {
