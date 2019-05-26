@@ -20,20 +20,24 @@ import (
 )
 
 func (server *Server) setupHandlers(pathPrefix string) http.Handler {
-	siteMux := http.NewServeMux()
-	siteMux.HandleFunc(pathPrefix, server.handleIndex)
-	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
-	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
+	mux := http.NewServeMux()
+
+	// register dynamic endpoint handlers
+	mux.HandleFunc(pathPrefix, server.handleIndex)
+	mux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
+	mux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
+
+	// register static endpoint handlers
 	staticFileHandler := http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))
-	siteMux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
-	siteMux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
-	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
+	mux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
+	mux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
+	mux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
 
-	wsMux := http.NewServeMux()
-	wsMux.Handle("/", handlers.LoggingHandler(os.Stderr, gziphandler.GzipHandler(http.Handler(siteMux))))
-	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
+	// register ws handler
+	mux.HandleFunc(pathPrefix+"ws", server.generateHandleWS())
 
-	return http.Handler(wsMux)
+	// wrap logging and compression middleware
+	return handlers.LoggingHandler(os.Stderr, gziphandler.GzipHandler(mux))
 }
 
 func (server *Server) generateHandleWS() http.HandlerFunc {
