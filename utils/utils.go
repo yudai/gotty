@@ -3,8 +3,17 @@ package utils
 import (
 	"crypto/rand"
 	"math/big"
+	"os"
 	"strconv"
 )
+
+func Expand(path string) string {
+	if path[0:2] == "~/" {
+		return os.Getenv("HOME") + path[1:]
+	} else {
+		return path
+	}
+}
 
 func Generate(length int) string {
 	const base = 36
