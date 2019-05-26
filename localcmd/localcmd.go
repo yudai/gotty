@@ -1,3 +1,5 @@
+// Package localcommand provides an implementation of webtty.Slave
+// that launches a local command with a PTY.
 package localcmd
 
 import (
@@ -8,9 +10,36 @@ import (
 
 	"github.com/kr/pty"
 	"github.com/pkg/errors"
+	"github.com/yudai/gotty/server"
 )
 
-type LocalCommand struct {
+type Factory struct {
+	command string
+	argv    []string
+}
+
+func NewFactory(command string, argv []string) (*Factory, error) {
+	return &Factory{
+		command: command,
+		argv:    argv,
+	}, nil
+}
+
+func (factory *Factory) Name() string {
+	return "local command"
+}
+
+func (factory *Factory) New(params map[string][]string) (server.Slave, error) {
+	argv := make([]string, len(factory.argv))
+	copy(argv, factory.argv)
+	if params["arg"] != nil && len(params["arg"]) > 0 {
+		argv = append(argv, params["arg"]...)
+	}
+	return NewLc(factory.command, argv)
+}
+
+// Lc implements the server.Slave interface
+type Lc struct {
 	command   string
 	argv      []string
 	cmd       *exec.Cmd
@@ -18,7 +47,7 @@ type LocalCommand struct {
 	ptyClosed chan struct{}
 }
 
-func New(command string, argv []string) (*LocalCommand, error) {
+func NewLc(command string, argv []string) (*Lc, error) {
 	cmd := exec.Command(command, argv...)
 
 	pty, err := pty.Start(cmd)
@@ -28,7 +57,7 @@ func New(command string, argv []string) (*LocalCommand, error) {
 	}
 	ptyClosed := make(chan struct{})
 
-	lcmd := &LocalCommand{
+	lcmd := &Lc{
 		command:   command,
 		argv:      argv,
 		cmd:       cmd,
@@ -50,15 +79,15 @@ func New(command string, argv []string) (*LocalCommand, error) {
 	return lcmd, nil
 }
 
-func (lcmd *LocalCommand) Read(p []byte) (n int, err error) {
+func (lcmd *Lc) Read(p []byte) (n int, err error) {
 	return lcmd.pty.Read(p)
 }
 
-func (lcmd *LocalCommand) Write(p []byte) (n int, err error) {
+func (lcmd *Lc) Write(p []byte) (n int, err error) {
 	return lcmd.pty.Write(p)
 }
 
-func (lcmd *LocalCommand) Close() error {
+func (lcmd *Lc) Close() error {
 	if lcmd.cmd != nil && lcmd.cmd.Process != nil {
 		lcmd.cmd.Process.Signal(syscall.SIGINT)
 	}
@@ -70,7 +99,7 @@ func (lcmd *LocalCommand) Close() error {
 	}
 }
 
-func (lcmd *LocalCommand) ResizeTerminal(width int, height int) error {
+func (lcmd *Lc) ResizeTerminal(width int, height int) error {
 	window := struct {
 		row uint16
 		col uint16
