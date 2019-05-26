@@ -11,84 +11,46 @@ import (
 	"sync"
 )
 
-///errors.go
+type (
+	// Master represents a PTY master, usually it's a websocket connection.
+	Master interface {
+		io.ReadWriter
+	}
 
-var (
-	// ErrSlaveClosed indicates the function has exited by the slave
-	ErrSlaveClosed = errors.New("slave closed")
+	// Slave represents a PTY slave, typically it's a local command.
+	Slave interface {
+		io.ReadWriteCloser
+		ResizeTerminal(columns int, rows int) error
+	}
 
-	// ErrSlaveClosed is returned when the slave connection is closed.
-	ErrMasterClosed = errors.New("master closed")
+	// WeTTY bridges a PTY slave and its PTY master.
+	// To support text-based streams and side channel commands such as
+	// terminal resizing, WeTTY uses an original protocol.
+	WeTTY struct {
+		// PTY Master, which probably a connection to browser
+		masterConn Master
+
+		// PTY Slave
+		slave Slave
+
+		windowTitle []byte
+		permitWrite bool
+		columns     int
+		rows        int
+		reconnect   int // in seconds
+		masterPrefs []byte
+
+		bufferSize int
+		writeMutex sync.Mutex
+	}
+
+	argResizeTerminal struct {
+		Columns float64
+		Rows    float64
+	}
 )
-
-///master.go
-
-// Master represents a PTY master, usually it's a websocket connection.
-type Master io.ReadWriter
-
-///message_types.go
-
-// Protocols defines the name of this protocol,
-// which is supposed to be used to the subprotocol of Websockt streams.
-var Protocols = []string{"webtty"}
-
-const (
-	// Unknown message type, maybe sent by a bug
-	UnknownInput = '0'
-	// User input typically from a keyboard
-	Input = '1'
-	// Ping to the server
-	Ping = '2'
-	// Notify that the browser size has been changed
-	ResizeTerminal = '3'
-)
-
-const (
-	// Unknown message type, maybe set by a bug
-	UnknownOutput = '0'
-	// Normal output to the terminal
-	Output = '1'
-	// Pong to the browser
-	Pong = '2'
-	// Set window title of the terminal
-	SetWindowTitle = '3'
-	// Set terminal preference
-	SetPreferences = '4'
-	// Make terminal to reconnect
-	SetReconnect = '5'
-)
-
-///slave.go
-
-// Slave represents a PTY slave, typically it's a local command.
-type Slave interface {
-	io.ReadWriter
-
-	// ResizeTerminal sets a new size of the terminal.
-	ResizeTerminal(columns int, rows int) error
-}
 
 ///webtty.go
-
-// WeTTY bridges a PTY slave and its PTY master.
-// To support text-based streams and side channel commands such as
-// terminal resizing, WeTTY uses an original protocol.
-type WeTTY struct {
-	// PTY Master, which probably a connection to browser
-	masterConn Master
-	// PTY Slave
-	slave Slave
-
-	windowTitle []byte
-	permitWrite bool
-	columns     int
-	rows        int
-	reconnect   int // in seconds
-	masterPrefs []byte
-
-	bufferSize int
-	writeMutex sync.Mutex
-}
 
 // New creates a new instance of WeTTY.
 // masterConn is a connection to the PTY master,
@@ -268,7 +230,44 @@ func (wt *WeTTY) handleMasterReadEvent(data []byte) error {
 	return nil
 }
 
-type argResizeTerminal struct {
-	Columns float64
-	Rows    float64
-}
+///message_types.go
+
+// Protocols defines the name of this protocol,
+// which is supposed to be used to the subprotocol of Websockt streams.
+var Protocols = []string{"webtty"}
+
+const (
+	// Unknown message type, maybe sent by a bug
+	UnknownInput = '0'
+	// User input typically from a keyboard
+	Input = '1'
+	// Ping to the server
+	Ping = '2'
+	// Notify that the browser size has been changed
+	ResizeTerminal = '3'
+)
+
+const (
+	// Unknown message type, maybe set by a bug
+	UnknownOutput = '0'
+	// Normal output to the terminal
+	Output = '1'
+	// Pong to the browser
+	Pong = '2'
+	// Set window title of the terminal
+	SetWindowTitle = '3'
+	// Set terminal preference
+	SetPreferences = '4'
+	// Make terminal to reconnect
+	SetReconnect = '5'
+)
+
+///errors.go
+
+var (
+	// ErrSlaveClosed indicates the function has exited by the slave
+	ErrSlaveClosed = errors.New("slave closed")
+
+	// ErrSlaveClosed is returned when the slave connection is closed.
+	ErrMasterClosed = errors.New("master closed")
+)

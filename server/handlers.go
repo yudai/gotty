@@ -107,7 +107,7 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 		return err //ors.Wrapf(err, "failed to parse arguments")
 	}
 	params := query.Query()
-	var slave Slave
+	var slave wetty.Slave
 	slave, err = server.factory.New(params)
 	if err != nil {
 		return err //ors.Wrapf(err, "failed to create backend")
