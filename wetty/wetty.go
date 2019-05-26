@@ -3,7 +3,6 @@
 package wetty
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -101,8 +100,7 @@ func (wt *WeTTY) Pipe() error {
 }
 
 func (wt *WeTTY) handleSlaveReadEvent(data []byte) error {
-	safeMessage := base64.StdEncoding.EncodeToString(data)
-	return wt.masterWrite(append([]byte{Output}, []byte(safeMessage)...))
+	return wt.masterWrite(append([]byte{Output}, data...))
 }
 
 func (wt *WeTTY) masterWrite(data []byte) error {
