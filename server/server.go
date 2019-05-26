@@ -19,16 +19,14 @@ import (
 
 // Server provides a webtty HTTP endpoint.
 type Server struct {
-	factory Factory
-	options *Options
-
+	factory       Factory
 	upgrader      *websocket.Upgrader
 	indexTemplate *template.Template
 }
 
 // New creates a new instance of Server.
 // Server will use the New() of the factory provided to handle each request.
-func New(factory Factory, options *Options) (*Server, error) {
+func New(factory Factory) (*Server, error) {
 	indexData, ok := assets.Assets["/index.html"]
 	if !ok {
 		panic("index not found") // must be in assets.Assets
@@ -40,8 +38,6 @@ func New(factory Factory, options *Options) (*Server, error) {
 
 	return &Server{
 		factory: factory,
-		options: options,
-
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -56,7 +52,7 @@ func New(factory Factory, options *Options) (*Server, error) {
 // existing connections. Use WithGracefullContext() to support gracefull shutdown.
 func (server *Server) Run() error {
 	path := "/"
-	if server.options.EnableRandomUrl {
+	if false {
 		path = "/" + utils.Generate(8) + "/"
 	}
 
