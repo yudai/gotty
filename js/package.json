@@ -7,7 +7,6 @@
         "webpack": "^2.5.1"
     },
     "dependencies": {
-        "libapps": "github:yudai/libapps#release-hterm-1.70",
         "xterm": "^2.7.0"
     }
 }

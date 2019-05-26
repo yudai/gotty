@@ -1,6 +1,4 @@
 import * as bare from "xterm";
-import { lib } from "libapps"
-
 
 bare.loadAddon("fit");
 
@@ -8,7 +6,6 @@ export class Xterm {
     elem: HTMLElement;
     term: bare;
     resizeListener: () => void;
-    decoder: lib.UTF8Decoder;
 
     message: HTMLElement;
     messageTimeout: number;
@@ -35,8 +32,6 @@ export class Xterm {
         });
 
         this.term.open(elem, true);
-
-        this.decoder = new lib.UTF8Decoder()
     };
 
     info(): { columns: number, rows: number } {
@@ -44,7 +39,7 @@ export class Xterm {
     };
 
     output(data: string) {
-        this.term.write(this.decoder.decode(data));
+        this.term.write(data);
     };
 
     showMessage(message: string, timeout: number) {
