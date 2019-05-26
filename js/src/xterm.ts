@@ -62,10 +62,6 @@ export class Xterm {
         }
     }
 
-    setWindowTitle(title: string) {
-        document.title = title;
-    };
-
     onInput(callback: (input: string) => void) {
         this.term.on("data", (data) => {
             callback(data);

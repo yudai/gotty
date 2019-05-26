@@ -14,7 +14,6 @@ export declare class Xterm {
     output(data: string): void;
     showMessage(message: string, timeout: number): void;
     removeMessage(): void;
-    setWindowTitle(title: string): void;
     onInput(callback: (input: string) => void): void;
     onResize(callback: (colmuns: number, rows: number) => void): void;
     deactivate(): void;

@@ -15,7 +15,6 @@ export class ConnectionFactory {
 export class Connection {
     bare: WebSocket;
 
-
     constructor(url: string, protocols: string[]) {
         this.bare = new WebSocket(url, protocols);
     }

@@ -8,8 +8,6 @@ export const msgResizeTerminal = '3';
 export const msgUnknownOutput = '0';
 export const msgOutput = '1';
 export const msgPong = '2';
-export const msgSetWindowTitle = '3';
-export const msgSetReconnect = '5';
 
 
 export interface Terminal {
@@ -17,7 +15,6 @@ export interface Terminal {
     output(data: string): void;
     showMessage(message: string, timeout: number): void;
     removeMessage(): void;
-    setWindowTitle(title: string): void;
     onInput(callback: (input: string) => void): void;
     onResize(callback: (colmuns: number, rows: number) => void): void;
     reset(): void;
@@ -43,22 +40,15 @@ export interface ConnectionFactory {
 export class WebTTY {
     term: Terminal;
     connectionFactory: ConnectionFactory;
-    args: string;
-    authToken: string;
-    reconnect: number;
 
-    constructor(term: Terminal, connectionFactory: ConnectionFactory, args: string, authToken: string) {
+    constructor(term: Terminal, connectionFactory: ConnectionFactory) {
         this.term = term;
         this.connectionFactory = connectionFactory;
-        this.args = args;
-        this.authToken = authToken;
-        this.reconnect = -1;
     };
 
     open() {
         let connection = this.connectionFactory.create();
         let pingTimer: number;
-        let reconnectTimeout: number;
 
         const setup = () => {
             connection.onOpen(() => {
@@ -98,14 +88,6 @@ export class WebTTY {
                         break;
                     case msgPong:
                         break;
-                    case msgSetWindowTitle:
-                        this.term.setWindowTitle(payload);
-                        break;
-                    case msgSetReconnect:
-                        const autoReconnect = JSON.parse(payload);
-                        console.log("Enabling reconnect: " + autoReconnect + " seconds")
-                        this.reconnect = autoReconnect;
-                        break;
                 }
             });
 
@@ -113,13 +95,6 @@ export class WebTTY {
                 clearInterval(pingTimer);
                 this.term.deactivate();
                 this.term.showMessage("Connection Closed", 0);
-                if (this.reconnect > 0) {
-                    reconnectTimeout = setTimeout(() => {
-                        connection = this.connectionFactory.create();
-                        this.term.reset();
-                        setup();
-                    }, this.reconnect * 1000);
-                }
             });
 
             connection.open();
@@ -127,7 +102,6 @@ export class WebTTY {
 
         setup();
         return () => {
-            clearTimeout(reconnectTimeout);
             connection.close();
         }
     };

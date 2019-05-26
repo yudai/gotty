@@ -6,8 +6,6 @@ export declare const msgResizeTerminal = "3";
 export declare const msgUnknownOutput = "0";
 export declare const msgOutput = "1";
 export declare const msgPong = "2";
-export declare const msgSetWindowTitle = "3";
-export declare const msgSetReconnect = "5";
 export interface Terminal {
     info(): {
         columns: number;
@@ -16,7 +14,6 @@ export interface Terminal {
     output(data: string): void;
     showMessage(message: string, timeout: number): void;
     removeMessage(): void;
-    setWindowTitle(title: string): void;
     onInput(callback: (input: string) => void): void;
     onResize(callback: (colmuns: number, rows: number) => void): void;
     reset(): void;
@@ -38,9 +35,6 @@ export interface ConnectionFactory {
 export declare class WebTTY {
     term: Terminal;
     connectionFactory: ConnectionFactory;
-    args: string;
-    authToken: string;
-    reconnect: number;
-    constructor(term: Terminal, connectionFactory: ConnectionFactory, args: string, authToken: string);
+    constructor(term: Terminal, connectionFactory: ConnectionFactory);
     open(): () => void;
 }
