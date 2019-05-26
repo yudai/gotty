@@ -4,31 +4,21 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
-	"time"
 	"unsafe"
 
 	"github.com/kr/pty"
 	"github.com/pkg/errors"
 )
 
-const (
-	DefaultCloseSignal  = syscall.SIGINT
-	DefaultCloseTimeout = 10 * time.Second
-)
-
 type LocalCommand struct {
-	command string
-	argv    []string
-
-	closeSignal  syscall.Signal
-	closeTimeout time.Duration
-
+	command   string
+	argv      []string
 	cmd       *exec.Cmd
 	pty       *os.File
 	ptyClosed chan struct{}
 }
 
-func New(command string, argv []string, options ...Option) (*LocalCommand, error) {
+func New(command string, argv []string) (*LocalCommand, error) {
 	cmd := exec.Command(command, argv...)
 
 	pty, err := pty.Start(cmd)
@@ -39,19 +29,11 @@ func New(command string, argv []string, options ...Option) (*LocalCommand, error
 	ptyClosed := make(chan struct{})
 
 	lcmd := &LocalCommand{
-		command: command,
-		argv:    argv,
-
-		closeSignal:  DefaultCloseSignal,
-		closeTimeout: DefaultCloseTimeout,
-
+		command:   command,
+		argv:      argv,
 		cmd:       cmd,
 		pty:       pty,
 		ptyClosed: ptyClosed,
-	}
-
-	for _, option := range options {
-		option(lcmd)
 	}
 
 	// When the process is closed by the user,
@@ -78,14 +60,12 @@ func (lcmd *LocalCommand) Write(p []byte) (n int, err error) {
 
 func (lcmd *LocalCommand) Close() error {
 	if lcmd.cmd != nil && lcmd.cmd.Process != nil {
-		lcmd.cmd.Process.Signal(lcmd.closeSignal)
+		lcmd.cmd.Process.Signal(syscall.SIGINT)
 	}
 	for {
 		select {
 		case <-lcmd.ptyClosed:
 			return nil
-		case <-lcmd.closeTimeoutC():
-			lcmd.cmd.Process.Signal(syscall.SIGKILL)
 		}
 	}
 }
@@ -110,15 +90,6 @@ func (lcmd *LocalCommand) ResizeTerminal(width int, height int) error {
 	)
 	if errno != 0 {
 		return errno
-	} else {
-		return nil
 	}
-}
-
-func (lcmd *LocalCommand) closeTimeoutC() <-chan time.Time {
-	if lcmd.closeTimeout >= 0 {
-		return time.After(lcmd.closeTimeout)
-	}
-
-	return make(chan time.Time)
+	return nil
 }

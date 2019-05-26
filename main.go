@@ -23,12 +23,8 @@ func main() {
 	if err := utils.ApplyDefaultValues(serverOptions); err != nil {
 		exit(err, 1)
 	}
-	localcmdOptions := &localcmd.Options{}
-	if err := utils.ApplyDefaultValues(localcmdOptions); err != nil {
-		exit(err, 1)
-	}
 
-	cliFlags, flagMappings, err := utils.GenerateFlags(serverOptions, localcmdOptions)
+	cliFlags, flagMappings, err := utils.GenerateFlags(serverOptions)
 	if err != nil {
 		exit(err, 3)
 	}
@@ -53,15 +49,15 @@ func main() {
 		configFile := c.String("config")
 		_, err := os.Stat(utils.Expand(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
-			if err := utils.ApplyConfigFile(configFile, serverOptions, localcmdOptions); err != nil {
+			if err := utils.ApplyConfigFile(configFile, serverOptions); err != nil {
 				exit(err, 2)
 			}
 		}
 
-		utils.ApplyFlags(cliFlags, flagMappings, c, serverOptions, localcmdOptions)
+		utils.ApplyFlags(cliFlags, flagMappings, c, serverOptions)
 
 		args := c.Args()
-		factory, err := localcmd.NewFactory(args[0], args[1:], localcmdOptions)
+		factory, err := localcmd.NewFactory(args[0], args[1:])
 		if err != nil {
 			exit(err, 3)
 		}
