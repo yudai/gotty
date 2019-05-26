@@ -1,20 +1,13 @@
-import { Hterm } from "./hterm";
 import { Xterm } from "./xterm";
 import { Terminal, WebTTY, protocols } from "./webtty";
 import { ConnectionFactory } from "./websocket";
 
 var gotty_auth_token : string = "";
-var gotty_term : string = "xterm";
 
 const elem = document.getElementById("terminal")
 
 if (elem !== null) {
-    var term: Terminal;
-    if (gotty_term == "hterm") {
-        term = new Hterm(elem);
-    } else {
-        term = new Xterm(elem);
-    }
+    var term: Terminal = new Xterm(elem);
     const httpsEnabled = window.location.protocol == "https:";
     const url = (httpsEnabled ? 'wss://' : 'ws://') + window.location.host + window.location.pathname + 'ws';
     const args = window.location.search;

@@ -7,7 +7,6 @@ export declare const msgUnknownOutput = "0";
 export declare const msgOutput = "1";
 export declare const msgPong = "2";
 export declare const msgSetWindowTitle = "3";
-export declare const msgSetPreferences = "4";
 export declare const msgSetReconnect = "5";
 export interface Terminal {
     info(): {
@@ -18,7 +17,6 @@ export interface Terminal {
     showMessage(message: string, timeout: number): void;
     removeMessage(): void;
     setWindowTitle(title: string): void;
-    setPreferences(value: object): void;
     onInput(callback: (input: string) => void): void;
     onResize(callback: (colmuns: number, rows: number) => void): void;
     reset(): void;

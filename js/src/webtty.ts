@@ -9,7 +9,6 @@ export const msgUnknownOutput = '0';
 export const msgOutput = '1';
 export const msgPong = '2';
 export const msgSetWindowTitle = '3';
-export const msgSetPreferences = '4';
 export const msgSetReconnect = '5';
 
 
@@ -19,7 +18,6 @@ export interface Terminal {
     showMessage(message: string, timeout: number): void;
     removeMessage(): void;
     setWindowTitle(title: string): void;
-    setPreferences(value: object): void;
     onInput(callback: (input: string) => void): void;
     onResize(callback: (colmuns: number, rows: number) => void): void;
     reset(): void;
@@ -102,10 +100,6 @@ export class WebTTY {
                         break;
                     case msgSetWindowTitle:
                         this.term.setWindowTitle(payload);
-                        break;
-                    case msgSetPreferences:
-                        const preferences = JSON.parse(payload);
-                        this.term.setPreferences(preferences);
                         break;
                     case msgSetReconnect:
                         const autoReconnect = JSON.parse(payload);

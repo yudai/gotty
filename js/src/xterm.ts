@@ -71,9 +71,6 @@ export class Xterm {
         document.title = title;
     };
 
-    setPreferences(value: object) {
-    };
-
     onInput(callback: (input: string) => void) {
         this.term.on("data", (data) => {
             callback(data);
