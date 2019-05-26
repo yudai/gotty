@@ -88,6 +88,11 @@ func (server *Server) processWSConn(conn *websocket.Conn) error {
 		return err //ors.New("failed to authenticate websocket connection: invalid message type")
 	}
 
+	type InitMessage struct {
+		Arguments string `json:"Arguments,omitempty"`
+		AuthToken string `json:"AuthToken,omitempty"`
+	}
+
 	var init InitMessage
 	err = json.Unmarshal(initLine, &init)
 	if err != nil {
