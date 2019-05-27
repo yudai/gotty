@@ -66,6 +66,10 @@ func New(factory Factory, options *Options) (*Server, error) {
 		originChekcer = func(r *http.Request) bool {
 			return matcher.MatchString(r.Header.Get("Origin"))
 		}
+	} else {
+		originChekcer = func(r *http.Request) bool {
+			return true
+		}
 	}
 
 	return &Server{
