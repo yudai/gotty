@@ -6,6 +6,8 @@ import (
 	"io"
 	"net"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/kr/pty"
 
@@ -13,11 +15,16 @@ import (
 )
 
 type Client struct {
+	mu   *sync.Mutex
+	conn net.Conn
 	addr string
 }
 
 func New(addr string) *Client {
-	return &Client{addr}
+	return &Client{
+		addr: addr,
+		mu:   &sync.Mutex{},
+	}
 }
 
 func (c *Client) Run() error {
@@ -31,7 +38,7 @@ func (c *Client) Run() error {
 	}
 
 	// read/write conn
-	_ = conn
+	c.conn = conn
 
 	// get terminal size
 	size, err := pty.GetsizeFull(os.Stdin)
@@ -49,7 +56,11 @@ func (c *Client) Run() error {
 
 	// os.Stderr.Write(resize)
 
-	conn.Write(append([]byte{wetty.ResizeTerminal}, resize...))
+	go c.PingLoop()
+
+	c.mu.Lock()
+	c.conn.Write(append([]byte{wetty.ResizeTerminal}, resize...))
+	c.mu.Unlock()
 	// defer exec.Command("reset").Run()
 
 	buf := make([]byte, 1024)
@@ -66,12 +77,21 @@ func (c *Client) Run() error {
 			continue
 		}
 		switch buf[0] {
+		case wetty.Pong:
 		case wetty.Output:
 			os.Stdout.Write(buf[1:n])
 		default:
-			io.WriteString(os.Stderr, fmt.Sprintf("unrecognized message type: `%b`", buf[0]))
+			io.WriteString(os.Stderr, fmt.Sprintf("unrecognized message type: `%s`", string(buf[0])))
 		}
 	}
 
 	return nil
+}
+
+func (c *Client) PingLoop() {
+	for range time.Tick(time.Second) {
+		c.mu.Lock()
+		c.conn.Write([]byte{wetty.Ping})
+		c.mu.Unlock()
+	}
 }
