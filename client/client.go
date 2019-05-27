@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -56,12 +57,14 @@ func (c *Client) Run() error {
 
 	// os.Stderr.Write(resize)
 
-	go c.PingLoop()
-
 	c.mu.Lock()
 	c.conn.Write(append([]byte{wetty.ResizeTerminal}, resize...))
 	c.mu.Unlock()
 	// defer exec.Command("reset").Run()
+
+	go c.PingLoop()
+
+	go c.ReadInput()
 
 	buf := make([]byte, 1024)
 	for {
@@ -92,6 +95,16 @@ func (c *Client) PingLoop() {
 	for range time.Tick(time.Second) {
 		c.mu.Lock()
 		c.conn.Write([]byte{wetty.Ping})
+		c.mu.Unlock()
+	}
+}
+
+func (c *Client) ReadInput() {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		line := scanner.Text()
+		c.mu.Lock()
+		io.WriteString(c.conn, string(wetty.Input)+line+"\n")
 		c.mu.Unlock()
 	}
 }
