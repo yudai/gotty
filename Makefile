@@ -1,5 +1,8 @@
 OUTPUT_DIR = ./builds
 
+client: main.go client/*.go 
+	go build -o gotty-client
+
 gotty: main.go server/*.go webtty/*.go localcmd/*.go Makefile
 	go build 
 
@@ -10,7 +13,7 @@ asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/stati
 	assets -d ./bindata/static -package assets -o ./assets/assets.go -map Assets
 
 .PHONY: all
-all: asset gotty
+all: asset gotty client
 	goimports -w
 
 bindata:

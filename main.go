@@ -5,11 +5,27 @@ import (
 	"os"
 	"strings"
 
+	"github.com/yudai/gotty/client"
 	"github.com/yudai/gotty/server"
 )
 
 func main() {
+	exe, err := os.Executable()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	args := os.Args[1:]
+
+	// client mode
+	if strings.HasSuffix(exe, "client") {
+		if err := client.New("127.0.0.1:8080").Run(); err != nil {
+			log.Fatalln(err)
+		}
+		os.Exit(0)
+	}
+
+	// server mode
 	if len(args) == 0 {
 		log.Fatalln("usage: gotty [command] [args]...")
 	}

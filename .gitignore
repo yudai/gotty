@@ -1,4 +1,5 @@
 gotty
+gotty-client
 bindata
 builds
 js/node_modules/*
