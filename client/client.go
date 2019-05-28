@@ -1,7 +1,6 @@
 package client
 
 import (
-	"io"
 	"os"
 
 	"github.com/navigaid/gotty/utils"
@@ -9,11 +8,11 @@ import (
 )
 
 type Client struct {
-	factory func() (io.ReadWriter, error)
+	factory func() (wetty.Master, error)
 }
 
 func New(addr string) *Client {
-	factory := func() (io.ReadWriter, error) {
+	factory := func() (wetty.Master, error) {
 		conn, _, err := wetty.Dialer.Dial(addr, nil)
 		return &utils.WsWrapper{conn}, err
 	}
