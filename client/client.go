@@ -1,17 +1,14 @@
 package client
 
 import (
-	"bufio"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/kr/pty"
 
+	"github.com/navigaid/gotty/utils"
 	"github.com/navigaid/gotty/wetty"
 )
 
@@ -62,49 +59,7 @@ func (c *Client) Run() error {
 	c.mu.Unlock()
 	// defer exec.Command("reset").Run()
 
-	go c.PingLoop()
-
-	go c.ReadInput()
-
-	buf := make([]byte, 1024)
-	for {
-		n, err := conn.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				return nil
-			}
-			return err
-		}
-		if n == 0 {
-			println("continue")
-			continue
-		}
-		switch buf[0] {
-		case wetty.Pong:
-		case wetty.Output:
-			os.Stdout.Write(buf[1:n])
-		default:
-			io.WriteString(os.Stderr, fmt.Sprintf("unrecognized message type: `%s`", string(buf[0])))
-		}
-	}
-
-	return nil
-}
-
-func (c *Client) PingLoop() {
-	for range time.Tick(time.Second) {
-		c.mu.Lock()
-		c.conn.Write([]byte{wetty.Ping})
-		c.mu.Unlock()
-	}
-}
-
-func (c *Client) ReadInput() {
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		c.mu.Lock()
-		io.WriteString(c.conn, string(wetty.Input)+line+"\n")
-		c.mu.Unlock()
-	}
+	var client wetty.Client = &utils.ReadWriter{os.Stdin, os.Stdout}
+	var master wetty.Master = conn
+	return wetty.NewCMPair(client, master).Pipe()
 }

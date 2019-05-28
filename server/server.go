@@ -5,16 +5,12 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/gorilla/websocket"
-
 	"github.com/navigaid/gotty/localcmd"
-	"github.com/navigaid/gotty/wetty"
 )
 
 // Server provides a wetty HTTP endpoint.
 type Server struct {
-	factory  *localcmd.Factory
-	upgrader *websocket.Upgrader
+	factory *localcmd.Factory
 }
 
 // New creates a new instance of Server.
@@ -23,11 +19,6 @@ func New(args []string) *Server {
 	return &Server{
 		factory: &localcmd.Factory{
 			Args: args,
-		},
-		upgrader: &websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			Subprotocols:    wetty.Protocols,
 		},
 	}
 }

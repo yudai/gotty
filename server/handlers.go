@@ -79,7 +79,7 @@ func (server *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := server.upgrader.Upgrade(w, r, nil)
+	conn, err := wetty.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		closeReason = err.Error()
 		return
@@ -105,11 +105,5 @@ func (server *Server) pipe(master wetty.Master) error {
 		return err //ors.Wrapf(err, "failed to create backend")
 	}
 	defer slave.Close()
-
-	tty, err := wetty.New(master, slave)
-	if err != nil {
-		return err //ors.Wrapf(err, "failed to create wetty")
-	}
-
-	return tty.Pipe()
+	return wetty.NewMSPair(master, slave).Pipe()
 }
