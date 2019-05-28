@@ -8,58 +8,19 @@ import (
 	"time"
 
 	"github.com/gorilla/handlers"
-	"github.com/invctrl/hijack/wrap"
 	"modernc.org/httpfs"
 
 	"github.com/navigaid/gotty/assets"
+	"github.com/navigaid/gotty/utils"
 	"github.com/navigaid/gotty/wetty"
 )
 
 func (server *Server) setupHandlers(pathPrefix string) http.Handler {
 	mux := http.NewServeMux()
-	// register static endpoint handlers
-	mux.Handle(pathPrefix, http.StripPrefix(pathPrefix, http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))))
-	// register ws handler
+	staticFileServer := http.FileServer(httpfs.NewFileSystem(assets.Assets, time.Now()))
+	mux.Handle(pathPrefix, http.StripPrefix(pathPrefix, staticFileServer))
 	mux.HandleFunc(pathPrefix+"ws", server.wsHandler)
-
-	return handlers.LoggingHandler(os.Stderr, server.hijack(mux))
-}
-
-func (server *Server) hijack(h http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(http.CanonicalHeaderKey("Hijack")) == "true" {
-			server.tcpHandler(w, r)
-			return
-		}
-		h.ServeHTTP(w, r)
-	}
-}
-
-func (server *Server) tcpHandler(w http.ResponseWriter, r *http.Request) {
-	closeReason := "unknown reason"
-
-	defer func() {
-		log.Printf(
-			"Connection closed by %s: %s, connections: %d/%d",
-			closeReason, r.RemoteAddr, 0, 0,
-		)
-	}()
-	conn, err := wrap.WrapConn(w.(http.Hijacker).Hijack())
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer conn.Close()
-
-	err = server.pipe(conn)
-	switch err {
-	case wetty.ErrSlaveClosed:
-		closeReason = "local command"
-	case wetty.ErrMasterClosed:
-		closeReason = "client"
-	default:
-		closeReason = fmt.Sprintf("an error: %s", err)
-	}
+	return handlers.LoggingHandler(os.Stderr, mux)
 }
 
 func (server *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
@@ -86,8 +47,15 @@ func (server *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	err = server.pipe(&wsWrapper{conn})
-
+	var master wetty.Master = &utils.WsWrapper{conn}
+	var slave wetty.Slave
+	slave, err = server.factory.New()
+	if err != nil {
+		closeReason = "slave creation failed"
+		return
+	}
+	defer slave.Close()
+	err = wetty.NewMSPair(master, slave).Pipe()
 	switch err {
 	case wetty.ErrSlaveClosed:
 		closeReason = "local command"
@@ -96,14 +64,4 @@ func (server *Server) wsHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		closeReason = fmt.Sprintf("an error: %s", err)
 	}
-}
-
-func (server *Server) pipe(master wetty.Master) error {
-	var slave wetty.Slave
-	slave, err := server.factory.New()
-	if err != nil {
-		return err //ors.Wrapf(err, "failed to create backend")
-	}
-	defer slave.Close()
-	return wetty.NewMSPair(master, slave).Pipe()
 }

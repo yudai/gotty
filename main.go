@@ -19,7 +19,7 @@ func main() {
 
 	// client mode
 	if strings.HasSuffix(exe, "client") {
-		if err := client.New("127.0.0.1:8080").Run(); err != nil {
+		if err := client.New("ws://localhost:8080/ws").Run(); err != nil {
 			log.Fatalln(err)
 		}
 		os.Exit(0)
