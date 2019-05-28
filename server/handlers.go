@@ -11,8 +11,8 @@ import (
 	"github.com/invctrl/hijack/wrap"
 	"modernc.org/httpfs"
 
-	"github.com/yudai/gotty/assets"
-	"github.com/yudai/gotty/wetty"
+	"github.com/navigaid/gotty/assets"
+	"github.com/navigaid/gotty/wetty"
 )
 
 func (server *Server) setupHandlers(pathPrefix string) http.Handler {

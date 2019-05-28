@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/yudai/gotty/client"
-	"github.com/yudai/gotty/server"
+	"github.com/navigaid/gotty/client"
+	"github.com/navigaid/gotty/server"
 )
 
 func main() {

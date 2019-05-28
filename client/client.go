@@ -12,7 +12,7 @@ import (
 
 	"github.com/kr/pty"
 
-	"github.com/yudai/gotty/wetty"
+	"github.com/navigaid/gotty/wetty"
 )
 
 type Client struct {

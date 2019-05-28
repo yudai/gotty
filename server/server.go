@@ -7,8 +7,8 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/yudai/gotty/localcmd"
-	"github.com/yudai/gotty/wetty"
+	"github.com/navigaid/gotty/localcmd"
+	"github.com/navigaid/gotty/wetty"
 )
 
 // Server provides a wetty HTTP endpoint.
