@@ -79,23 +79,12 @@ func (lcmd *Lc) Close() error {
 	}
 }
 
-func (lcmd *Lc) ResizeTerminal(width int, height int) error {
-	window := struct {
-		row uint16
-		col uint16
-		x   uint16
-		y   uint16
-	}{
-		uint16(height),
-		uint16(width),
-		0,
-		0,
-	}
+func (lcmd *Lc) ResizeTerminal(sz *pty.Winsize) error {
 	_, _, errno := syscall.Syscall(
 		syscall.SYS_IOCTL,
 		lcmd.pty.Fd(),
 		syscall.TIOCSWINSZ,
-		uintptr(unsafe.Pointer(&window)),
+		uintptr(unsafe.Pointer(sz)),
 	)
 	if errno != 0 {
 		return errno

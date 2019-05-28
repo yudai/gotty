@@ -58,8 +58,8 @@ export class WebTTY {
                     connection.send(
                         msgResizeTerminal + JSON.stringify(
                             {
-                                columns: colmuns,
-                                rows: rows
+                                "Cols": colmuns,
+                                "Rows": rows
                             }
                         )
                     );

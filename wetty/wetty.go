@@ -7,10 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/kr/pty"
 )
 
 type (
@@ -27,7 +29,7 @@ type (
 	// Slave represents a PTY slave, typically it's a local command.
 	Slave interface {
 		io.ReadWriteCloser
-		ResizeTerminal(columns int, rows int) error
+		ResizeTerminal(*pty.Winsize) error
 	}
 
 	CMPair struct {
@@ -247,18 +249,15 @@ func (ms *MSPair) handleMasterReadEvent(data []byte) error {
 			return err //ors.Wrapf(err, "failed to return Pong message to master")
 		}
 	case ResizeTerminal:
-		type termSize struct {
-			Columns float64
-			Rows    float64
-		}
-		var args termSize
+		sz := &pty.Winsize{}
 		if len(data) <= 1 {
 			return errors.New("received malformed remote command for terminal resize: empty payload")
 		}
-		if err := json.Unmarshal(data[1:], &args); err != nil {
+		if err := json.Unmarshal(data[1:], sz); err != nil {
 			return err //ors.Wrapf(err, "received malformed data for terminal resize")
 		}
-		ms.slave.ResizeTerminal(int(args.Rows), int(args.Columns))
+		ms.slave.ResizeTerminal(sz)
+		log.Println("new sz:", sz)
 	default:
 		return errors.New(fmt.Sprintf("unknown message type `%c`", data[0]))
 	}
