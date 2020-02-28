@@ -6,13 +6,17 @@ BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMM
 gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
 	go build ${BUILD_OPTIONS}
 
+docker: 
+	docker build . -t gotty-bash:$(VERSION)
+
+
 .PHONY: asset
 asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
 
 .PHONY: all
-all: asset gotty
+all: asset gotty docker
 
 bindata:
 	mkdir bindata
