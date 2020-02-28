@@ -4,7 +4,11 @@ VERSION = 2.0.0-alpha.3
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
 
 gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
-	godep go build ${BUILD_OPTIONS}
+	go build ${BUILD_OPTIONS}
+
+docker: 
+	docker build . -t gotty-bash:$(VERSION)
+
 
 .PHONY: asset
 asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
@@ -12,7 +16,7 @@ asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/stati
 	gofmt -w server/asset.go
 
 .PHONY: all
-all: asset gotty
+all: asset gotty docker
 
 bindata:
 	mkdir bindata
@@ -78,3 +82,5 @@ shasums:
 
 release:
 	ghr -c ${GIT_COMMIT} --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
+clean:
+	rm -fr gotty
