@@ -78,3 +78,5 @@ shasums:
 
 release:
 	ghr -c ${GIT_COMMIT} --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
+clean:
+	rm -fr gotty
