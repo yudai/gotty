@@ -169,6 +169,40 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 }
 
 func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
+	indexVars, err := server.indexVariables(r)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	indexBuf := new(bytes.Buffer)
+	err = server.indexTemplate.Execute(indexBuf, indexVars)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	w.Write(indexBuf.Bytes())
+}
+
+func (server *Server) handleManifest(w http.ResponseWriter, r *http.Request) {
+	indexVars, err := server.indexVariables(r)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	indexBuf := new(bytes.Buffer)
+	err = server.manifestTemplate.Execute(indexBuf, indexVars)
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	w.Write(indexBuf.Bytes())
+}
+
+func (server *Server) indexVariables(r *http.Request) (map[string]interface{}, error) {
 	titleVars := server.titleVariables(
 		[]string{"server", "master"},
 		map[string]map[string]interface{}{
@@ -182,22 +216,13 @@ func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	titleBuf := new(bytes.Buffer)
 	err := server.titleTemplate.Execute(titleBuf, titleVars)
 	if err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
+		return nil, err
 	}
 
 	indexVars := map[string]interface{}{
 		"title": titleBuf.String(),
 	}
-
-	indexBuf := new(bytes.Buffer)
-	err = server.indexTemplate.Execute(indexBuf, indexVars)
-	if err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	w.Write(indexBuf.Bytes())
+	return indexVars, err
 }
 
 func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
