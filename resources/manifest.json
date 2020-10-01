@@ -1,0 +1,15 @@
+{
+  "short_name": "{{ .title }}",
+  "name": "{{ .title }}",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "./icon_192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "display": "minimal-ui",
+  "theme_color": "#000000",
+  "background_color": "#000000"
+}
