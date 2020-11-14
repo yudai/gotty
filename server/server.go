@@ -196,11 +196,6 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 
 	siteHandler := http.Handler(siteMux)
 
-	if server.options.EnableBasicAuth {
-		log.Printf("Using Basic Authentication")
-		siteHandler = server.wrapBasicAuth(siteHandler, server.options.Credential)
-	}
-
 	withGz := gziphandler.GzipHandler(server.wrapHeaders(siteHandler))
 	siteHandler = server.wrapLogger(withGz)
 
@@ -208,6 +203,11 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 	wsMux.Handle("/", siteHandler)
 	wsMux.HandleFunc(pathPrefix+"ws", server.generateHandleWS(ctx, cancel, counter))
 	siteHandler = http.Handler(wsMux)
+
+	if server.options.EnableBasicAuth {
+		log.Printf("Using Basic Authentication")
+		siteHandler = server.wrapBasicAuth(siteHandler, server.options.Credential)
+	}
 
 	return siteHandler
 }
