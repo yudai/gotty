@@ -9,6 +9,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
+	gPath "path"
 	"regexp"
 	noesctmpl "text/template"
 	"time"
@@ -95,10 +97,15 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 
 	counter := newCounter(time.Duration(server.options.Timeout) * time.Second)
 
-	path := "/"
-	if server.options.EnableRandomUrl {
-		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
+	baseURL, err := url.Parse(server.options.BaseURL)
+	if err != nil {
+		return errors.Wrapf(err, "failed to setup an HTTP server")
 	}
+	rPath := ""
+	if server.options.EnableRandomUrl {
+		rPath = randomstring.Generate(server.options.RandomUrlLength)
+	}
+	path := gPath.Join("/", baseURL.Path, rPath) + "/"
 
 	handlers := server.setupHandlers(cctx, cancel, path, counter)
 	srv, err := server.setupHTTPServer(handlers)
