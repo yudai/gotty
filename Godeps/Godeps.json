@@ -8,7 +8,7 @@
 			"Rev": "967539e5e271a2bc9b3dcb1285078a1b1df105ae"
 		},
 		{
-			"ImportPath": "github.com/codegangsta/cli",
+			"ImportPath": "github.com/urfave/cli",
 			"Comment": "v1.19.1",
 			"Rev": "0bdeddeeb0f650497d603c4ad7b20cfe685682f6"
 		},
