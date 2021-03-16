@@ -16,9 +16,10 @@ all: asset gotty
 
 .PHONY: clean
 clean:
-	rm -rf server/static
-	rm gotty
 	rm -rf js/node_modules
+	rm -rf server/static
+	rm -f gotty
+	
 
 server/static:
 	mkdir server/static
@@ -45,10 +46,10 @@ server/static/css/index.css: server/static/css resources/index.css
 server/static/css/xterm_customize.css: server/static/css resources/xterm_customize.css
 	cp resources/xterm_customize.css server/static/css/xterm_customize.css
 
-server/static/css/xterm.css: server/static/css js/node_modules/xterm/dist/xterm.css
-	cp js/node_modules/xterm/dist/xterm.css server/static/css/xterm.css
+server/static/css/xterm.css: server/static/css js/node_modules/xterm/css/xterm.css
+	cp js/node_modules/xterm/css/xterm.css server/static/css/xterm.css
 
-js/node_modules/xterm/dist/xterm.css:
+js/node_modules/xterm/css/xterm.css:
 	cd js && \
 	npm install
 
