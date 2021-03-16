@@ -14,6 +14,12 @@ asset: server/static/js/gotty-bundle.js server/static/index.html server/static/f
 .PHONY: all
 all: asset gotty
 
+.PHONY: clean
+clean:
+	rm -rf server/static
+	rm gotty
+	rm -rf js/node_modules
+
 server/static:
 	mkdir server/static
 
@@ -50,7 +56,7 @@ js/dist/gotty-bundle.js: js/src/* js/node_modules/webpack
 	cd js && \
 	`npm bin`/webpack
 
-js/node_modules/webpack:
+js/node_modules/webpack: 
 	cd js && \
 	npm install
 
