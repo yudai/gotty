@@ -1,5 +1,8 @@
 import * as bare from "xterm";
 import { FitAddon } from 'xterm-addon-fit'
+import { SearchAddon } from 'xterm-addon-search'
+import { Unicode11Addon } from 'xterm-addon-unicode11'
+import { WebLinksAddon } from 'xterm-addon-web-links'
 import { lib } from "libapps"
 
 export class Xterm {
@@ -18,6 +21,14 @@ export class Xterm {
         this.term = new bare.Terminal();
         const fitAddon = new FitAddon();
         this.term.loadAddon(fitAddon);
+        this.term.loadAddon(new WebLinksAddon());
+        const unicode11Addon = new Unicode11Addon();
+        this.term.loadAddon(unicode11Addon);
+        const searchAddon = new SearchAddon();
+        this.term.loadAddon(searchAddon);
+ 
+        // activate the new version
+        this.term.unicode.activeVersion = '11';
 
         this.message = elem.ownerDocument.createElement("div");
         this.message.className = "xterm-overlay";

@@ -49,7 +49,7 @@ server/static/css/xterm_customize.css: server/static/css resources/xterm_customi
 server/static/css/xterm.css: server/static/css js/node_modules/xterm/css/xterm.css
 	cp js/node_modules/xterm/css/xterm.css server/static/css/xterm.css
 
-js/node_modules/xterm/css/xterm.css:
+js/node_modules/xterm/css/xterm.css: js/package.json
 	cd js && \
 	npm install
 
