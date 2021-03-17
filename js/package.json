@@ -2,12 +2,17 @@
     "devDependencies": {
         "license-loader": "^0.5.0",
         "ts-loader": "^2.0.3",
-        "typescript": "^2.3.2",
+        "typescript": "^3.5.1",
         "uglifyjs-webpack-plugin": "^1.0.0-beta.2",
         "webpack": "^2.5.1"
     },
     "dependencies": {
         "libapps": "github:yudai/libapps#release-hterm-1.70",
-        "xterm": "^2.7.0"
+        "xterm": "^4.11.0",
+        "xterm-addon-fit": "^0.5.0",
+        "xterm-addon-ligatures": "^0.4.0",
+        "xterm-addon-search": "^0.8.0",
+        "xterm-addon-unicode11": "^0.2.0",
+        "xterm-addon-web-links": "^0.4.0"
     }
 }

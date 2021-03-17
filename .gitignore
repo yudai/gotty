@@ -1,4 +1,5 @@
 gotty
-bindata
+server/static
 builds
+js/dist/
 js/node_modules/*
