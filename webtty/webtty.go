@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -14,7 +15,9 @@ import (
 // terminal resizing, WebTTY uses an original protocol.
 type WebTTY struct {
 	// PTY downstream, which is usually a connection to browser
-	downstream Downstream
+	downstreamWriter  Downstream
+	downstreamReaders []Downstream
+
 	// PTY upstream, usually a local tty
 	upstream Upstream
 
@@ -35,8 +38,9 @@ type WebTTY struct {
 // upstream is usually a local command with a PTY.
 func New(downstream Downstream, upstream Upstream, options ...Option) (*WebTTY, error) {
 	wt := &WebTTY{
-		downstream: downstream,
-		upstream:   upstream,
+		downstreamWriter:  downstream,
+		downstreamReaders: []Downstream{downstream},
+		upstream:          upstream,
 
 		permitWrite: false,
 		columns:     0,
@@ -50,6 +54,26 @@ func New(downstream Downstream, upstream Upstream, options ...Option) (*WebTTY, 
 	}
 
 	return wt, nil
+}
+
+func (wt *WebTTY) addDownstreamReader(downstream Downstream) {
+	wt.writeMutex.Lock()
+	defer wt.writeMutex.Unlock()
+	wt.downstreamReaders = append(wt.downstreamReaders, downstream)
+}
+
+func (wt *WebTTY) AddDownstreamReader(ctx context.Context, downstream Downstream) error {
+	err := wt.sendInitializeMessage()
+	if err != nil {
+		return errors.Wrapf(err, "failed to send initializing message")
+	}
+	wt.addDownstreamReader(downstream)
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	}
+
+	return err
 }
 
 // Run starts the main process of the WebTTY.
@@ -87,7 +111,7 @@ func (wt *WebTTY) Run(ctx context.Context) error {
 		errs <- func() error {
 			buffer := make([]byte, wt.bufferSize)
 			for {
-				n, err := wt.downstream.Read(buffer)
+				n, err := wt.downstreamWriter.Read(buffer)
 				if err != nil {
 					return ErrDownstreamClosed
 				}
@@ -146,10 +170,12 @@ func (wt *WebTTY) handleUpstreamReadEvent(data []byte) error {
 func (wt *WebTTY) masterWrite(data []byte) error {
 	wt.writeMutex.Lock()
 	defer wt.writeMutex.Unlock()
-
-	_, err := wt.downstream.Write(data)
-	if err != nil {
-		return errors.Wrapf(err, "failed to write to master")
+	for i, downstreamReader := range wt.downstreamReaders {
+		fmt.Printf("Sending %s to %d\n", data, i)
+		_, err := downstreamReader.Write(data)
+		if err != nil {
+			return errors.Wrapf(err, "failed to write to master")
+		}
 	}
 
 	return nil
@@ -159,6 +185,7 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 	if len(data) == 0 {
 		return errors.New("unexpected zero length read from master")
 	}
+	fmt.Printf("Reading %s \n", string(data))
 
 	switch data[0] {
 	case Input:

@@ -87,6 +87,8 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 	}
 }
 
+var tty *webtty.WebTTY = nil
+
 func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) error {
 	typ, initLine, err := conn.ReadMessage()
 	if err != nil {
@@ -120,7 +122,6 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 	if err != nil {
 		return errors.Wrapf(err, "failed to create backend")
 	}
-	defer upstream.Close()
 
 	titleVars := server.titleVariables(
 		[]string{"server", "downstream", "upstream"},
@@ -158,12 +159,21 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 		opts = append(opts, webtty.WithMasterPreferences(server.options.Preferences))
 	}
 
-	tty, err := webtty.New(&wsWrapper{conn}, upstream, opts...)
+	if tty != nil {
+		fmt.Println("Pre add downstream")
+		err := tty.AddDownstreamReader(ctx, &wsWrapper{conn})
+		fmt.Println("Post add downstream")
+		return err
+	}
+
+	tty, err = webtty.New(&wsWrapper{conn}, upstream, opts...)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create webtty")
 	}
 
+	fmt.Println("Pre tty.run")
 	err = tty.Run(ctx)
+	fmt.Println("post tty.run")
 
 	return err
 }

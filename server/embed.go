@@ -2,7 +2,6 @@ package server
 
 import (
 	"embed"
-	_ "embed"
 )
 
 //go:embed static/*
