@@ -77,9 +77,9 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 		switch err {
 		case ctx.Err():
 			closeReason = "cancelation"
-		case webtty.ErrSlaveClosed:
+		case webtty.ErrUpstreamClosed:
 			closeReason = server.factory.Name()
-		case webtty.ErrMasterClosed:
+		case webtty.ErrDownstreamClosed:
 			closeReason = "client"
 		default:
 			closeReason = fmt.Sprintf("an error: %s", err)
@@ -115,21 +115,21 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 		return errors.Wrapf(err, "failed to parse arguments")
 	}
 	params := query.Query()
-	var slave Slave
-	slave, err = server.factory.New(params)
+	var upstream Upstream
+	upstream, err = server.factory.New(params)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create backend")
 	}
-	defer slave.Close()
+	defer upstream.Close()
 
 	titleVars := server.titleVariables(
-		[]string{"server", "master", "slave"},
+		[]string{"server", "downstream", "upstream"},
 		map[string]map[string]interface{}{
 			"server": server.options.TitleVariables,
-			"master": map[string]interface{}{
+			"downstream": map[string]interface{}{
 				"remote_addr": conn.RemoteAddr(),
 			},
-			"slave": slave.WindowTitleVariables(),
+			"upstream": upstream.WindowTitleVariables(),
 		},
 	)
 
@@ -158,7 +158,7 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 		opts = append(opts, webtty.WithMasterPreferences(server.options.Preferences))
 	}
 
-	tty, err := webtty.New(&wsWrapper{conn}, slave, opts...)
+	tty, err := webtty.New(&wsWrapper{conn}, upstream, opts...)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create webtty")
 	}

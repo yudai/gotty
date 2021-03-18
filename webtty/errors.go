@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	// ErrSlaveClosed indicates the function has exited by the slave
-	ErrSlaveClosed = errors.New("slave closed")
+	// ErrUpstreamClosed indicates the function has exited by the upstream
+	ErrUpstreamClosed = errors.New("upstream closed")
 
-	// ErrSlaveClosed is returned when the slave connection is closed.
-	ErrMasterClosed = errors.New("master closed")
+	// ErrDownstreamClosed is returned when the downstream connection is closed.
+	ErrDownstreamClosed = errors.New("downstream closed")
 )

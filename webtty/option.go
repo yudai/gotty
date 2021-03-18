@@ -9,7 +9,7 @@ import (
 // Option is an option for WebTTY.
 type Option func(*WebTTY) error
 
-// WithPermitWrite sets a WebTTY to accept input from slaves.
+// WithPermitWrite sets a WebTTY to accept input from upstreams.
 func WithPermitWrite() Option {
 	return func(wt *WebTTY) error {
 		wt.permitWrite = true
@@ -17,7 +17,7 @@ func WithPermitWrite() Option {
 	}
 }
 
-// WithFixedColumns sets a fixed width to TTY master.
+// WithFixedColumns sets a fixed width to TTY downstreams.
 func WithFixedColumns(columns int) Option {
 	return func(wt *WebTTY) error {
 		wt.columns = columns
@@ -25,7 +25,7 @@ func WithFixedColumns(columns int) Option {
 	}
 }
 
-// WithFixedRows sets a fixed height to TTY master.
+// WithFixedRows sets a fixed height to TTY downstreams.
 func WithFixedRows(rows int) Option {
 	return func(wt *WebTTY) error {
 		wt.rows = rows

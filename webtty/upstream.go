@@ -4,8 +4,8 @@ import (
 	"io"
 )
 
-// Slave represents a PTY slave, typically it's a local command.
-type Slave interface {
+// Upstream represents a PTY doing the executing, typically it's a local command.
+type Upstream interface {
 	io.ReadWriter
 
 	// WindowTitleVariables returns any values that can be used to fill out

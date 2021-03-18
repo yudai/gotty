@@ -9,14 +9,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-// WebTTY bridges a PTY slave and its PTY master.
+// WebTTY bridges a PTY upstream and its PTY downstream.
 // To support text-based streams and side channel commands such as
 // terminal resizing, WebTTY uses an original protocol.
 type WebTTY struct {
-	// PTY Master, which probably a connection to browser
-	masterConn Master
-	// PTY Slave
-	slave Slave
+	// PTY downstream, which is usually a connection to browser
+	downstream Downstream
+	// PTY upstream, usually a local tty
+	upstream Upstream
 
 	windowTitle []byte
 	permitWrite bool
@@ -30,13 +30,13 @@ type WebTTY struct {
 }
 
 // New creates a new instance of WebTTY.
-// masterConn is a connection to the PTY master,
+// downstream is a connection to the PTY downstream,
 // typically it's a websocket connection to a client.
-// slave is a PTY slave such as a local command with a PTY.
-func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
+// upstream is usually a local command with a PTY.
+func New(downstream Downstream, upstream Upstream, options ...Option) (*WebTTY, error) {
 	wt := &WebTTY{
-		masterConn: masterConn,
-		slave:      slave,
+		downstream: downstream,
+		upstream:   upstream,
 
 		permitWrite: false,
 		columns:     0,
@@ -54,10 +54,10 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 
 // Run starts the main process of the WebTTY.
 // This method blocks until the context is canceled.
-// Note that the master and slave are left intact even
+// Note that the downstream and upstream are left intact even
 // after the context is canceled. Closing them is caller's
 // responsibility.
-// If the connection to one end gets closed, returns ErrSlaveClosed or ErrMasterClosed.
+// If the connection to one end gets closed, returns ErrUpstreamClosed or ErrDownstreamClosed.
 func (wt *WebTTY) Run(ctx context.Context) error {
 	err := wt.sendInitializeMessage()
 	if err != nil {
@@ -70,12 +70,12 @@ func (wt *WebTTY) Run(ctx context.Context) error {
 		errs <- func() error {
 			buffer := make([]byte, wt.bufferSize)
 			for {
-				n, err := wt.slave.Read(buffer)
+				n, err := wt.upstream.Read(buffer)
 				if err != nil {
-					return ErrSlaveClosed
+					return ErrUpstreamClosed
 				}
 
-				err = wt.handleSlaveReadEvent(buffer[:n])
+				err = wt.handleUpstreamReadEvent(buffer[:n])
 				if err != nil {
 					return err
 				}
@@ -87,9 +87,9 @@ func (wt *WebTTY) Run(ctx context.Context) error {
 		errs <- func() error {
 			buffer := make([]byte, wt.bufferSize)
 			for {
-				n, err := wt.masterConn.Read(buffer)
+				n, err := wt.downstream.Read(buffer)
 				if err != nil {
-					return ErrMasterClosed
+					return ErrDownstreamClosed
 				}
 
 				err = wt.handleMasterReadEvent(buffer[:n])
@@ -133,7 +133,7 @@ func (wt *WebTTY) sendInitializeMessage() error {
 	return nil
 }
 
-func (wt *WebTTY) handleSlaveReadEvent(data []byte) error {
+func (wt *WebTTY) handleUpstreamReadEvent(data []byte) error {
 	safeMessage := base64.StdEncoding.EncodeToString(data)
 	err := wt.masterWrite(append([]byte{Output}, []byte(safeMessage)...))
 	if err != nil {
@@ -147,7 +147,7 @@ func (wt *WebTTY) masterWrite(data []byte) error {
 	wt.writeMutex.Lock()
 	defer wt.writeMutex.Unlock()
 
-	_, err := wt.masterConn.Write(data)
+	_, err := wt.downstream.Write(data)
 	if err != nil {
 		return errors.Wrapf(err, "failed to write to master")
 	}
@@ -170,15 +170,15 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 			return nil
 		}
 
-		_, err := wt.slave.Write(data[1:])
+		_, err := wt.upstream.Write(data[1:])
 		if err != nil {
-			return errors.Wrapf(err, "failed to write received data to slave")
+			return errors.Wrapf(err, "failed to write received data to upstream")
 		}
 
 	case Ping:
 		err := wt.masterWrite([]byte{Pong})
 		if err != nil {
-			return errors.Wrapf(err, "failed to return Pong message to master")
+			return errors.Wrapf(err, "failed to return Pong message to downstream")
 		}
 
 	case ResizeTerminal:
@@ -205,7 +205,7 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 			columns = int(args.Columns)
 		}
 
-		wt.slave.ResizeTerminal(columns, rows)
+		wt.upstream.ResizeTerminal(columns, rows)
 	default:
 		return errors.Errorf("unknown message type `%c`", data[0])
 	}
