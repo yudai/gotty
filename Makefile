@@ -1,6 +1,6 @@
 OUTPUT_DIR = ./builds
 GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
-VERSION = 2.0.0-alpha.3
+VERSION = 2.1.0alpha2
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
 
 gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
@@ -85,7 +85,10 @@ targz:
 shasums:
 	cd ${OUTPUT_DIR}/dist; sha256sum * > ./SHA256SUMS
 
+release-artifacts: asset gotty cross_compile targz shasums
+
 release:
-	ghr -c ${GIT_COMMIT} --delete --prerelease -u sorenisanerd -r gotty pre-release ${OUTPUT_DIR}/dist
+	ghr -draft -prerelease ${VERSION} ${OUTPUT_DIR}/dist # -c ${GIT_COMMIT} --delete --prerelease -u sorenisanerd -r gotty ${VERSION}
+
 clean:
-	rm -fr gotty
+	rm -fr gotty builds
