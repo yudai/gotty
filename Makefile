@@ -9,7 +9,6 @@ gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
 docker: 
 	docker build . -t gotty-bash:$(VERSION)
 
-
 .PHONY: asset
 asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
