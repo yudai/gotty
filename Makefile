@@ -80,6 +80,6 @@ shasums:
 	cd ${OUTPUT_DIR}/dist; sha256sum * > ./SHA256SUMS
 
 release:
-	ghr -c ${GIT_COMMIT} --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
+	ghr -c ${GIT_COMMIT} --delete --prerelease -u sorenisanerd -r gotty pre-release ${OUTPUT_DIR}/dist
 clean:
 	rm -fr gotty

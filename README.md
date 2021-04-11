@@ -1,20 +1,18 @@
-# ![](https://raw.githubusercontent.com/yudai/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
+# ![](https://raw.githubusercontent.com/sorenisanerd/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
 
-[![GitHub release](http://img.shields.io/github/release/yudai/gotty.svg?style=flat-square)][release]
-[![Wercker](http://img.shields.io/wercker/ci/55d0eeff7331453f0801982c.svg?style=flat-square)][wercker]
+[![GitHub release](http://img.shields.io/github/release/sorenisanerd/gotty.svg?style=flat-square)][release]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 
-[release]: https://github.com/yudai/gotty/releases
-[wercker]: https://app.wercker.com/project/bykey/03b91f441bebeda34f80e09a9f14126f
-[license]: https://github.com/yudai/gotty/blob/master/LICENSE
+[release]: https://github.com/sorenisanerd/gotty/releases
+[license]: https://github.com/sorenisanerd/gotty/blob/master/LICENSE
 
 GoTTY is a simple command line tool that turns your CLI tools into web applications.
 
-![Screenshot](https://raw.githubusercontent.com/yudai/gotty/master/screenshot.gif)
+![Screenshot](https://raw.githubusercontent.com/sorenisanerd/gotty/master/screenshot.gif)
 
 # Installation
 
-Download the latest stable binary file from the [Releases](https://github.com/yudai/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/yudai/gotty/releases/latest) for a stable build.
+Download the latest stable binary file from the [Releases](https://github.com/sorenisanerd/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/sorenisanerd/gotty/releases/latest) for a stable build.
 
 (Files named with `darwin_amd64` are for Mac OS X users)
 
@@ -31,7 +29,7 @@ $ brew install yudai/gotty/gotty
 If you have a Go language environment, you can install GoTTY with the `go get` command. However, this command builds a binary file from the latest master branch, which can include unstable or breaking changes. GoTTY requires go1.9 or later.
 
 ```sh
-$ go get github.com/yudai/gotty
+$ go get github.com/sorenisanerd/gotty
 ```
 
 # Usage
@@ -94,7 +92,7 @@ preferences {
 }
 ```
 
-See the [`.gotty`](https://github.com/yudai/gotty/blob/master/.gotty) file in this repository for the list of configuration options.
+See the [`.gotty`](https://github.com/sorenisanerd/gotty/blob/master/.gotty) file in this repository for the list of configuration options.
 
 ### Security Options
 

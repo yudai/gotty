@@ -41,4 +41,4 @@ When your pull request is to add a new feature, we recommend add an actual useca
 
 ## Contact
 
-If you have a trivial question about GoTTY for a bug or new feature, you can contact @i_yudai on Twitter (unfortunately, I cannot provide support on GoTTY though).
+If you have a trivial question about GoTTY for a bug or new feature, you can contact @sorenisanerd on Twitter (unfortunately, I cannot provide support on GoTTY though).
