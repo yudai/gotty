@@ -6,7 +6,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kr/pty"
+	"github.com/creack/pty"
 	"github.com/pkg/errors"
 )
 
@@ -101,8 +101,8 @@ func (lcmd *LocalCommand) ResizeTerminal(width int, height int) error {
 	window := pty.Winsize{
 		Rows: uint16(height),
 		Cols: uint16(width),
-		X: 0,
-		Y: 0,
+		X:    0,
+		Y:    0,
 	}
 	err := pty.Setsize(lcmd.pty, &window)
 	if err != nil {

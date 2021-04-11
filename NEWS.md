@@ -7,4 +7,5 @@
  * Fix printing of ipv6 addresses (Thanks, @Felixoid!)
  * Add Progressive Web App support (Thanks, @sehaas!)
  * Add instructions for GNU screen (Thanks, @Immortalin!)
+ * Add Solaris support (Thanks, @fazalmajid!)
  * New maintainer: @sorenisanerd
