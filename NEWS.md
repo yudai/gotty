@@ -6,4 +6,5 @@
  * Fix typos (Thanks, @0xflotus, @RealCyGuy, and @fredster33!)
  * Fix printing of ipv6 addresses (Thanks, @Felixoid!)
  * Add Progressive Web App support (Thanks, @sehaas!)
+ * Add instructions for GNU screen (Thanks, @Immortalin!)
  * New maintainer: @sorenisanerd
