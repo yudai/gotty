@@ -14,7 +14,7 @@ GoTTY is a simple command line tool that turns your CLI tools into web applicati
 
 # Installation
 
-Download the latest stable binary file from the [Releases](https://github.com/yudai/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/yudai/gotty/releases/latest) for a stabale build.
+Download the latest stable binary file from the [Releases](https://github.com/yudai/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/yudai/gotty/releases/latest) for a stable build.
 
 (Files named with `darwin_amd64` are for Mac OS X users)
 
