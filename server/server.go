@@ -28,9 +28,10 @@ type Server struct {
 	factory Factory
 	options *Options
 
-	upgrader      *websocket.Upgrader
-	indexTemplate *template.Template
-	titleTemplate *noesctmpl.Template
+	upgrader         *websocket.Upgrader
+	indexTemplate    *template.Template
+	titleTemplate    *noesctmpl.Template
+	manifestTemplate *template.Template
 }
 
 // New creates a new instance of Server.
@@ -50,6 +51,15 @@ func New(factory Factory, options *Options) (*Server, error) {
 	indexTemplate, err := template.New("index").Parse(string(indexData))
 	if err != nil {
 		panic("index template parse failed") // must be valid
+	}
+
+	manifestData, err := Asset("static/manifest.json")
+	if err != nil {
+		panic("manifest not found") // must be in bindata
+	}
+	manifestTemplate, err := template.New("manifest").Parse(string(manifestData))
+	if err != nil {
+		panic("manifest template parse failed") // must be valid
 	}
 
 	titleTemplate, err := noesctmpl.New("title").Parse(options.TitleFormat)
@@ -78,8 +88,9 @@ func New(factory Factory, options *Options) (*Server, error) {
 			Subprotocols:    webtty.Protocols,
 			CheckOrigin:     originChekcer,
 		},
-		indexTemplate: indexTemplate,
-		titleTemplate: titleTemplate,
+		indexTemplate:    indexTemplate,
+		titleTemplate:    titleTemplate,
+		manifestTemplate: manifestTemplate,
 	}, nil
 }
 
@@ -190,7 +201,9 @@ func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFu
 	siteMux.Handle(pathPrefix+"js/", http.StripPrefix(pathPrefix, staticFileHandler))
 	siteMux.Handle(pathPrefix+"favicon.png", http.StripPrefix(pathPrefix, staticFileHandler))
 	siteMux.Handle(pathPrefix+"css/", http.StripPrefix(pathPrefix, staticFileHandler))
+	siteMux.Handle(pathPrefix+"icon_192.png", http.StripPrefix(pathPrefix, staticFileHandler))
 
+	siteMux.HandleFunc(pathPrefix+"manifest.json", server.handleManifest)
 	siteMux.HandleFunc(pathPrefix+"auth_token.js", server.handleAuthToken)
 	siteMux.HandleFunc(pathPrefix+"config.js", server.handleConfig)
 
