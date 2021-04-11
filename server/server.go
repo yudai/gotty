@@ -127,10 +127,10 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		scheme = "https"
 	}
 	host, port, _ := net.SplitHostPort(listener.Addr().String())
-	log.Printf("HTTP server is listening at: %s", scheme+"://"+host+":"+port+path)
+	log.Printf("HTTP server is listening at: %s", scheme+"://"+net.JoinHostPort(host, port)+path)
 	if server.options.Address == "0.0.0.0" {
 		for _, address := range listAddresses() {
-			log.Printf("Alternative URL: %s", scheme+"://"+address+":"+port+path)
+			log.Printf("Alternative URL: %s", scheme+"://"+net.JoinHostPort(address, port)+path)
 		}
 	}
 
