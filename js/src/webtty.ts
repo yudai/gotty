@@ -11,6 +11,7 @@ export const msgPong = '2';
 export const msgSetWindowTitle = '3';
 export const msgSetPreferences = '4';
 export const msgSetReconnect = '5';
+export const msgSetBufferSize = '6';
 
 
 export interface Terminal {
@@ -48,6 +49,7 @@ export class WebTTY {
     args: string;
     authToken: string;
     reconnect: number;
+    bufSize: number;
 
     constructor(term: Terminal, connectionFactory: ConnectionFactory, args: string, authToken: string) {
         this.term = term;
@@ -55,6 +57,7 @@ export class WebTTY {
         this.args = args;
         this.authToken = authToken;
         this.reconnect = -1;
+        this.bufSize = 1024;
     };
 
     open() {
@@ -90,7 +93,14 @@ export class WebTTY {
 
                 this.term.onInput(
                     (input: string) => {
-                        connection.send(msgInput + input);
+                        // Leave room for message type id
+                        let effectiveBufferSize = this.bufSize - 1;
+
+                        // Split input into buffer sized chunks
+                        for (let i = 0; i < Math.ceil(input.length/effectiveBufferSize); i++) {
+                            let inputChunk = input.substring(i*effectiveBufferSize, Math.min((i+1)*effectiveBufferSize, input.length))
+                            connection.send(msgInput + inputChunk);
+                        }
                     }
                 );
 
@@ -119,6 +129,10 @@ export class WebTTY {
                         const autoReconnect = JSON.parse(payload);
                         console.log("Enabling reconnect: " + autoReconnect + " seconds")
                         this.reconnect = autoReconnect;
+                        break;
+                    case msgSetBufferSize:
+                        const bufSize = JSON.parse(payload);
+                        this.bufSize = bufSize;
                         break;
                 }
             });

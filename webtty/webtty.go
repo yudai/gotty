@@ -115,6 +115,12 @@ func (wt *WebTTY) sendInitializeMessage() error {
 		return errors.Wrapf(err, "failed to send window title")
 	}
 
+	bufSizeMsg, _ := json.Marshal(wt.bufferSize)
+	err = wt.masterWrite(append([]byte{SetBufferSize}, bufSizeMsg...))
+	if err != nil {
+		return errors.Wrapf(err, "failed to send buffer size")
+	}
+
 	if wt.reconnect > 0 {
 		reconnect, _ := json.Marshal(wt.reconnect)
 		err := wt.masterWrite(append([]byte{SetReconnect}, reconnect...))

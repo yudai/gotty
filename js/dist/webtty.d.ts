@@ -9,6 +9,7 @@ export declare const msgPong = "2";
 export declare const msgSetWindowTitle = "3";
 export declare const msgSetPreferences = "4";
 export declare const msgSetReconnect = "5";
+export declare const msgSetBufferSize = "6";
 export interface Terminal {
     info(): {
         columns: number;
@@ -43,6 +44,7 @@ export declare class WebTTY {
     args: string;
     authToken: string;
     reconnect: number;
+    bufSize: number;
     constructor(term: Terminal, connectionFactory: ConnectionFactory, args: string, authToken: string);
     open(): () => void;
 }
