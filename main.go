@@ -9,7 +9,7 @@ import (
 	"strings"
 	"syscall"
 
-	cli "github.com/urfave/cli/v2"
+	"github.com/urfave/cli"
 
 	"github.com/sorenisanerd/gotty/backend/localcommand"
 	"github.com/sorenisanerd/gotty/pkg/homedir"
@@ -41,16 +41,16 @@ func main() {
 
 	app.Flags = append(
 		cliFlags,
-		&cli.StringFlag{
-			Name:    "config",
-			Value:   "~/.gotty",
-			Usage:   "Config file path",
-			EnvVars: []string{"GOTTY_CONFIG"},
+		cli.StringFlag{
+			Name:   "config",
+			Value:  "~/.gotty",
+			Usage:  "Config file path",
+			EnvVar: "GOTTY_CONFIG",
 		},
 	)
 
-	app.Action = func(c *cli.Context) error {
-		if c.NArg() == 0 {
+	app.Action = func(c *cli.Context) {
+		if len(c.Args()) == 0 {
 			msg := "Error: No command given."
 			cli.ShowAppHelp(c)
 			exit(fmt.Errorf(msg), 1)
@@ -75,15 +75,15 @@ func main() {
 		}
 
 		args := c.Args()
-		factory, err := localcommand.NewFactory(args.First(), args.Tail(), backendOptions)
+		factory, err := localcommand.NewFactory(args[0], args[1:], backendOptions)
 		if err != nil {
 			exit(err, 3)
 		}
 
 		hostname, _ := os.Hostname()
 		appOptions.TitleVariables = map[string]interface{}{
-			"command":  args.First(),
-			"argv":     args.Tail(),
+			"command":  args[0],
+			"argv":     args[1:],
 			"hostname": hostname,
 		}
 
@@ -95,7 +95,7 @@ func main() {
 		ctx, cancel := context.WithCancel(context.Background())
 		gCtx, gCancel := context.WithCancel(context.Background())
 
-		log.Printf("GoTTY is starting with command: %s", strings.Join(args.Slice(), " "))
+		log.Printf("GoTTY is starting with command: %s", strings.Join(args, " "))
 
 		errs := make(chan error, 1)
 		go func() {
@@ -108,7 +108,6 @@ func main() {
 			exit(err, 8)
 		}
 
-		return nil
 	}
 	app.Run(os.Args)
 }
