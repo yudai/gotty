@@ -3,14 +3,16 @@ GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
 VERSION = 2.1.0alpha2
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
 
-gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
+gotty: main.go server/*.go webtty/*.go backend/*.go Makefile asset
 	go build ${BUILD_OPTIONS}
 
 docker: 
 	docker build . -t gotty-bash:$(VERSION)
 
 .PHONY: asset
-asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png
+asset: bindata/static/js/gotty.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png server/asset.go
+
+server/asset.go:
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
 
@@ -38,10 +40,6 @@ bindata/static/icon_192.png: bindata/static resources/icon_192.png
 bindata/static/js: bindata/static
 	mkdir -p bindata/static/js
 
-
-bindata/static/js/gotty-bundle.js: bindata/static/js js/dist/gotty-bundle.js
-	cp js/dist/gotty-bundle.js bindata/static/js/gotty-bundle.js
-
 bindata/static/css: bindata/static
 	mkdir -p bindata/static/css
 
@@ -58,9 +56,9 @@ js/node_modules/xterm/dist/xterm.css:
 	cd js && \
 	npm install
 
-js/dist/gotty-bundle.js: js/src/* js/node_modules/webpack
+bindata/static/js/gotty.js: js/src/* js/node_modules/webpack
 	cd js && \
-	`npm bin`/webpack
+	npx webpack
 
 js/node_modules/webpack:
 	cd js && \
@@ -91,4 +89,4 @@ release:
 	ghr -draft -prerelease ${VERSION} ${OUTPUT_DIR}/dist # -c ${GIT_COMMIT} --delete --prerelease -u sorenisanerd -r gotty ${VERSION}
 
 clean:
-	rm -fr gotty builds
+	rm -fr gotty builds bindata server/asset.go

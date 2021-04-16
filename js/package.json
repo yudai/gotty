@@ -1,13 +1,18 @@
 {
+    "name": "gotty",
+    "version": "2.0.0",
+    "private": true,
     "devDependencies": {
         "license-loader": "^0.5.0",
-        "ts-loader": "^2.0.3",
-        "typescript": "^2.3.2",
-        "uglifyjs-webpack-plugin": "^1.0.0-beta.2",
-        "webpack": "^2.5.1"
+        "ts-loader": "^8.1.0",
+        "typescript": "^4.2.4",
+        "webpack": "^5.33.2",
+        "webpack-cli": "^4.6.0"
     },
     "dependencies": {
+        "css-loader": "^5.2.1",
         "libapps": "github:yudai/libapps#release-hterm-1.70",
+        "style-loader": "^2.0.0",
         "xterm": "^2.7.0"
     }
 }
