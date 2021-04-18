@@ -65,9 +65,9 @@ js/node_modules/webpack:
 	npm install
 
 README.md: README.md.in
-	(cat $< ; git log --pretty=format:' * %aN <%aE>' | \
-		grep -v 'sorenisanerd' | \
-		grep -v 'yudai@arielsworks' | \
+	(cat $< ; git log --pretty=format:' * %aN' | \
+		grep -v 'S.*ren L. Hansen' | \
+		grep -v 'Iwasaki Yudai' | \
 		sort -u ) > $@
 
 tools:

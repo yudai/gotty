@@ -194,45 +194,44 @@ The MIT License
 
 ## Original author
 
- * Iwasaki Yudai <yudai@arielsworks.com>
+ * Iwasaki Yudai
 
 ## Maintainer
 
- * Soren Hansen <sorenisanerd@gmail.com>
+ * Søren L. Hansen
 
 ## Contributors
- * 0xflotus <0xflotus@gmail.com>
- * Andrea Lusuardi - uovobw <uovobw@gmail.com>
- * Andy Skelton <skeltoac@gmail.com>
- * Artem Medvedev <amedvedev@outlook.com>
- * Blake Jennings <blake_jennings@me.com>
- * Christian Jensen <christian@jensenbox.com>
- * Christopher Wilkinson <git@wilk.tech>
- * Cyrus <54488650+RealCyGuy@users.noreply.github.com>
- * David Horsley <widdma@gmail.com>
- * Fazal Majid <fazal@majid.org>
- * freakhill <johan.gall@gmail.com>
- * fredster33 <64927044+fredster33@users.noreply.github.com>
- * Iwasaki Yudai <yudai@arielworks.com>
- * Jan-Willem Korver <jwkorver@xs4all.nl>
- * Jason Cooke <Jason-Cooke@users.noreply.github.com>
- * Johan Gall <johan.gall@gmail.com>
- * Korenevskiy Denis <denkoren@corp.badoo.com>
- * Lin <immortalin@icloud.com>
- * Manfred Touron <m@42.am>
- * Massimiliano Stucchi <mstucchi@ripe.net>
- * mattn <mattn.jp@gmail.com>
- * Mikhail f. Shiryaev <mr.felixoid@gmail.com>
- * Quentin Perez <qperez@ocs.online.net>
- * Richard Metzler <r.metzler@cpu-24-7.com>
- * Robert Bittle <guywithnose@gmail.com>
- * Sebastian Haas <sehaas@deebas.com>
- * shingt <van.s.ver@gmail.com>
- * Shoji Ihara <shoji.ihara@gmail.com>
- * Shuanglei Tao <tsl0922@gmail.com>
- * Stephan van Ellewee <stephan.van.ellewee@gmail.com>
- * The Gitter Badger <badger@gitter.im>
- * Xinyun Zhou <me@xyzhou.com>
- * Yifa Zhang <zyfdegh@users.noreply.github.com>
- * yogesh singh <ygit@users.noreply.github.com>
- * zlji <zlji@Ctrip.com>
+ * 0xflotus
+ * Andrea Lusuardi - uovobw
+ * Andy Skelton
+ * Artem Medvedev
+ * Blake Jennings
+ * Christian Jensen
+ * Christopher Wilkinson
+ * Cyrus
+ * David Horsley
+ * Fazal Majid
+ * freakhill
+ * fredster33
+ * Jan-Willem Korver
+ * Jason Cooke
+ * Johan Gall
+ * Korenevskiy Denis
+ * Lin
+ * Manfred Touron
+ * Massimiliano Stucchi
+ * mattn
+ * Mikhail f. Shiryaev
+ * Quentin Perez
+ * Richard Metzler
+ * Robert Bittle
+ * Sebastian Haas
+ * shingt
+ * Shoji Ihara
+ * Shuanglei Tao
+ * Stephan van Ellewee
+ * The Gitter Badger
+ * Xinyun Zhou
+ * Yifa Zhang
+ * yogesh singh
+ * zlji
