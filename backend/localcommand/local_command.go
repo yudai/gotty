@@ -30,6 +30,8 @@ type LocalCommand struct {
 func New(command string, argv []string, options ...Option) (*LocalCommand, error) {
 	cmd := exec.Command(command, argv...)
 
+	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
+
 	pty, err := pty.Start(cmd)
 	if err != nil {
 		// todo close cmd?
