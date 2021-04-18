@@ -28,8 +28,9 @@ func GenerateFlags(options ...interface{}) (flags []cli.Flag, mappings map[strin
 			mappings[flagName] = field.Name()
 
 			flagShortName := field.Tag("flagSName")
+			var aliases []string
 			if flagShortName != "" {
-				flagName += ", " + flagShortName
+				aliases = []string{flagShortName}
 			}
 
 			flagDescription := field.Tag("flagDescribe")
@@ -41,12 +42,14 @@ func GenerateFlags(options ...interface{}) (flags []cli.Flag, mappings map[strin
 					Value:   field.Value().(string),
 					Usage:   flagDescription,
 					EnvVars: []string{envName},
+					Aliases: aliases,
 				})
 			case reflect.Bool:
 				flags = append(flags, &cli.BoolFlag{
 					Name:    flagName,
 					Usage:   flagDescription,
 					EnvVars: []string{envName},
+					Aliases: aliases,
 				})
 			case reflect.Int:
 				flags = append(flags, &cli.IntFlag{
@@ -54,6 +57,7 @@ func GenerateFlags(options ...interface{}) (flags []cli.Flag, mappings map[strin
 					Value:   field.Value().(int),
 					Usage:   flagDescription,
 					EnvVars: []string{envName},
+					Aliases: aliases,
 				})
 			}
 		}
