@@ -64,6 +64,12 @@ js/node_modules/webpack:
 	cd js && \
 	npm install
 
+README.md: README.md.in
+	(cat $< ; git log --pretty=format:' * %aN <%aE>' | \
+		grep -v 'sorenisanerd' | \
+		grep -v 'yudai@arielsworks' | \
+		sort -u ) > $@
+
 tools:
 	go get github.com/tools/godep
 	go get github.com/mitchellh/gox

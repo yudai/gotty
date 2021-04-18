@@ -1,0 +1,9 @@
+# 'git shortlog --help' and look for mailmap for the format of each line
+
+# Email consolidation:
+# <Preferred address in AUTHORS> <other alias used by same author>
+
+
+# Name consolidation:
+# Preferred author spelling <preferred email>
+Søren L. Hansen <sorenisanerd@gmail.com>
