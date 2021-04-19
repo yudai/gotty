@@ -74,7 +74,6 @@ README.md: README.md.in
 	rm contributors.txt.tmp options.txt.tmp
 
 tools:
-	go get github.com/tools/godep
 	go get github.com/mitchellh/gox
 	go get github.com/tcnksm/ghr
 	go get github.com/jteeuwen/go-bindata/...
