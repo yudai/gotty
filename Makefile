@@ -65,10 +65,13 @@ js/node_modules/webpack:
 	npm install
 
 README.md: README.md.in
-	(cat $< ; git log --pretty=format:' * %aN' | \
+	git log --pretty=format:' * %aN' | \
 		grep -v 'S.*ren L. Hansen' | \
 		grep -v 'Iwasaki Yudai' | \
-		sort -u ) > $@
+		sort -u > contributors.txt.tmp
+	./gotty --help | sed '1,/GLOBAL OPTIONS/ d' > options.txt.tmp
+	sed -f README.md.sed < $< > $@
+	rm contributors.txt.tmp options.txt.tmp
 
 tools:
 	go get github.com/tools/godep
