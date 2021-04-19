@@ -12,7 +12,9 @@ GoTTY is a simple command line tool that turns your CLI tools into web applicati
 
 # Installation
 
-Download the latest stable binary file from the [Releases](https://github.com/sorenisanerd/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/sorenisanerd/gotty/releases/latest) for a stable build.
+## From release page
+
+You can download the latest stable binary file from the [Releases](https://github.com/sorenisanerd/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/sorenisanerd/gotty/releases/latest) for a stable build.
 
 (Files named with `darwin_amd64` are for Mac OS X users)
 
@@ -21,7 +23,7 @@ Download the latest stable binary file from the [Releases](https://github.com/so
 You can install GoTTY with [Homebrew](http://brew.sh/) as well.
 
 ```sh
-$ brew install yudai/gotty/gotty
+$ brew install sorenisanerd/gotty/gotty
 ```
 
 ## `go get` Installation (Development)
