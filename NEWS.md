@@ -1,5 +1,9 @@
 # GoTTY releases
 
+## v1.1.1 (Unreleased)
+
+ * Pass BUILD\_OPTIONS to gox, too, so release artifacts have version info included.
+
 ## v1.1.0
 
  * Today I learned about Go's handling of versions, so re-releasing 2.1.0 as 1.1.0.
