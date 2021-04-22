@@ -1,40 +1,39 @@
-import * as bare from "xterm";
+import { Terminal, IDisposable } from "xterm";
+import { FitAddon } from 'xterm-addon-fit';
 import { lib } from "libapps"
-
-
-bare.loadAddon("fit");
 
 export class Xterm {
     elem: HTMLElement;
-    term: bare;
+    term: Terminal;
     resizeListener: () => void;
     decoder: lib.UTF8Decoder;
 
     message: HTMLElement;
     messageTimeout: number;
     messageTimer: NodeJS.Timeout;
-
+    onResizeHandler: IDisposable;
+    onDataHandler: IDisposable;
 
     constructor(elem: HTMLElement) {
         this.elem = elem;
-        this.term = new bare();
+        this.term = new Terminal();
+        const fitAddon = new FitAddon();
+        this.term.loadAddon(fitAddon);
 
         this.message = elem.ownerDocument.createElement("div");
         this.message.className = "xterm-overlay";
         this.messageTimeout = 2000;
 
         this.resizeListener = () => {
-            this.term.fit();
+            fitAddon.fit();
             this.term.scrollToBottom();
             this.showMessage(String(this.term.cols) + "x" + String(this.term.rows), this.messageTimeout);
         };
 
-        this.term.on("open", () => {
-            this.resizeListener();
-            window.addEventListener("resize", () => { this.resizeListener(); });
-        });
-
-        this.term.open(elem, true);
+        this.term.open(elem);
+        this.term.focus();
+        this.resizeListener();
+        window.addEventListener("resize", () => { this.resizeListener(); });
 
         this.decoder = new lib.UTF8Decoder()
     };
@@ -75,21 +74,21 @@ export class Xterm {
     };
 
     onInput(callback: (input: string) => void) {
-        this.term.on("data", (data) => {
+        this.onDataHandler = this.term.onData((data) => {
             callback(data);
         });
 
     };
 
     onResize(callback: (colmuns: number, rows: number) => void) {
-        this.term.on("resize", (data) => {
-            callback(data.cols, data.rows);
+        this.onResizeHandler = this.term.onResize(() => {
+            callback(this.term.cols, this.term.rows);
         });
     };
 
     deactivate(): void {
-        this.term.off("data");
-        this.term.off("resize");
+        this.onDataHandler.dispose();
+        this.onResizeHandler.dispose();
         this.term.blur();
     }
 
@@ -100,6 +99,6 @@ export class Xterm {
 
     close(): void {
         window.removeEventListener("resize", this.resizeListener);
-        this.term.destroy();
+        this.term.dispose();
     }
 }
