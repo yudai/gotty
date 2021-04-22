@@ -1,0 +1,25 @@
+name: Go
+
+on:
+  push:
+    branches: [ gh-workflows ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+
+    - name: Test
+      run: make test
+
+    - name: Build
+      run: make tools cross_compile
