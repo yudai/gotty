@@ -1,7 +1,7 @@
 OUTPUT_DIR = ./builds
 GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
-VERSION = 1.1.0
-BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
+VERSION = $(shell git describe --tags)
+BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION)"
 
 gotty: main.go server/*.go webtty/*.go backend/*.go Makefile asset
 	go build ${BUILD_OPTIONS}
