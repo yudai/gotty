@@ -1,8 +1,10 @@
 # GoTTY releases
 
-## v1.1.1 (Unreleased)
+## v1.2.0
 
  * Pass BUILD\_OPTIONS to gox, too, so release artifacts have version info included.
+ * Update xterm.js 2.7.0 => 4.11.0
+ * Lots of clean up.
 
 ## v1.1.0
 
