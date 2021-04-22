@@ -53,7 +53,9 @@ export class Hterm {
 
     setPreferences(value: object) {
         Object.keys(value).forEach((key) => {
-            this.term.getPrefs().set(key, value[key]);
+            if (key != "EnableWebGL") {
+                this.term.getPrefs().set(key, value[key]);
+            }
         });
     };
 
@@ -75,9 +77,9 @@ export class Hterm {
     };
 
     deactivate(): void {
-        this.io.onVTKeystroke    = function(){};
-        this.io.sendString       = function(){};
-        this.io.onTerminalResize = function(){};
+        this.io.onVTKeystroke = function () { };
+        this.io.sendString = function () { };
+        this.io.onTerminalResize = function () { };
         this.term.uninstallKeyboard();
     }
 

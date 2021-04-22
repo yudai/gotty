@@ -154,9 +154,12 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 	if server.options.Height > 0 {
 		opts = append(opts, webtty.WithFixedRows(server.options.Height))
 	}
-	if server.options.Preferences != nil {
-		opts = append(opts, webtty.WithMasterPreferences(server.options.Preferences))
+	if server.options.Preferences == nil {
+		server.options.Preferences = &HtermPrefernces{}
 	}
+	// Awkward hack until HtermPreferences can be phased out
+	server.options.Preferences.EnableWebGL = server.options.EnableWebGL
+	opts = append(opts, webtty.WithMasterPreferences(server.options.Preferences))
 
 	tty, err := webtty.New(&wsWrapper{conn}, slave, opts...)
 	if err != nil {

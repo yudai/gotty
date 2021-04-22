@@ -14,6 +14,8 @@
         "libapps": "github:yudai/libapps#release-hterm-1.70",
         "style-loader": "^2.0.0",
         "xterm": "^4.11.0",
-        "xterm-addon-fit": "^0.5.0"
+        "xterm-addon-fit": "^0.5.0",
+        "xterm-addon-web-links": "^0.4.0",
+        "xterm-addon-webgl": "^0.10.0"
     }
 }

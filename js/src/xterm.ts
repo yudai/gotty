@@ -1,5 +1,7 @@
 import { Terminal, IDisposable } from "xterm";
 import { FitAddon } from 'xterm-addon-fit';
+import { WebLinksAddon } from 'xterm-addon-web-links';
+import { WebglAddon } from 'xterm-addon-webgl';
 import { lib } from "libapps"
 
 export class Xterm {
@@ -13,19 +15,21 @@ export class Xterm {
     messageTimer: NodeJS.Timeout;
     onResizeHandler: IDisposable;
     onDataHandler: IDisposable;
+    fitAddOn: FitAddon;
 
     constructor(elem: HTMLElement) {
         this.elem = elem;
         this.term = new Terminal();
-        const fitAddon = new FitAddon();
-        this.term.loadAddon(fitAddon);
+        this.fitAddOn = new FitAddon();
+        this.term.loadAddon(new WebLinksAddon());
+        this.term.loadAddon(this.fitAddOn);
 
         this.message = elem.ownerDocument.createElement("div");
         this.message.className = "xterm-overlay";
         this.messageTimeout = 2000;
 
         this.resizeListener = () => {
-            fitAddon.fit();
+            this.fitAddOn.fit();
             this.term.scrollToBottom();
             this.showMessage(String(this.term.cols) + "x" + String(this.term.rows), this.messageTimeout);
         };
@@ -71,6 +75,11 @@ export class Xterm {
     };
 
     setPreferences(value: object) {
+        Object.keys(value).forEach((key) => {
+            if (key == "EnableWebGL" && key) {
+                this.term.loadAddon(new WebglAddon());
+            }
+        });
     };
 
     onInput(callback: (input: string) => void) {

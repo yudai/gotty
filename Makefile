@@ -12,7 +12,7 @@ docker:
 .PHONY: asset
 asset: bindata/static/js/gotty.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png server/asset.go
 
-server/asset.go:
+server/asset.go: bindata/* bindata/*/* bindata/*/*/*
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
 
