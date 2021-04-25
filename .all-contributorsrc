@@ -144,6 +144,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "TechWilk",
+      "name": "Christopher Wilkinson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9367803?v=4",
+      "profile": "https://wilk.tech/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
