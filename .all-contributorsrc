@@ -72,6 +72,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "fazalmajid",
+      "name": "Fazal Majid",
+      "avatar_url": "https://avatars.githubusercontent.com/u/331198?v=4",
+      "profile": "https://majid.info/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
