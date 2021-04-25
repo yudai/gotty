@@ -1,4 +1,4 @@
-# ![](https://raw.githubusercontent.com/sorenisanerd/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
+# ![](https://raw.githubusercontent.com/sorenisanerd/gotty/master/resources/favicon.ico) GoTTY - Share your terminal as a web application
 
 [![GitHub release](http://img.shields.io/github/release/sorenisanerd/gotty.svg?style=flat-square)][release]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
