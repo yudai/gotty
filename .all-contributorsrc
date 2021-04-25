@@ -180,6 +180,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "DenKoren",
+      "name": "Denis Korenevskiy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3419381?v=4",
+      "profile": "https://github.com/DenKoren",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
