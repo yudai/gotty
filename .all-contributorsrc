@@ -243,6 +243,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "gitter-badger",
+      "name": "The Gitter Badger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8518239?v=4",
+      "profile": "https://gitter.im/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
