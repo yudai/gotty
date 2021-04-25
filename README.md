@@ -1,6 +1,6 @@
 # ![](https://raw.githubusercontent.com/sorenisanerd/gotty/master/resources/favicon.ico) GoTTY - Share your terminal as a web application
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-27-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-28-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![GitHub release](http://img.shields.io/github/release/sorenisanerd/gotty.svg?style=flat-square)][release]
@@ -237,6 +237,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/shoz"><img src="https://avatars.githubusercontent.com/u/225194?v=4?s=100" width="100px;" alt=""/><br /><sub><b>shoji</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=shoz" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/tsl0922"><img src="https://avatars.githubusercontent.com/u/1680515?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Shuanglei Tao</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=tsl0922" title="Code">💻</a></td>
     <td align="center"><a href="https://gitter.im/"><img src="https://avatars.githubusercontent.com/u/8518239?v=4?s=100" width="100px;" alt=""/><br /><sub><b>The Gitter Badger</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=gitter-badger" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/xinsnake"><img src="https://avatars.githubusercontent.com/u/1287677?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jacob Zhou</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=xinsnake" title="Code">💻</a></td>
   </tr>
 </table>
 
