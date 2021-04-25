@@ -1,6 +1,6 @@
 # ![](https://raw.githubusercontent.com/sorenisanerd/gotty/master/resources/favicon.ico) GoTTY - Share your terminal as a web application
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![GitHub release](http://img.shields.io/github/release/sorenisanerd/gotty.svg?style=flat-square)][release]
@@ -220,6 +220,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://andy.blog/"><img src="https://avatars.githubusercontent.com/u/52292?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andy Skelton</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=skeltoac" title="Code">💻</a></td>
     <td align="center"><a href="https://twitter.com/artdevjs"><img src="https://avatars.githubusercontent.com/u/7567983?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Artem Medvedev</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=artdevjs" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/blakejennings"><img src="https://avatars.githubusercontent.com/u/1976331?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Blake Jennings</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=blakejennings" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/jensenbox"><img src="https://avatars.githubusercontent.com/u/189265?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Christian Jensen</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=jensenbox" title="Code">💻</a></td>
   </tr>
 </table>
 

@@ -135,6 +135,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "jensenbox",
+      "name": "Christian Jensen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/189265?v=4",
+      "profile": "https://github.com/jensenbox",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
