@@ -126,6 +126,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "blakejennings",
+      "name": "Blake Jennings",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1976331?v=4",
+      "profile": "https://github.com/blakejennings",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
