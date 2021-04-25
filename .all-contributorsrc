@@ -108,6 +108,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "skeltoac",
+      "name": "Andy Skelton",
+      "avatar_url": "https://avatars.githubusercontent.com/u/52292?v=4",
+      "profile": "https://andy.blog/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
