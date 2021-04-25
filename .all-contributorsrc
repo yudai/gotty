@@ -117,6 +117,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "artdevjs",
+      "name": "Artem Medvedev",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7567983?v=4",
+      "profile": "https://twitter.com/artdevjs",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
