@@ -189,6 +189,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "stucchimax",
+      "name": "Massimiliano Stucchi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1331438?v=4",
+      "profile": "https://www.stucchi.ch/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
