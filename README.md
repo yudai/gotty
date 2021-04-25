@@ -1,6 +1,6 @@
 # ![](https://raw.githubusercontent.com/sorenisanerd/gotty/master/resources/favicon.ico) GoTTY - Share your terminal as a web application
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-17-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-18-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![GitHub release](http://img.shields.io/github/release/sorenisanerd/gotty.svg?style=flat-square)][release]
@@ -225,6 +225,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/jensenbox"><img src="https://avatars.githubusercontent.com/u/189265?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Christian Jensen</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=jensenbox" title="Code">💻</a></td>
     <td align="center"><a href="https://wilk.tech/"><img src="https://avatars.githubusercontent.com/u/9367803?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Christopher Wilkinson</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=TechWilk" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/RealCyGuy"><img src="https://avatars.githubusercontent.com/u/54488650?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cyrus</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=RealCyGuy" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/dehorsley"><img src="https://avatars.githubusercontent.com/u/3401668?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David Horsley</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=dehorsley" title="Code">💻</a></td>
   </tr>
 </table>
 
