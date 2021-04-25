@@ -1,6 +1,6 @@
 # ![](https://raw.githubusercontent.com/sorenisanerd/gotty/master/resources/favicon.ico) GoTTY - Share your terminal as a web application
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![GitHub release](http://img.shields.io/github/release/sorenisanerd/gotty.svg?style=flat-square)][release]
@@ -215,6 +215,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://majid.info/"><img src="https://avatars.githubusercontent.com/u/331198?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Fazal Majid</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=fazalmajid" title="Code">💻</a></td>
     <td align="center"><a href="https://narrationbox.com/"><img src="https://avatars.githubusercontent.com/u/7126128?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Immortalin</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=Immortalin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/freakhill"><img src="https://avatars.githubusercontent.com/u/916582?v=4?s=100" width="100px;" alt=""/><br /><sub><b>freakhill</b></sub></a><br /><a href="https://github.com/sorenisanerd/gotty/commits?author=freakhill" title="Code">💻</a></td>
   </tr>
 </table>
 
