@@ -1,9 +1,12 @@
 # GoTTY releases
 
-## v1.3.0 (Unreleased)
+## v1.3.0
 
  * Links in the tty are now clickable.
  * Use WebGL for rendering by default.
+ * Ensure authentication (TLS or Basic auth) remain enabled even if some of the options are only given in config files Thanks, @devanlai!
+ * Fix typo in README.md Thanks, @prusnak!
+ * Add arm64/Linux build. Thanks for the suggestion, @nephaste!
 
 ## v1.2.0
 
