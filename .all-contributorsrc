@@ -306,6 +306,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "nephaste",
+      "name": "Stéphane",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3392684?v=4",
+      "profile": "http://forum.cachem.fr/viewforum.php?f=21",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7
