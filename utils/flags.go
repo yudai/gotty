@@ -46,10 +46,11 @@ func GenerateFlags(options ...interface{}) (flags []cli.Flag, mappings map[strin
 				})
 			case reflect.Bool:
 				flags = append(flags, &cli.BoolFlag{
-					Name:    flagName,
-					Usage:   flagDescription,
-					EnvVars: []string{envName},
-					Aliases: aliases,
+					Name:        flagName,
+					Usage:       flagDescription,
+					EnvVars:     []string{envName},
+					Aliases:     aliases,
+					DefaultText: field.Tag("default"),
 				})
 			case reflect.Int:
 				flags = append(flags, &cli.IntFlag{
