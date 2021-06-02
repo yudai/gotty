@@ -11,6 +11,8 @@
 
 GoTTY is a simple command line tool that turns your CLI tools into web applications.
 
+[Original work](https://github.com/yudai/gotty) by [Iwasaki Yudai](https://github.com/yudai). There would be no GoTTY without him. ❤️
+
 ![Screenshot](https://raw.githubusercontent.com/sorenisanerd/gotty/master/screenshot.gif)
 
 # Installation
