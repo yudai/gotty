@@ -1,8 +1,7 @@
 name: Go
 
 on:
-  push:
-    branches: [ gh-workflows ]
+  - push
 
 jobs:
 
