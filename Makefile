@@ -3,21 +3,21 @@ GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
 VERSION = $(shell git describe --tags)
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION)"
 
-gotty: main.go server/*.go webtty/*.go backend/*.go Makefile asset
+gotty: main.go server/*.go webtty/*.go backend/*.go Makefile server/asset.go
 	go build ${BUILD_OPTIONS}
 
 docker: 
 	docker build . -t gotty-bash:$(VERSION)
 
-.PHONY: asset
-asset: bindata/static/js/gotty.js bindata/static/index.html bindata/static/icon.svg bindata/static/favicon.ico bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png server/asset.go
+.PHONY: assets
+assets: bindata/static/js/gotty.js bindata/static/index.html bindata/static/icon.svg bindata/static/favicon.ico bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png
 
-server/asset.go: bindata/* bindata/*/* bindata/*/*/*
+server/asset.go: assets
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
 
 .PHONY: all
-all: asset gotty docker
+all: gotty docker
 
 bindata:
 	mkdir bindata
@@ -91,7 +91,7 @@ targz:
 shasums:
 	cd ${OUTPUT_DIR}/dist; sha256sum * > ./SHA256SUMS
 
-release-artifacts: asset gotty cross_compile targz shasums
+release-artifacts: gotty cross_compile targz shasums
 
 release:
 	ghr -draft ${VERSION} ${OUTPUT_DIR}/dist # -c ${GIT_COMMIT} --delete --prerelease -u sorenisanerd -r gotty ${VERSION}
