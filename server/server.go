@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"html/template"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net"
@@ -14,10 +15,10 @@ import (
 	"time"
 
 	"github.com/NYTimes/gziphandler"
-	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
+	"github.com/sorenisanerd/gotty/bindata"
 	"github.com/sorenisanerd/gotty/pkg/homedir"
 	"github.com/sorenisanerd/gotty/pkg/randomstring"
 	"github.com/sorenisanerd/gotty/webtty"
@@ -37,7 +38,7 @@ type Server struct {
 // New creates a new instance of Server.
 // Server will use the New() of the factory provided to handle each request.
 func New(factory Factory, options *Options) (*Server, error) {
-	indexData, err := Asset("static/index.html")
+	indexData, err := bindata.Fs.ReadFile("static/index.html")
 	if err != nil {
 		panic("index not found") // must be in bindata
 	}
@@ -53,7 +54,7 @@ func New(factory Factory, options *Options) (*Server, error) {
 		panic("index template parse failed") // must be valid
 	}
 
-	manifestData, err := Asset("static/manifest.json")
+	manifestData, err := bindata.Fs.ReadFile("static/manifest.json")
 	if err != nil {
 		panic("manifest not found") // must be in bindata
 	}
@@ -192,9 +193,11 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 }
 
 func (server *Server) setupHandlers(ctx context.Context, cancel context.CancelFunc, pathPrefix string, counter *counter) http.Handler {
-	staticFileHandler := http.FileServer(
-		&assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "static"},
-	)
+	fs, err := fs.Sub(bindata.Fs, "static")
+	if err != nil {
+		log.Fatalf("failed to open static/ subdirectory of embedded filesystem: %v", err)
+	}
+	staticFileHandler := http.FileServer(http.FS(fs))
 
 	var siteMux = http.NewServeMux()
 	siteMux.HandleFunc(pathPrefix, server.handleIndex)

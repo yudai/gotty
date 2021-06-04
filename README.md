@@ -158,16 +158,7 @@ $ gotty -w docker run -it --rm busybox
 
 ## Development
 
-You can build a binary using the following commands. Windows is not supported now. go1.9 is required.
-
-```sh
-# Install tools
-go get github.com/jteeuwen/go-bindata/...
-go get github.com/tools/godep
-
-# Build
-make
-```
+You can build a binary by simply running `make`. go1.16 is required.
 
 To build the frontend part (JS files and other static files), you need `npm`.
 
