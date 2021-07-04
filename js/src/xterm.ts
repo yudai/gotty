@@ -78,6 +78,10 @@ export class Xterm {
         Object.keys(value).forEach((key) => {
             if (key == "EnableWebGL" && key) {
                 this.term.loadAddon(new WebglAddon());
+            } else if (key == "font-size") {
+                this.term.setOption("fontSize", value[key])
+            } else if (key == "font-family") {
+                this.term.setOption("fontFamily", value[key])
             }
         });
     };
