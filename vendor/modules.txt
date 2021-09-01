@@ -1,0 +1,31 @@
+# github.com/NYTimes/gziphandler v0.0.0-20170804200234-967539e5e271
+## explicit
+github.com/NYTimes/gziphandler
+# github.com/codegangsta/cli v1.19.1
+## explicit
+github.com/codegangsta/cli
+# github.com/elazarl/go-bindata-assetfs v0.0.0-20150813044622-d5cac425555c
+## explicit
+github.com/elazarl/go-bindata-assetfs
+# github.com/fatih/structs v0.0.0-20150526064352-a9f7daa9c272
+## explicit
+github.com/fatih/structs
+# github.com/gorilla/websocket v0.0.0-20150811171432-b6ab76f1fe98
+## explicit
+github.com/gorilla/websocket
+# github.com/hashicorp/go-multierror v0.0.0-20150608033521-56912fb08d85
+## explicit
+github.com/hashicorp/go-multierror
+# github.com/kr/pty v0.0.0-20150511174710-5cf931ef8f76
+## explicit
+github.com/kr/pty
+# github.com/pkg/errors v0.8.1-0.20161029093637-248dadf4e906
+## explicit
+github.com/pkg/errors
+# github.com/stretchr/testify v1.7.0
+## explicit
+# github.com/yudai/hcl v0.0.0-20151013225006-5fa2393b3552
+## explicit
+github.com/yudai/hcl
+github.com/yudai/hcl/hcl
+github.com/yudai/hcl/json
