@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"strings"
@@ -61,6 +62,11 @@ func main() {
 			if err := utils.ApplyConfigFile(configFile, appOptions, backendOptions); err != nil {
 				exit(err, 2)
 			}
+		}
+
+		if appOptions.Quiet {
+			log.SetFlags(0)
+			log.SetOutput(ioutil.Discard)
 		}
 
 		utils.ApplyFlags(cliFlags, flagMappings, c, appOptions, backendOptions)
