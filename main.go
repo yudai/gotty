@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/signal"
 	"strings"
