@@ -342,6 +342,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "hardliner66",
+      "name": "Steve Biedermann",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2937272?v=4",
+      "profile": "https://twitch.tv/iamhardliner",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
