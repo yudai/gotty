@@ -1,4 +1,4 @@
-FROM golang:1.13.1
+FROM golang:1.16
 
 WORKDIR /gotty
 COPY . /gotty
