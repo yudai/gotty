@@ -1,4 +1,4 @@
-module github.com/yudai/gotty
+module github.com/ghthor/gotty
 
 go 1.17
 
