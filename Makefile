@@ -51,17 +51,17 @@ js/node_modules/xterm/dist/xterm.css:
 
 js/dist/gotty-bundle.js: js/src/* js/node_modules/webpack
 	cd js && \
-	`npm bin`/webpack
+	$$(npm bin)/webpack
 
 js/node_modules/webpack:
 	cd js && \
 	npm install
 
 tools:
+	go install github.com/go-bindata/go-bindata/go-bindata@latest # for static asset management
 	# TODO convert to `go install`
 	go get github.com/mitchellh/gox           # for crosscompiling
 	go get github.com/tcnksm/ghr              # for making gihub releases
-	go get github.com/jteeuwen/go-bindata/... # for static asset management
 
 test:
 	if [ `go fmt $(go list ./... | grep -v /vendor/) | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
@@ -78,3 +78,7 @@ shasums:
 
 release:
 	ghr -c ${GIT_COMMIT} --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
+
+.PHONY: clean
+clean:
+	rm -rf bindata/ js/node_modules/*
