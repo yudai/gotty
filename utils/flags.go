@@ -11,7 +11,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/yudai/hcl"
 
-	"github.com/yudai/gotty/pkg/homedir"
+	"github.com/ghthor/gotty/pkg/homedir"
 )
 
 func GenerateFlags(options ...interface{}) (flags []cli.Flag, mappings map[string]string, err error) {

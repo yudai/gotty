@@ -17,5 +17,3 @@ require (
 	github.com/hashicorp/go-multierror v0.0.0-20150608033521-56912fb08d85 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 )
-
-replace github.com/yudai/gotty => ./
