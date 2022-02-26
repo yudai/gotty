@@ -1,4 +1,4 @@
-module github.com/ghthor/gotty
+module github.com/ghthor/gotty/v2
 
 go 1.17
 
