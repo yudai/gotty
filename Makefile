@@ -6,13 +6,12 @@ BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMM
 gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
 	go build ${BUILD_OPTIONS}
 
-.PHONY: asset
-asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
+server/asset.go: bindata/static/js/gotty-bundle.js bindata/static/js/gotty-bundle.js.map bindata/static/js/gotty-bundle.js.LICENSE.txt bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
 	go-bindata -prefix bindata -pkg server -ignore=\\.gitkeep -o server/asset.go bindata/...
 	gofmt -w server/asset.go
 
 .PHONY: all
-all: asset gotty
+all: server/asset.go gotty
 
 bindata:
 	mkdir bindata
@@ -33,6 +32,11 @@ bindata/static/js: bindata/static
 bindata/static/js/gotty-bundle.js: bindata/static/js js/dist/gotty-bundle.js
 	cp js/dist/gotty-bundle.js bindata/static/js/gotty-bundle.js
 
+bindata/static/js/gotty-bundle.js.LICENSE.txt: js/dist/gotty-bundle.js.LICENSE.txt
+	cp $< $@
+bindata/static/js/gotty-bundle.js.map: js/dist/gotty-bundle.js.map
+	cp $< $@
+
 bindata/static/css: bindata/static
 	mkdir -p bindata/static/css
 
@@ -42,23 +46,26 @@ bindata/static/css/index.css: bindata/static/css resources/index.css
 bindata/static/css/xterm_customize.css: bindata/static/css resources/xterm_customize.css
 	cp resources/xterm_customize.css bindata/static/css/xterm_customize.css
 
-bindata/static/css/xterm.css: bindata/static/css js/node_modules/xterm/dist/xterm.css
-	cp js/node_modules/xterm/dist/xterm.css bindata/static/css/xterm.css
+bindata/static/css/xterm.css: bindata/static/css js/node_modules/xterm/css/xterm.css
+	cp js/node_modules/xterm/css/xterm.css bindata/static/css/xterm.css
 
-js/node_modules/xterm/dist/xterm.css:
+js/node_modules/xterm/css/xterm.css:
 	cd js && \
-	npm install
+		npm install
 
 js/dist/gotty-bundle.js: js/src/* js/node_modules/webpack
 	cd js && \
-	$$(npm bin)/webpack
+		/usr/bin/node $$(npm bin)/webpack
+
+js/dist/gotty-bundle.js.LICENSE.txt: js/dist/gotty-bundle.js
+js/dist/gotty-bundle.js.map: js/dist/gotty-bundle.js
 
 js/node_modules/webpack:
 	cd js && \
-	npm install
+		npm install
 
 tools:
-	go install github.com/go-bindata/go-bindata/go-bindata@latest # for static asset management
+	go install github.com/go-bindata/go-bindata/v3/go-bindata@latest # for static asset management
 	# TODO convert to `go install`
 	go get github.com/mitchellh/gox           # for crosscompiling
 	go get github.com/tcnksm/ghr              # for making gihub releases
@@ -78,6 +85,10 @@ shasums:
 
 release:
 	ghr -c ${GIT_COMMIT} --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
+
+.PHONY: update_go_modules
+update_go_modules:
+	go get -u
 
 .PHONY: clean
 clean:
