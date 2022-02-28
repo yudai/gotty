@@ -14,10 +14,10 @@ server/asset.go: bindata/static/js/gotty-bundle.js bindata/static/js/gotty-bundl
 all: server/asset.go gotty
 
 bindata:
-	mkdir bindata
+	mkdir -p bindata
 
 bindata/static: bindata
-	mkdir bindata/static
+	mkdir -p bindata/static
 
 bindata/static/index.html: bindata/static resources/index.html
 	cp resources/index.html bindata/static/index.html
@@ -55,7 +55,7 @@ js/node_modules/xterm/css/xterm.css:
 
 js/dist/gotty-bundle.js: js/src/* js/node_modules/webpack
 	cd js && \
-		/usr/bin/node $$(npm bin)/webpack
+		npx webpack
 
 js/dist/gotty-bundle.js.LICENSE.txt: js/dist/gotty-bundle.js
 js/dist/gotty-bundle.js.map: js/dist/gotty-bundle.js

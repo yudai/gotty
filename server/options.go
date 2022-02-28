@@ -41,6 +41,7 @@ func (options *Options) Validate() error {
 	return nil
 }
 
+// TODO(ghthor): add defaults to all these options that match the example .gotty file
 type HtermPrefernces struct {
 	AltGrMode                     *string                      `hcl:"alt_gr_mode" json:"alt-gr-mode,omitempty"`
 	AltBackspaceIsMetaBackspace   bool                         `hcl:"alt_backspace_is_meta_backspace" json:"alt-backspace-is-meta-backspace,omitempty"`
@@ -72,6 +73,7 @@ type HtermPrefernces struct {
 	EnableClipboardNotice         bool                         `hcl:"enable_clipboard_notice" json:"enable-clipboard-notice,omitempty"`
 	EnableClipboardWrite          bool                         `hcl:"enable_clipboard_write" json:"enable-clipboard-write,omitempty"`
 	EnableDec12                   bool                         `hcl:"enable_dec12" json:"enable-dec12,omitempty"`
+	EnableWebGL                   bool                         `hcl:"enable_webgl" json:"enable-webgl,omitempty"`
 	Environment                   map[string]string            `hcl:"environment" json:"environment,omitempty"`
 	FontFamily                    string                       `hcl:"font_family" json:"font-family,omitempty"`
 	FontSize                      int                          `hcl:"font_size" json:"font-size,omitempty"`

@@ -103,6 +103,19 @@ preferences {
 
 See the [`.gotty`](https://github.com/ghthor/gotty/blob/master/.gotty) file in this repository for the list of configuration options.
 
+#### Enable WebGL
+
+The WebGL renderer is much better than the default canvas renderer for text; it
+can handle italics without clipping the letters. I think this is because
+upstream xtermjs is focusing on the WebGL renderer. To enable WebGL you need to
+add the following to your `~/.gotty` config file.
+
+```hcl
+preferences {
+  enable_webgl = true
+}
+```
+
 ### Security Options
 
 By default, GoTTY doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the TTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. When you need interaction with the TTY for some reasons, consider starting GoTTY with tmux or GNU Screen and run your command on it (see "Sharing with Multiple Clients" section for detail).
