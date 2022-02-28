@@ -52,11 +52,11 @@ export class Hterm {
     };
 
     setPreferences(value: object) {
-      Object.keys(value).forEach((key) => {
-        if (key != "enable-webgl") {
-          this.term.getPrefs().set(key, value[key]);
-        }
-      });
+        Object.keys(value).forEach((key) => {
+            if (key != "enable-webgl") {
+                this.term.getPrefs().set(key, value[key]);
+            }
+        });
     };
 
     onInput(callback: (input: string) => void) {
@@ -77,9 +77,9 @@ export class Hterm {
     };
 
     deactivate(): void {
-        this.io.onVTKeystroke    = function(){};
-        this.io.sendString       = function(){};
-        this.io.onTerminalResize = function(){};
+        this.io.onVTKeystroke = function() { };
+        this.io.sendString = function() { };
+        this.io.onTerminalResize = function() { };
         this.term.uninstallKeyboard();
     }
 

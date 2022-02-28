@@ -1,5 +1,5 @@
 OUTPUT_DIR = ./builds
-GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
+GIT_COMMIT = $$(git rev-parse HEAD | cut -c1-7)
 VERSION = 3.0.0-alpha.1
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
 
@@ -70,8 +70,14 @@ tools:
 	go get github.com/mitchellh/gox           # for crosscompiling
 	go get github.com/tcnksm/ghr              # for making gihub releases
 
+.PHONY: test
 test:
-	if [ `go fmt $(go list ./... | grep -v /vendor/) | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
+	if [ $$(go fmt $$(go list ./...) | wc -l) -gt 0 ]; then echo "go fmt error"; exit 1; fi
+	cd js && npx tsfmt -r --verify
+
+.PHONY: tsfmt
+tsfmt:
+	cd js && npx tsfmt -r
 
 cross_compile:
 	GOARM=5 gox -os="darwin linux freebsd netbsd openbsd" -arch="386 amd64 arm" -osarch="!darwin/arm" -output "${OUTPUT_DIR}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
