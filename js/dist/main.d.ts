@@ -1,1 +1,2 @@
-export { };
+export declare class GoTTY {
+}

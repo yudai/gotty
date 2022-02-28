@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { lib } from "libapps";
-import { IDisposable, Terminal } from 'xterm';
+import { IDisposable, Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 export declare class Xterm {
     elem: HTMLElement;
