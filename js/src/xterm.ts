@@ -1,9 +1,8 @@
-import {lib} from "libapps";
+import { lib } from "libapps";
 
-import {IDisposable, Terminal} from 'xterm';
-import {FitAddon} from "xterm-addon-fit";
-import {WebglAddon} from "xterm-addon-webgl";
-
+import { IDisposable, Terminal } from "xterm";
+import { FitAddon } from "xterm-addon-fit";
+import { WebglAddon } from "xterm-addon-webgl";
 
 export class Xterm {
     elem: HTMLElement;
@@ -15,13 +14,13 @@ export class Xterm {
     messageTimeout: number;
     messageTimer: NodeJS.Timer;
 
-	fitAddon: FitAddon;
-	disposables: IDisposable[] = [];
+    fitAddon: FitAddon;
+    disposables: IDisposable[] = [];
 
 
     constructor(elem: HTMLElement) {
         this.elem = elem;
-		        const isWindows = ['Windows', 'Win16', 'Win32', 'WinCE'].indexOf(navigator.platform) >= 0;
+        const isWindows = ['Windows', 'Win16', 'Win32', 'WinCE'].indexOf(navigator.platform) >= 0;
         this.term = new Terminal({
             cursorStyle: "block",
             cursorBlink: true,
@@ -30,20 +29,20 @@ export class Xterm {
             fontSize: 12,
         });
 
-		this.fitAddon = new FitAddon();
-		this.term.loadAddon(this.fitAddon);
+        this.fitAddon = new FitAddon();
+        this.term.loadAddon(this.fitAddon);
 
         this.message = elem.ownerDocument.createElement("div");
         this.message.className = "xterm-overlay";
         this.messageTimeout = 2000;
 
         this.resizeListener = () => {
-			this.fitAddon.fit();
+            this.fitAddon.fit();
             this.term.scrollToBottom();
             this.showMessage(String(this.term.cols) + "x" + String(this.term.rows), this.messageTimeout);
         };
 
-		this.term.open(elem);
+        this.term.open(elem);
 
         this.term.focus()
         this.resizeListener();
@@ -85,28 +84,28 @@ export class Xterm {
     };
 
     setPreferences(value: object) {
-      Object.keys(value).forEach((key) => {
-        if (key && key == "enable-webgl") {
-          this.term.loadAddon(new WebglAddon());
-        }
-      });
+        Object.keys(value).forEach((key) => {
+            if (key && key == "enable-webgl") {
+                this.term.loadAddon(new WebglAddon());
+            }
+        });
     };
 
     onInput(callback: (input: string) => void) {
-		this.disposables.push(this.term.onData((data) => {
-			callback(data);
-		}));
+        this.disposables.push(this.term.onData((data) => {
+            callback(data);
+        }));
 
     };
 
     onResize(callback: (colmuns: number, rows: number) => void) {
-		this.disposables.push(this.term.onResize((data) => {
-			callback(data.cols, data.rows);
-		}));
+        this.disposables.push(this.term.onResize((data) => {
+            callback(data.cols, data.rows);
+        }));
     };
 
     deactivate(): void {
-		this.disposables.forEach(d => d.dispose())
+        this.disposables.forEach(d => d.dispose())
         this.term.blur();
     }
 
@@ -117,6 +116,6 @@ export class Xterm {
 
     close(): void {
         window.removeEventListener("resize", this.resizeListener);
-		this.term.dispose();
+        this.term.dispose();
     }
 }

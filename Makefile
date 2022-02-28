@@ -75,7 +75,7 @@ test:
 	if [ $$(go fmt $$(go list ./...) | wc -l) -gt 0 ]; then echo "go fmt error"; exit 1; fi
 	cd js && npx tsfmt -r --verify
 
-.PHONY: fmt
+.PHONY: tsfmt
 tsfmt:
 	cd js && npx tsfmt -r
 
