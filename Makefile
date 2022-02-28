@@ -14,10 +14,10 @@ server/asset.go: bindata/static/js/gotty-bundle.js bindata/static/js/gotty-bundl
 all: server/asset.go gotty
 
 bindata:
-	mkdir bindata
+	mkdir -p bindata
 
 bindata/static: bindata
-	mkdir bindata/static
+	mkdir -p bindata/static
 
 bindata/static/index.html: bindata/static resources/index.html
 	cp resources/index.html bindata/static/index.html
