@@ -55,7 +55,7 @@ js/node_modules/xterm/css/xterm.css:
 
 js/dist/gotty-bundle.js: js/src/* js/node_modules/webpack
 	cd js && \
-		/usr/bin/node $$(npm bin)/webpack
+		npx webpack
 
 js/dist/gotty-bundle.js.LICENSE.txt: js/dist/gotty-bundle.js
 js/dist/gotty-bundle.js.map: js/dist/gotty-bundle.js
