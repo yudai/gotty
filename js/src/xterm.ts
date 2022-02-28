@@ -2,6 +2,7 @@ import {lib} from "libapps";
 
 import {IDisposable, Terminal} from 'xterm';
 import {FitAddon} from "xterm-addon-fit";
+import {WebglAddon} from "xterm-addon-webgl";
 
 
 export class Xterm {
@@ -84,6 +85,11 @@ export class Xterm {
     };
 
     setPreferences(value: object) {
+      Object.keys(value).forEach((key) => {
+        if (key && key == "enable-webgl") {
+          this.term.loadAddon(new WebglAddon());
+        }
+      });
     };
 
     onInput(callback: (input: string) => void) {

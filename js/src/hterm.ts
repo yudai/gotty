@@ -52,9 +52,11 @@ export class Hterm {
     };
 
     setPreferences(value: object) {
-        Object.keys(value).forEach((key) => {
-            this.term.getPrefs().set(key, value[key]);
-        });
+      Object.keys(value).forEach((key) => {
+        if (key != "enable-webgl") {
+          this.term.getPrefs().set(key, value[key]);
+        }
+      });
     };
 
     onInput(callback: (input: string) => void) {
