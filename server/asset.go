@@ -200,7 +200,7 @@ func staticJsGottyBundleJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/js/gotty-bundle.js", size: 665001, mode: os.FileMode(420), modTime: time.Unix(1646016572, 0)}
+	info := bindataFileInfo{name: "static/js/gotty-bundle.js", size: 665001, mode: os.FileMode(420), modTime: time.Unix(1646018728, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -220,7 +220,7 @@ func staticJsGottyBundleJsLicenseTxt() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/js/gotty-bundle.js.LICENSE.txt", size: 5807, mode: os.FileMode(420), modTime: time.Unix(1646016453, 0)}
+	info := bindataFileInfo{name: "static/js/gotty-bundle.js.LICENSE.txt", size: 5807, mode: os.FileMode(420), modTime: time.Unix(1646018728, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -240,7 +240,7 @@ func staticJsGottyBundleJsMap() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/js/gotty-bundle.js.map", size: 1784330, mode: os.FileMode(420), modTime: time.Unix(1646016759, 0)}
+	info := bindataFileInfo{name: "static/js/gotty-bundle.js.map", size: 1784330, mode: os.FileMode(420), modTime: time.Unix(1646018728, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
