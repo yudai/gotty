@@ -2,13 +2,11 @@ import { Terminal, IDisposable } from "xterm";
 import { FitAddon } from 'xterm-addon-fit';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { WebglAddon } from 'xterm-addon-webgl';
-import { lib } from "libapps"
 
 export class Xterm {
     elem: HTMLElement;
     term: Terminal;
     resizeListener: () => void;
-    decoder: lib.UTF8Decoder;
 
     message: HTMLElement;
     messageTimeout: number;
@@ -38,8 +36,6 @@ export class Xterm {
         this.term.focus();
         this.resizeListener();
         window.addEventListener("resize", () => { this.resizeListener(); });
-
-        this.decoder = new lib.UTF8Decoder()
     };
 
     info(): { columns: number, rows: number } {
@@ -47,7 +43,7 @@ export class Xterm {
     };
 
     output(data: string) {
-        this.term.write(this.decoder.decode(data));
+        this.term.write(Uint8Array.from(data, c => c.charCodeAt(0)));
     };
 
     showMessage(message: string, timeout: number) {

@@ -154,13 +154,6 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 	if server.options.Height > 0 {
 		opts = append(opts, webtty.WithFixedRows(server.options.Height))
 	}
-	if server.options.Preferences == nil {
-		server.options.Preferences = &HtermPrefernces{}
-	}
-	// Awkward hack until HtermPreferences can be phased out
-	server.options.Preferences.EnableWebGL = server.options.EnableWebGL
-	opts = append(opts, webtty.WithMasterPreferences(server.options.Preferences))
-
 	tty, err := webtty.New(&wsWrapper{conn}, slave, opts...)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create webtty")
@@ -236,7 +229,7 @@ func (server *Server) handleAuthToken(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
-	w.Write([]byte("var gotty_term = '" + server.options.Term + "';"))
+	w.Write([]byte("var gotty_term = 'xterm';"))
 }
 
 // titleVariables merges maps in a specified order.

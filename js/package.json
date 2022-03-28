@@ -11,7 +11,6 @@
     },
     "dependencies": {
         "css-loader": "^5.2.6",
-        "libapps": "github:yudai/libapps#release-hterm-1.70",
         "style-loader": "^2.0.0",
         "xterm": "^4.12.0",
         "xterm-addon-fit": "^0.5.0",
