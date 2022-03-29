@@ -43,11 +43,19 @@ export class Xterm {
     };
 
     output(data: string) {
-        this.term.write(Uint8Array.from(data, c => c.charCodeAt(0)));
+        this.term.write(data);
     };
 
+    getMessage(): HTMLElement {
+        return this.message;
+    }
+
     showMessage(message: string, timeout: number) {
-        this.message.textContent = message;
+        this.message.innerHTML = message;
+        this.showMessageElem(timeout);
+    }
+
+    showMessageElem(timeout: number) {
         this.elem.appendChild(this.message);
 
         if (this.messageTimer) {

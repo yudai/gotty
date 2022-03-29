@@ -2,6 +2,7 @@ OUTPUT_DIR = ./builds
 GIT_COMMIT = `git rev-parse HEAD | cut -c1-7`
 VERSION = $(shell git describe --tags)
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION)"
+WEBPACK_MODE = production
 
 gotty: main.go assets server/*.go webtty/*.go backend/*.go Makefile
 	go build ${BUILD_OPTIONS}
@@ -10,7 +11,7 @@ docker:
 	docker build . -t gotty-bash:$(VERSION)
 
 .PHONY: all docker assets
-assets: bindata/static/js/gotty.js bindata/static/index.html bindata/static/icon.svg bindata/static/favicon.ico bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png
+assets: bindata/static/js/gotty.js.map bindata/static/js/gotty.js bindata/static/index.html bindata/static/icon.svg bindata/static/favicon.ico bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png
 
 all: gotty
 
@@ -32,7 +33,7 @@ js/node_modules/xterm/dist/xterm.css:
 
 bindata/static/js/gotty.js: js/src/* | js/node_modules/webpack
 	cd js && \
-	npx webpack
+	npx webpack --mode=$(WEBPACK_MODE)
 
 js/node_modules/webpack:
 	cd js && \

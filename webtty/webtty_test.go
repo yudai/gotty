@@ -98,8 +98,8 @@ func TestWriteFromFrontend(t *testing.T) {
 	checkNextMsgType(t, mMaster.gottyToMasterReader, SetWindowTitle)
 	checkNextMsgType(t, mMaster.gottyToMasterReader, SetBufferSize)
 
-	// simulate input from frontend...
-	message := []byte("1hello\n") // line buffered canonical mode
+	// simulate input from frontend... ("hello" in base64)
+	message := []byte("1aGVsbG8=\n") // line buffered canonical mode
 	mMaster.masterToGottyWriter.Write(message)
 
 	// ...and make sure it makes it through to the slave intact
@@ -108,7 +108,7 @@ func TestWriteFromFrontend(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error from Write(): %s", err)
 	}
-	if !bytes.Equal(readBuf[:n], message[1:]) {
+	if !bytes.Equal(readBuf[:n], []byte("hello")) {
 		t.Fatalf("Unexpected message received: `%s`", readBuf[:n])
 	}
 }

@@ -5,3 +5,16 @@ html, body, #terminal {
     padding: 0%;
     margin: 0%;
 }
+
+.fileDialog {
+    position: fixed;
+    top: 40%;
+    left: 40%;
+    background-color: lightgray;
+    padding: 20px;
+    border: 10px;
+    border-color: red;
+    border-width: medium;
+    display: none;
+    z-index: 5;
+}

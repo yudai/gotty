@@ -176,7 +176,13 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 			return nil
 		}
 
-		_, err := wt.slave.Write(data[1:])
+		var decodedBuffer = make([]byte, len(data))
+		n, err := base64.StdEncoding.Decode(decodedBuffer, data[1:])
+		if err != nil {
+			return errors.Wrapf(err, "failed to write received data to slave")
+		}
+
+		_, err = wt.slave.Write(decodedBuffer[:n])
 		if err != nil {
 			return errors.Wrapf(err, "failed to write received data to slave")
 		}
