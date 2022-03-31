@@ -11,7 +11,16 @@ docker:
 	docker build . -t gotty-bash:$(VERSION)
 
 .PHONY: all docker assets
-assets: bindata/static/js/gotty.js.map bindata/static/js/gotty.js bindata/static/index.html bindata/static/icon.svg bindata/static/favicon.ico bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css bindata/static/manifest.json bindata/static/icon_192.png
+assets: bindata/static/js/gotty.js.map \
+	bindata/static/js/gotty.js \
+	bindata/static/index.html \
+	bindata/static/icon.svg \
+	bindata/static/favicon.ico \
+	bindata/static/css/index.css \
+	bindata/static/css/xterm.css \
+	bindata/static/css/xterm_customize.css \
+	bindata/static/manifest.json \
+	bindata/static/icon_192.png
 
 all: gotty
 
@@ -31,7 +40,7 @@ js/node_modules/xterm/dist/xterm.css:
 	cd js && \
 	npm install
 
-bindata/static/js/gotty.js: js/src/* | js/node_modules/webpack
+bindata/static/js/gotty.js.map bindata/static/js/gotty.js: js/src/* | js/node_modules/webpack
 	cd js && \
 	npx webpack --mode=$(WEBPACK_MODE)
 
