@@ -24,6 +24,7 @@ type WebTTY struct {
 	rows        int
 	reconnect   int // in seconds
 	masterPrefs []byte
+	decoder     Decoder
 
 	bufferSize int
 	writeMutex sync.Mutex
@@ -43,6 +44,7 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 		rows:        0,
 
 		bufferSize: 1024,
+		decoder:    &NullCodec{},
 	}
 
 	for _, option := range options {
@@ -177,9 +179,9 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 		}
 
 		var decodedBuffer = make([]byte, len(data))
-		n, err := base64.StdEncoding.Decode(decodedBuffer, data[1:])
+		n, err := wt.decoder.Decode(decodedBuffer, data[1:])
 		if err != nil {
-			return errors.Wrapf(err, "failed to write received data to slave")
+			return errors.Wrapf(err, "failed to decode received data")
 		}
 
 		_, err = wt.slave.Write(decodedBuffer[:n])
@@ -191,6 +193,14 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 		err := wt.masterWrite([]byte{Pong})
 		if err != nil {
 			return errors.Wrapf(err, "failed to return Pong message to master")
+		}
+
+	case SetEncoding:
+		switch string(data[1:]) {
+		case "base64":
+			wt.decoder = base64.StdEncoding
+		case "null":
+			wt.decoder = NullCodec{}
 		}
 
 	case ResizeTerminal:

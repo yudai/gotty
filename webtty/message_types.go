@@ -13,6 +13,8 @@ const (
 	Ping = '2'
 	// Notify that the browser size has been changed
 	ResizeTerminal = '3'
+	// Change encoding
+	SetEncoding = '4'
 )
 
 const (

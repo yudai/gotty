@@ -149,7 +149,7 @@ export class WebTTY {
         let maxChunkSize = Math.floor(effectiveBufferSize / 4)*3;
 
         for (let i = 0; i < Math.ceil(dataString.length / maxChunkSize); i++) {
-            let inputChunk = dataString.substring(i * effectiveBufferSize, Math.min((i + 1) * effectiveBufferSize, dataString.length))
+            let inputChunk = dataString.substring(i * maxChunkSize, Math.min((i + 1) * maxChunkSize, dataString.length))
             this.connection.send(msgInput + btoa(inputChunk));
         }
     }
@@ -209,6 +209,9 @@ export class WebTTY {
 
                 this.term.onResize(resizeHandler);
                 resizeHandler(termInfo.columns, termInfo.rows);
+
+                // Set encoding to base64 (TODO: Fix this up)
+                connection.send("4base64");
 
                 this.term.onInput(
                     (input: string) => {
