@@ -6,15 +6,8 @@ html, body, #terminal {
     margin: 0%;
 }
 
-.fileDialog {
-    position: fixed;
-    top: 40%;
-    left: 40%;
-    background-color: lightgray;
-    padding: 20px;
-    border: 10px;
-    border-color: red;
-    border-width: medium;
-    display: none;
-    z-index: 5;
+.progress .progress-bar {
+  transition: unset;
+  transition-duration: 0.1s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

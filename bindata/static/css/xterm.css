@@ -133,7 +133,8 @@
     cursor: default;
 }
 
-.xterm.xterm-cursor-pointer {
+.xterm.xterm-cursor-pointer,
+.xterm .xterm-cursor-pointer {
     cursor: pointer;
 }
 
@@ -167,4 +168,13 @@
 
 .xterm-underline {
     text-decoration: underline;
+}
+
+.xterm-strikethrough {
+    text-decoration: line-through;
+}
+
+.xterm-screen .xterm-decoration-container .xterm-decoration {
+	z-index: 6;
+	position: absolute;
 }
