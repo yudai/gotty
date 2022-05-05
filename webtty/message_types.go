@@ -1,7 +1,7 @@
 package webtty
 
 // Protocols defines the name of this protocol,
-// which is supposed to be used to the subprotocol of Websockt streams.
+// which is supposed to be used to the subprotocol of Websocket streams.
 var Protocols = []string{"webtty"}
 
 const (
