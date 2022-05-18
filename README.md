@@ -1,3 +1,4 @@
+
 # ![](https://raw.githubusercontent.com/yudai/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
 
 [![GitHub release](http://img.shields.io/github/release/yudai/gotty.svg?style=flat-square)][release]
@@ -51,6 +52,7 @@ By default, GoTTY starts a web server at port 8080. Open the URL on your web bro
 --port value, -p value        Port number to liten (default: "8080") [$GOTTY_PORT]
 --permit-write, -w            Permit clients to write to the TTY (BE CAREFUL) [$GOTTY_PERMIT_WRITE]
 --credential value, -c value  Credential for Basic Authentication (ex: user:pass, default disabled) [$GOTTY_CREDENTIAL]
+--api-prefix                  Add a prefix string for service [$GOTTY_API_PREFIX]
 --random-url, -r              Add a random string to the URL [$GOTTY_RANDOM_URL]
 --random-url-length value     Random URL length (default: 8) [$GOTTY_RANDOM_URL_LENGTH]
 --tls, -t                     Enable TLS/SSL [$GOTTY_TLS]
