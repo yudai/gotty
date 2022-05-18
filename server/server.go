@@ -4,12 +4,14 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"regexp"
+	"strings"
 	noesctmpl "text/template"
 	"time"
 
@@ -96,6 +98,9 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 	counter := newCounter(time.Duration(server.options.Timeout) * time.Second)
 
 	path := "/"
+	if strings.TrimSpace(server.options.ApiPrefix) != "" {
+		path = fmt.Sprintf(`/%s/`, strings.TrimSpace(server.options.ApiPrefix))
+	}
 	if server.options.EnableRandomUrl {
 		path = "/" + randomstring.Generate(server.options.RandomUrlLength) + "/"
 	}
