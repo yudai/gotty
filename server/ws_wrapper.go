@@ -19,7 +19,7 @@ func (wsw *wsWrapper) Write(p []byte) (n int, err error) {
 
 func (wsw *wsWrapper) Read(p []byte) (n int, err error) {
 	for {
-		msgType, reader, err := wsw.Conn.NextReader()
+		msgType, bytes, err := wsw.Conn.ReadMessage()
 		if err != nil {
 			return 0, err
 		}
@@ -28,6 +28,7 @@ func (wsw *wsWrapper) Read(p []byte) (n int, err error) {
 			continue
 		}
 
-		return reader.Read(p)
+		copy(p, bytes)
+		return len(bytes), err
 	}
 }
