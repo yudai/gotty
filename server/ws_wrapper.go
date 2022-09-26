@@ -17,9 +17,17 @@ func (wsw *wsWrapper) Write(p []byte) (n int, err error) {
 	return writer.Write(p)
 }
 
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
+}
+
 func (wsw *wsWrapper) Read(p []byte) (n int, err error) {
 	for {
-		msgType, reader, err := wsw.Conn.NextReader()
+		msgType, bytes, err := wsw.Conn.ReadMessage()
 		if err != nil {
 			return 0, err
 		}
@@ -28,6 +36,7 @@ func (wsw *wsWrapper) Read(p []byte) (n int, err error) {
 			continue
 		}
 
-		return reader.Read(p)
+		copy(p, bytes)
+		return minInt(len(p), len(bytes)), err
 	}
 }
