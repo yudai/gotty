@@ -35,7 +35,7 @@
 /*!
  * xterm (https://npmjs.com/package/xterm)
  * @license MIT
- * @version 4.17.0
+ * @version 5.1.0
  * ==xterm/LICENSE==
  * Copyright (c) 2017-2019, The xterm.js authors (https://github.com/xtermjs/xterm.js)
  * Copyright (c) 2014-2016, SourceLair Private Company (https://www.sourcelair.com)
@@ -63,7 +63,7 @@
 /*!
  * xterm-addon-fit (https://npmjs.com/package/xterm-addon-fit)
  * @license MIT
- * @version 0.5.0
+ * @version 0.7.0
  * ==xterm-addon-fit/LICENSE==
  * Copyright (c) 2019, The xterm.js authors (https://github.com/xtermjs/xterm.js)
  * 
@@ -89,7 +89,7 @@
 /*!
  * xterm-addon-webgl (https://npmjs.com/package/xterm-addon-webgl)
  * @license MIT
- * @version 0.11.4
+ * @version 0.14.0
  * ==xterm-addon-webgl/LICENSE==
  * Copyright (c) 2018, The xterm.js authors (https://github.com/xtermjs/xterm.js)
  * 
