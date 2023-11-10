@@ -38,7 +38,7 @@ $ go install github.com/ghthor/gotty/v2@latest
 You can specify a specific version based on git tags.
 
 ```sh
-$ go install github.com/ghthor/gotty/v2@2.3.2
+$ go install github.com/ghthor/gotty/v2@v2.3.4
 ```
 
 # Usage
