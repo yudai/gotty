@@ -100,7 +100,7 @@ func staticCssIndexCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/css/index.css", size: 116, mode: os.FileMode(420), modTime: time.Unix(1699642130, 0)}
+	info := bindataFileInfo{name: "static/css/index.css", size: 116, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -120,7 +120,7 @@ func staticCssXtermCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/css/xterm.css", size: 5383, mode: os.FileMode(420), modTime: time.Unix(1699644275, 0)}
+	info := bindataFileInfo{name: "static/css/xterm.css", size: 5383, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -140,7 +140,7 @@ func staticCssXterm_customizeCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/css/xterm_customize.css", size: 550, mode: os.FileMode(420), modTime: time.Unix(1699642097, 0)}
+	info := bindataFileInfo{name: "static/css/xterm_customize.css", size: 550, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -160,7 +160,7 @@ func staticFaviconPng() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/favicon.png", size: 863, mode: os.FileMode(420), modTime: time.Unix(1699642801, 0)}
+	info := bindataFileInfo{name: "static/favicon.png", size: 863, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -180,7 +180,7 @@ func staticIndexHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/index.html", size: 491, mode: os.FileMode(420), modTime: time.Unix(1699642801, 0)}
+	info := bindataFileInfo{name: "static/index.html", size: 491, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -200,7 +200,7 @@ func staticJsGottyBundleJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/js/gotty-bundle.js", size: 618623, mode: os.FileMode(420), modTime: time.Unix(1699644275, 0)}
+	info := bindataFileInfo{name: "static/js/gotty-bundle.js", size: 618623, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -220,7 +220,7 @@ func staticJsGottyBundleJsLicenseTxt() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/js/gotty-bundle.js.LICENSE.txt", size: 1774, mode: os.FileMode(420), modTime: time.Unix(1699644275, 0)}
+	info := bindataFileInfo{name: "static/js/gotty-bundle.js.LICENSE.txt", size: 1774, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -240,7 +240,7 @@ func staticJsGottyBundleJsMap() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "static/js/gotty-bundle.js.map", size: 1680886, mode: os.FileMode(420), modTime: time.Unix(1699644275, 0)}
+	info := bindataFileInfo{name: "static/js/gotty-bundle.js.map", size: 1680886, mode: os.FileMode(420), modTime: time.Unix(1699644520, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
