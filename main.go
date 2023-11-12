@@ -9,12 +9,12 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 
-	"github.com/yudai/gotty/backend/localcommand"
-	"github.com/yudai/gotty/pkg/homedir"
-	"github.com/yudai/gotty/server"
-	"github.com/yudai/gotty/utils"
+	"github.com/ghthor/gotty/v2/backend/localcommand"
+	"github.com/ghthor/gotty/v2/pkg/homedir"
+	"github.com/ghthor/gotty/v2/server"
+	"github.com/ghthor/gotty/v2/utils"
 )
 
 func main() {
@@ -66,7 +66,7 @@ func main() {
 
 		utils.ApplyFlags(cliFlags, flagMappings, c, appOptions, backendOptions)
 
-		appOptions.EnableBasicAuth = c.IsSet("credential")
+		appOptions.EnableBasicAuth = appOptions.EnableBasicAuth || c.IsSet("credential")
 		appOptions.EnableTLSClientAuth = c.IsSet("tls-ca-crt")
 
 		err = appOptions.Validate()

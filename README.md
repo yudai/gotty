@@ -1,37 +1,44 @@
-# ![](https://raw.githubusercontent.com/yudai/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
+# ![](https://raw.githubusercontent.com/ghthor/gotty/master/resources/favicon.png) GoTTY - Share your terminal as a web application
 
-[![GitHub release](http://img.shields.io/github/release/yudai/gotty.svg?style=flat-square)][release]
+> TODO update the CI to github actions? travis?
+
+[![GitHub release](http://img.shields.io/github/release/ghthor/gotty.svg?style=flat-square)][release]
 [![Wercker](http://img.shields.io/wercker/ci/55d0eeff7331453f0801982c.svg?style=flat-square)][wercker]
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 
-[release]: https://github.com/yudai/gotty/releases
+[release]: https://github.com/ghthor/gotty/releases
 [wercker]: https://app.wercker.com/project/bykey/03b91f441bebeda34f80e09a9f14126f
-[license]: https://github.com/yudai/gotty/blob/master/LICENSE
+[license]: https://github.com/ghthor/gotty/blob/master/LICENSE
 
 GoTTY is a simple command line tool that turns your CLI tools into web applications.
 
-![Screenshot](https://raw.githubusercontent.com/yudai/gotty/master/screenshot.gif)
+> TODO: update this screenshot
+
+![Screenshot](https://raw.githubusercontent.com/ghthor/gotty/master/screenshot.gif)
 
 # Installation
 
-Download the latest stable binary file from the [Releases](https://github.com/yudai/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/yudai/gotty/releases/latest) for a stabale build.
+> TODO make release using github actions
+
+Download the latest stable binary file from the [Releases](https://github.com/ghthor/gotty/releases) page. Note that the release marked `Pre-release` is built for testing purpose, which can include unstable or breaking changes. Download a release marked [Latest release](https://github.com/ghthor/gotty/releases/latest) for a stable build.
 
 (Files named with `darwin_amd64` are for Mac OS X users)
 
-## Homebrew Installation
+## `go install` Installation
 
-You can install GoTTY with [Homebrew](http://brew.sh/) as well.
+> TODO look into oldest compatible go compiler
+
+If you have a go language environment, you can install GoTTY with the `go
+install` command. GoTTY requires go1.12 or later.
 
 ```sh
-$ brew install yudai/gotty/gotty
+$ go install github.com/ghthor/gotty/v2@latest
 ```
 
-## `go get` Installation (Development)
-
-If you have a Go language environment, you can install GoTTY with the `go get` command. However, this command builds a binary file from the latest master branch, which can include unstable or breaking changes. GoTTY requires go1.9 or later.
+You can specify a specific version based on git tags.
 
 ```sh
-$ go get github.com/yudai/gotty
+$ go install github.com/ghthor/gotty/v2@v2.3.4
 ```
 
 # Usage
@@ -94,15 +101,28 @@ preferences {
 }
 ```
 
-See the [`.gotty`](https://github.com/yudai/gotty/blob/master/.gotty) file in this repository for the list of configuration options.
+See the [`.gotty`](https://github.com/ghthor/gotty/blob/master/.gotty) file in this repository for the list of configuration options.
+
+#### Enable WebGL
+
+The WebGL renderer is much better than the default canvas renderer for text; it
+can handle italics without clipping the letters. I think this is because
+upstream xtermjs is focusing on the WebGL renderer. To enable WebGL you need to
+add the following to your `~/.gotty` config file.
+
+```hcl
+preferences {
+  enable_webgl = true
+}
+```
 
 ### Security Options
 
 By default, GoTTY doesn't allow clients to send any keystrokes or commands except terminal window resizing. When you want to permit clients to write input to the TTY, add the `-w` option. However, accepting input from remote clients is dangerous for most commands. When you need interaction with the TTY for some reasons, consider starting GoTTY with tmux or GNU Screen and run your command on it (see "Sharing with Multiple Clients" section for detail).
 
-To restrict client access, you can use the `-c` option to enable the basic authentication. With this option, clients need to input the specified username and password to connect to the GoTTY server. Note that the credentical will be transmitted between the server and clients in plain text. For more strict authentication, consider the SSL/TLS client certificate authentication described below.
+To restrict client access, you can use the `-c` option to enable the basic authentication. With this option, clients need to input the specified username and password to connect to the GoTTY server. Note that the credentials will be transmitted between the server and clients in plain text. For more strict authentication, consider the SSL/TLS client certificate authentication described below.
 
-The `-r` option is a little bit casualer way to restrict access. With this option, GoTTY generates a random URL so that only people who know the URL can get access to the server.  
+The `-r` option provides a casual way to restrict access. With this option, GoTTY generates a random URL so that only people who know the URL can get access to the server.
 
 All traffic between the server and clients are NOT encrypted by default. When you send secret information through GoTTY, we strongly recommend you use the `-t` option which enables TLS/SSL on the session. By default, GoTTY loads the crt and key files placed at `~/.gotty.crt` and `~/.gotty.key`. You can overwrite these file paths with the `--tls-crt` and `--tls-key` options. When you need to generate a self-signed certification file, you can use the `openssl` command.
 
@@ -110,7 +130,7 @@ All traffic between the server and clients are NOT encrypted by default. When yo
 openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout ~/.gotty.key -out ~/.gotty.crt
 ```
 
-(NOTE: For Safari uses, see [how to enable self-signed certificates for WebSockets](http://blog.marcon.me/post/24874118286/secure-websockets-safari) when use self-signed certificates)
+(NOTE: For Safari uses, see [how to enable self-signed certificates for WebSockets](http://blog.marcon.me/post/24874118286/secure-websockets-safari) when using self-signed certificates)
 
 For additional security, you can use the SSL/TLS client certificate authentication by providing a CA certificate file to the `--tls-ca-crt` option (this option requires the `-t` or `--tls` to be set). This option requires all clients to send valid client certificates that are signed by the specified certification authority.
 
@@ -151,12 +171,13 @@ $ gotty -w docker run -it --rm busybox
 
 ## Development
 
-You can build a binary using the following commands. Windows is not supported now. go1.9 is required.
+You can build a binary using the following commands. Windows is not supported now. go1.12 is required.
+
+> TODO: Migrate to the go std lib static asset library
 
 ```sh
 # Install tools
-go get github.com/jteeuwen/go-bindata/...
-go get github.com/tools/godep
+go install github.com/go-bindata/go-bindata/v3/go-bindata@latest # for static asset management
 
 # Build
 make
@@ -189,3 +210,6 @@ GoTTY uses [xterm.js](https://xtermjs.org/) and [hterm](https://groups.google.co
 # License
 
 The MIT License
+
+> ❤ Special thanks to [yudai](https://github.com/yudai/gotty) for
+> creating this project!

@@ -1,13 +1,17 @@
-import * as bare from "xterm";
+/// <reference types="node" />
 import { lib } from "libapps";
+import { IDisposable, Terminal } from "xterm";
+import { FitAddon } from "xterm-addon-fit";
 export declare class Xterm {
     elem: HTMLElement;
-    term: bare;
+    term: Terminal;
     resizeListener: () => void;
     decoder: lib.UTF8Decoder;
     message: HTMLElement;
     messageTimeout: number;
-    messageTimer: number;
+    messageTimer: NodeJS.Timer;
+    fitAddon: FitAddon;
+    disposables: IDisposable[];
     constructor(elem: HTMLElement);
     info(): {
         columns: number;

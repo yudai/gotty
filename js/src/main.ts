@@ -3,6 +3,10 @@ import { Xterm } from "./xterm";
 import { Terminal, WebTTY, protocols } from "./webtty";
 import { ConnectionFactory } from "./websocket";
 
+// NOTE: This fixes tsfmt diffs in dist with this file
+export class GoTTY {
+}
+
 // @TODO remove these
 declare var gotty_auth_token: string;
 declare var gotty_term: string;
