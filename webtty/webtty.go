@@ -42,7 +42,7 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 		columns:     0,
 		rows:        0,
 
-		bufferSize: 1024,
+		bufferSize: 4096,
 	}
 
 	for _, option := range options {
