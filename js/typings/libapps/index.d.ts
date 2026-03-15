@@ -37,7 +37,7 @@ export declare namespace lib {
     }
 
     export interface Memory {
-        new (): Storage;
+        new(): Storage;
         Memory(): Storage
     }
 

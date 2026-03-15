@@ -1,13 +1,16 @@
-import * as bare from "xterm";
 import { lib } from "libapps";
+import { IDisposable, Terminal } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
 export declare class Xterm {
     elem: HTMLElement;
-    term: bare;
+    term: Terminal;
     resizeListener: () => void;
     decoder: lib.UTF8Decoder;
     message: HTMLElement;
     messageTimeout: number;
-    messageTimer: number;
+    messageTimer: ReturnType<typeof setTimeout>;
+    fitAddon: FitAddon;
+    disposables: IDisposable[];
     constructor(elem: HTMLElement);
     info(): {
         columns: number;

@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 // WebTTY bridges a PTY slave and its PTY master.
@@ -42,7 +43,7 @@ func New(masterConn Master, slave Slave, options ...Option) (*WebTTY, error) {
 		columns:     0,
 		rows:        0,
 
-		bufferSize: 1024,
+		bufferSize: 4096,
 	}
 
 	for _, option := range options {
@@ -64,49 +65,52 @@ func (wt *WebTTY) Run(ctx context.Context) error {
 		return errors.Wrapf(err, "failed to send initializing message")
 	}
 
-	errs := make(chan error, 2)
+	grp, grpCtx := errgroup.WithContext(ctx)
+	done := grpCtx.Done()
 
-	go func() {
-		errs <- func() error {
-			buffer := make([]byte, wt.bufferSize)
-			for {
-				n, err := wt.slave.Read(buffer)
-				if err != nil {
-					return ErrSlaveClosed
-				}
-
-				err = wt.handleSlaveReadEvent(buffer[:n])
-				if err != nil {
-					return err
-				}
+	grp.Go(func() error {
+		buffer := make([]byte, wt.bufferSize)
+		for {
+			select {
+			case <-done:
+				return grpCtx.Err()
+			default:
 			}
-		}()
-	}()
 
-	go func() {
-		errs <- func() error {
-			buffer := make([]byte, wt.bufferSize)
-			for {
-				n, err := wt.masterConn.Read(buffer)
-				if err != nil {
-					return ErrMasterClosed
-				}
-
-				err = wt.handleMasterReadEvent(buffer[:n])
-				if err != nil {
-					return err
-				}
+			n, err := wt.slave.Read(buffer)
+			if err != nil {
+				return ErrSlaveClosed
 			}
-		}()
-	}()
 
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case err = <-errs:
-	}
+			err = wt.handleSlaveReadEvent(buffer[:n])
+			if err != nil {
+				return err
+			}
+		}
+	})
 
-	return err
+	grp.Go(func() error {
+		buffer := make([]byte, wt.bufferSize)
+		for {
+			select {
+			case <-done:
+				return grpCtx.Err()
+			default:
+			}
+
+			n, err := wt.masterConn.Read(buffer)
+			if err != nil {
+				return ErrMasterClosed
+			}
+
+			err = wt.handleMasterReadEvent(buffer[:n])
+			if err != nil {
+				return err
+			}
+		}
+	})
+
+	return grp.Wait()
 }
 
 func (wt *WebTTY) sendInitializeMessage() error {
@@ -205,7 +209,8 @@ func (wt *WebTTY) handleMasterReadEvent(data []byte) error {
 			columns = int(args.Columns)
 		}
 
-		wt.slave.ResizeTerminal(columns, rows)
+		// Ignoring this error unfournately
+		_ = wt.slave.ResizeTerminal(columns, rows)
 	default:
 		return errors.Errorf("unknown message type `%c`", data[0])
 	}

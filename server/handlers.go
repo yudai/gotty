@@ -13,8 +13,15 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
-	"github.com/yudai/gotty/webtty"
+	"github.com/ghthor/gotty/v2/webtty"
 )
+
+func zeroAsInfinity(format string, v int) string {
+	if v == 0 {
+		return "∞"
+	}
+	return fmt.Sprintf(format, v)
+}
 
 func (server *Server) generateHandleWS(ctx context.Context, cancel context.CancelFunc, counter *counter) http.HandlerFunc {
 	once := new(int64)
@@ -42,8 +49,8 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 		defer func() {
 			num := counter.done()
 			log.Printf(
-				"Connection closed by %s: %s, connections: %d/%d",
-				closeReason, r.RemoteAddr, num, server.options.MaxConnection,
+				"Connection closed by %s: %s, connections: %d/%s",
+				closeReason, r.RemoteAddr, num, zeroAsInfinity("%d", server.options.MaxConnection),
 			)
 
 			if server.options.Once {
@@ -58,7 +65,10 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 			}
 		}
 
-		log.Printf("New client connected: %s, connections: %d/%d", r.RemoteAddr, num, server.options.MaxConnection)
+		log.Printf(
+			"New client connected: %s, connections: %d/%s",
+			r.RemoteAddr, num, zeroAsInfinity("%d", server.options.MaxConnection),
+		)
 
 		if r.Method != "GET" {
 			http.Error(w, "Method not allowed", 405)
@@ -72,7 +82,7 @@ func (server *Server) generateHandleWS(ctx context.Context, cancel context.Cance
 		}
 		defer conn.Close()
 
-		err = server.processWSConn(ctx, conn)
+		err = server.processWSConn(r.Context(), conn)
 
 		switch err {
 		case ctx.Err():
@@ -115,8 +125,9 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 		return errors.Wrapf(err, "failed to parse arguments")
 	}
 	params := query.Query()
+
 	var slave Slave
-	slave, err = server.factory.New(params)
+	slave, err = server.factory.New(ctx, params, conn)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create backend")
 	}
@@ -164,8 +175,11 @@ func (server *Server) processWSConn(ctx context.Context, conn *websocket.Conn) e
 	}
 
 	err = tty.Run(ctx)
+	if err != nil && !errors.Is(err, context.Canceled) {
+		return err
+	}
 
-	return err
+	return nil
 }
 
 func (server *Server) handleIndex(w http.ResponseWriter, r *http.Request) {

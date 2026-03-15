@@ -5,7 +5,7 @@ import (
 )
 
 type Options struct {
-	Address             string           `hcl:"address" flagName:"address" flagSName:"a" flagDescribe:"IP address to listen" default:"0.0.0.0"`
+	Address             string           `hcl:"address" flagName:"address" flagSName:"a" flagDescribe:"IP address to listen" default:"localhost"`
 	Port                string           `hcl:"port" flagName:"port" flagSName:"p" flagDescribe:"Port number to liten" default:"8080"`
 	PermitWrite         bool             `hcl:"permit_write" flagName:"permit-write" flagSName:"w" flagDescribe:"Permit clients to write to the TTY (BE CAREFUL)" default:"false"`
 	EnableBasicAuth     bool             `hcl:"enable_basic_auth" default:"false"`
@@ -41,6 +41,7 @@ func (options *Options) Validate() error {
 	return nil
 }
 
+// TODO(ghthor): add defaults to all these options that match the example .gotty file
 type HtermPrefernces struct {
 	AltGrMode                     *string                      `hcl:"alt_gr_mode" json:"alt-gr-mode,omitempty"`
 	AltBackspaceIsMetaBackspace   bool                         `hcl:"alt_backspace_is_meta_backspace" json:"alt-backspace-is-meta-backspace,omitempty"`
@@ -72,6 +73,7 @@ type HtermPrefernces struct {
 	EnableClipboardNotice         bool                         `hcl:"enable_clipboard_notice" json:"enable-clipboard-notice,omitempty"`
 	EnableClipboardWrite          bool                         `hcl:"enable_clipboard_write" json:"enable-clipboard-write,omitempty"`
 	EnableDec12                   bool                         `hcl:"enable_dec12" json:"enable-dec12,omitempty"`
+	EnableWebGL                   bool                         `hcl:"enable_webgl" json:"enable-webgl,omitempty"`
 	Environment                   map[string]string            `hcl:"environment" json:"environment,omitempty"`
 	FontFamily                    string                       `hcl:"font_family" json:"font-family,omitempty"`
 	FontSize                      int                          `hcl:"font_size" json:"font-size,omitempty"`

@@ -201,6 +201,9 @@
   // [bool] Respect the host's attempt to change the cursor blink status using DEC Private Mode 12.
   // enable_dec12 = false
 
+  // [bool] Enable webgl rendering in the browser client terminal(hterm)
+  // enable_webgl = false
+
   // [map[string]string] The default environment variables, as an object.
   // environment = {"TERM" = "xterm-256color"}
 

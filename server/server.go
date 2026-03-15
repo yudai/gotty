@@ -14,13 +14,13 @@ import (
 	"time"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/elazarl/go-bindata-assetfs"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
-	"github.com/yudai/gotty/pkg/homedir"
-	"github.com/yudai/gotty/pkg/randomstring"
-	"github.com/yudai/gotty/webtty"
+	"github.com/ghthor/gotty/v2/pkg/homedir"
+	"github.com/ghthor/gotty/v2/pkg/randomstring"
+	"github.com/ghthor/gotty/v2/webtty"
 )
 
 // Server provides a webtty HTTP endpoint.
@@ -117,9 +117,13 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		log.Printf("Port number configured to `0`, choosing a random port")
 	}
 	hostPort := net.JoinHostPort(server.options.Address, server.options.Port)
-	listener, err := net.Listen("tcp", hostPort)
-	if err != nil {
-		return errors.Wrapf(err, "failed to listen at `%s`", hostPort)
+
+	listener := opts.listener
+	if listener == nil {
+		listener, err = net.Listen("tcp", hostPort)
+		if err != nil {
+			return errors.Wrapf(err, "failed to listen at `%s`", hostPort)
+		}
 	}
 
 	scheme := "http"

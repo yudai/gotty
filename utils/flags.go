@@ -7,11 +7,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/codegangsta/cli"
 	"github.com/fatih/structs"
+	"github.com/urfave/cli"
 	"github.com/yudai/hcl"
 
-	"github.com/yudai/gotty/pkg/homedir"
+	"github.com/ghthor/gotty/v2/pkg/homedir"
 )
 
 func GenerateFlags(options ...interface{}) (flags []cli.Flag, mappings map[string]string, err error) {

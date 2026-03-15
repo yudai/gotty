@@ -1,6 +1,7 @@
 package localcommand
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"syscall"
@@ -28,8 +29,8 @@ type LocalCommand struct {
 	ptyClosed chan struct{}
 }
 
-func New(command string, argv []string, options ...Option) (*LocalCommand, error) {
-	cmd := exec.Command(command, argv...)
+func New(ctx context.Context, command string, argv []string, options ...Option) (*LocalCommand, error) {
+	cmd := exec.CommandContext(ctx, command, argv...)
 
 	pty, err := pty.Start(cmd)
 	if err != nil {
