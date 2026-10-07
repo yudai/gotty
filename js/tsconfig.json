@@ -9,6 +9,8 @@
       "sourceMap": true,
       "target": "es5",
       "module": "commonJS",
+      "lib": ["dom", "es2015"],
+      "types": [],
       "baseUrl": ".",
       "paths": {
           "*": ["./typings/*"]
